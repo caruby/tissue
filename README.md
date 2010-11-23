@@ -1,7 +1,7 @@
 caRuby Tissue: caTissue API facade
 ===================================
 
-**Home**:         [http://caruby.rubyforge.com](http://caruby.rubyforge.com)    
+**Home**:         [http://caruby.rubyforge.org](http://caruby.rubyforge.org)    
 **Git**:          [http://github.com/caruby/tissue](http://github.com/caruby/tissue)    
 **Author**:       OHSU Knight Cancer Institute    
 **Copyright**:    2010    
@@ -28,7 +28,7 @@ jgem install caruby-tissue
 Usage
 -----
 
-See the project [Home](http://caruby.rubyforge.com) Page for usage examples. 
+See the project [Home](http://caruby.rubyforge.org) Page for usage examples. 
 
 Changelog
 ---------
@@ -39,6 +39,6 @@ Changelog
 Copyright
 ---------
 
-caRuby &copy; 2010 by [Oregon Health & Science University](mailto:loneyf@ohsu.edu).
+caRuby &copy; 2010 by [Oregon Health & Science University](http://www.ohsu.edu/xd/health/services/cancer/index.cfm).
 caRuby is licensed under the MIT license. Please see the LICENSE and LEGAL
 files for more information.
