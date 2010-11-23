@@ -1,0 +1,17 @@
+#!/usr/bin/env jruby
+#
+# crtmigrate: migrates a source file to caTissue
+#
+
+# load the required gems
+require 'rubygems'
+begin
+  gem 'caruby-tissue'
+rescue LoadError
+  # if the gem is not available, then try a local source
+  $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+end
+
+require 'catissue/migration/command'
+
+CaTissue::MigrateCommand.new.execute

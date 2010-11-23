@@ -1,0 +1,9 @@
+# Tests merging attribute properites.
+
+secondary_key_attributes:
+  CollectionProtocol:
+    - title
+
+required_attributes:
+  CollectionProtocol:
+    - sequenceNumber

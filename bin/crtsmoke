@@ -1,0 +1,27 @@
+#!/usr/bin/env jruby
+#
+# crtsmoke: Verifies a caTissue connection
+#
+
+# Don't print messages if the help or version option is set.
+quiet = ARGV.include?('--help') || ARGV.include?('--version')
+
+puts "Starting the smoke test..." unless quiet
+
+puts "Loading the caruby-tissue gem..." unless quiet
+
+# load the caruby-tissue gem
+require 'rubygems'
+begin
+  gem 'caruby-tissue'
+rescue LoadError
+  # if the gem is not available, then try a local source
+  $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+end
+
+puts "Loading the caTissue client..." unless quiet
+
+require 'catissue/cli/smoke'
+
+# run the command
+CaTissue::CLI::Smoke.new.start

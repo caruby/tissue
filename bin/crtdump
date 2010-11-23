@@ -1,0 +1,31 @@
+#!/usr/bin/env jruby
+#
+# crtdump: Dumps the content of a caTissue object to stdout
+#
+
+# load the caruby-tissue gem
+require 'rubygems'
+begin
+  gem 'caruby-tissue'
+rescue LoadError
+  # if the gem is not available, then try a local source
+  $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+end
+
+# the default log file
+DEF_LOG_FILE = 'log/catissue.log'
+
+require 'catissue/cli/command'
+
+# run the command
+CaTissue::Command.new(:class, :id).execute do |opts, class_name, id|
+  # the search template
+  obj = CaTissue.const_get(class_name).new(:identifier=>id.to_i)
+  unless obj.find then
+    print("#{class_name} with identifier #{id} not found") and exit(-1)
+  end
+  # fetch the references
+  obj.references
+  # print the object graph
+  puts obj.dump
+end

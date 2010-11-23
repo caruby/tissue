@@ -1,0 +1,11 @@
+# This is the Galena frozen example migration field mapping file.
+# This example extends the simple migration with storage fields
+# and the frozen defaults.
+
+MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
+SPN: SpecimenCollectionGroup.surgical_pathology_number
+Collection Date: ReceivedEventParameters.timestamp
+Quantity: TissueSpecimen.initial_quantity
+Box: SpecimenPosition.container.name
+X: SpecimenPosition.position_dimension_one
+Y: SpecimenPosition.position_dimension_two

@@ -1,0 +1,47 @@
+#!/usr/bin/env jruby
+#
+# crtextract: extracts caTissue records which changed during a time interval
+#
+# == Usage
+#
+# catissue-extract.rb [options]
+#
+# --help, -h:
+#    print this help message and exit
+# --target, -t class:
+#    target class to extract (default Specimen)
+# --log file, -l file:
+#    log file (default ./log/migration.log)
+# --since date, -s date:
+#    earliest change date selection condition (optional)
+# --before date, -b date:
+#    latest change date selection condition (optional)
+# --on date, -b date:
+#    change date selection condition (optional)
+# --debug, -d:
+#    print debug messages to log (optional)
+#
+# See the ohsu distribution doc/extract.html file for more information.
+#
+# == License
+#
+# This program is licensed under the terms of the +LEGAL+ file in
+# the source distribution.
+#
+# load the required gems
+require 'rubygems'
+gem 'caruby-tissue'
+
+require 'catissue/cli/command'
+require 'catissue/extract/delta'
+require 'catissue/extract/extractor'
+
+# the command line specification
+spec = [
+  [:version, "--version", "prints the version of caRuby Tissue and the supported caTissue releases"],
+]
+
+# run the command
+CaRuby::Command.new(spec).execute do |opts|
+  if opts[:version] then puts "#{CaTissue::VERSION} for caTissue v#{CaTissue::CATISSUE_VERSIONS}" end
+end

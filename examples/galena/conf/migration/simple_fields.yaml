@@ -1,0 +1,30 @@
+# This is the Galena simple example migration field mapping file.
+# Each entry is in the format:
+#   heading: paths
+# The heading is the CSV file label in the leading heading record.
+# The paths is a comma-separated list of CaTissue domain object attribute paths specifying
+# how the CSV heading maps to a CaTissue attribute value. Each attribute path is in the format:
+#   class.attribute[.attribute]
+# where class is a CaTissue class and attribute is a Ruby accessor method defined in the CaTissue class.
+# The accessor method can be one of the following:
+# * a Java property name, e.g. lastName
+# * the pre-defined Rubyized underscore form of the Java property, e.g. last_name
+
+# The collection protocol title for the specimen
+Protocol: CollectionProtocol.short_title
+
+# The input MRN field is used for the PMI MRN, CPR PPI and Participant last name.
+# Since the migration source is for a single collection site, the MRN is unique within the protocol.
+# The simple input does not have a Participant name field. It is a useful practice to set the caTissue
+# name to some value, since caTissue uses the name for display and sorting. For want of a better
+# value, the name is set to the MRN.
+MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
+
+# The input SPN field is the SCG SPN value.
+SPN: SpecimenCollectionGroup.surgical_pathology_number
+
+# The input Collection Date is the Specimen received timestamp.
+Collection Date: ReceivedEventParameters.timestamp
+
+# The input Quantity is the target Specimen initial quantity.
+Quantity: Specimen.initial_quantity

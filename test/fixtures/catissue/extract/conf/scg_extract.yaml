@@ -1,0 +1,3 @@
+fields: test/fixtures/catissue/extract/conf/scg_fields.yaml
+output: test/results/catissue/extract/scg.csv
+target: SpecimenCollectionGroup

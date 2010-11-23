@@ -1,0 +1,24 @@
+# This is the Galena example tiny migration field mapping file.
+# This example input has all of the fields necessary to create a specimen.
+# The example does not use a shim.
+
+# The collection protocol title for the specimen
+Protocol: CollectionProtocol.short_title
+
+# The input MRN field is used for the PMI MRN, CPR PPI and Participant last name
+MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
+
+# The input SPN field is the SCG SPN value
+SPN: SpecimenCollectionGroup.surgical_pathology_number
+
+# The date the specimen was received
+Received Date: ReceivedEventParameters.timestamp
+
+# The specimen label
+Label: TissueSpecimen.label
+
+# The type of the specimen
+Type: TissueSpecimen.specimen_type
+
+# The specimen amount
+Quantity: TissueSpecimen.initial_quantity

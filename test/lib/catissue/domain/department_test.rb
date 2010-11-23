@@ -1,0 +1,21 @@
+require File.join(File.dirname(__FILE__), '..', 'test_case')
+require 'caruby/util/uniquifier'
+
+class CaTissueDepartmentTest < Test::Unit::TestCase
+  include CaTissue::TestCase
+
+  attr_reader :department
+
+  def setup
+    super
+    @department = CaTissue::Department.new(:name => 'Test Department'.uniquify)
+  end
+
+  def test_defaults
+    verify_defaults(department)
+  end
+
+  def test_save
+    verify_save(department)
+  end
+end
