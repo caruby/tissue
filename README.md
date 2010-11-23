@@ -1,8 +1,8 @@
 caRuby Tissue: caTissue API facade
 ===================================
 
-**Home**:         [http://caruby.rubyforge.com](http://caruby.rubyforge.com) 
-**Git**:          [http://github.com/caruby/tissue](http://github.com/caruby/tissue)
+**Home**:         [http://caruby.rubyforge.com](http://caruby.rubyforge.com)    
+**Git**:          [http://github.com/caruby/tissue](http://github.com/caruby/tissue)    
 **Author**:       OHSU Knight Cancer Institute    
 **Copyright**:    2010    
 **License**:      MIT License    
