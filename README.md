@@ -28,7 +28,7 @@ jgem install caruby-tissue
 Usage
 -----
 
-See the project [http://caruby.rubyforge.com](Home) Page for usage examples. 
+See the project [Home](http://caruby.rubyforge.com) Page for usage examples. 
 
 Changelog
 ---------
