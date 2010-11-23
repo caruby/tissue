@@ -16,7 +16,7 @@ Feature List
 
 1. caTissue API wrapper.
 
-2. Built on the caRuby Core.
+2. Built on the caRuby [Core](/caruby/core).
 
 3. Migration utility.
 
