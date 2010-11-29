@@ -102,7 +102,9 @@ secondary key rather than content, e.g.:
 </pre>
 <p>
 The complete definitions are included in this method for convenience in
-order to seed the example in a test database.
+order to seed the example in a test database. A real-world migration might
+find it useful to create a similar defaults file in order to rapidly seed
+an empty test or staging database.
 </p>
 
 
@@ -343,13 +345,13 @@ Creates the Galena example Defaults singleton and populates the attributes.
       <pre class="lines">
 
 
-33
 34
 35
-36</pre>
+36
+37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 34</span>
 
 <span class='def def kw'>def</span> <span class='initialize identifier id'>initialize</span>
   <span class='super super kw'>super</span>
@@ -393,12 +395,12 @@ Returns the value of attribute box_type
       <pre class="lines">
 
 
-30
 31
-32</pre>
+32
+33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 31</span>
 
 <span class='def def kw'>def</span> <span class='box_type identifier id'>box_type</span>
   <span class='@box_type ivar id'>@box_type</span>
@@ -436,12 +438,12 @@ Returns the value of attribute freezer_type
       <pre class="lines">
 
 
-30
 31
-32</pre>
+32
+33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 31</span>
 
 <span class='def def kw'>def</span> <span class='freezer_type identifier id'>freezer_type</span>
   <span class='@freezer_type ivar id'>@freezer_type</span>
@@ -479,12 +481,12 @@ Returns the value of attribute hospital
       <pre class="lines">
 
 
-30
 31
-32</pre>
+32
+33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 31</span>
 
 <span class='def def kw'>def</span> <span class='hospital identifier id'>hospital</span>
   <span class='@hospital ivar id'>@hospital</span>
@@ -522,12 +524,12 @@ Returns the value of attribute protocol
       <pre class="lines">
 
 
-30
 31
-32</pre>
+32
+33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 31</span>
 
 <span class='def def kw'>def</span> <span class='protocol identifier id'>protocol</span>
   <span class='@protocol ivar id'>@protocol</span>
@@ -565,12 +567,12 @@ Returns the value of attribute tissue_bank
       <pre class="lines">
 
 
-30
 31
-32</pre>
+32
+33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 31</span>
 
 <span class='def def kw'>def</span> <span class='tissue_bank identifier id'>tissue_bank</span>
   <span class='@tissue_bank ivar id'>@tissue_bank</span>
@@ -612,19 +614,21 @@ Creates the Galena example administrative objects as necessary.
       <pre class="lines">
 
 
-39
 40
 41
 42
-43</pre>
+43
+44
+45</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 39</span>
+      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena/seed/defaults.rb', line 40</span>
 
 <span class='def def kw'>def</span> <span class='ensure_exists identifier id'>ensure_exists</span>
   <span class='@protocol ivar id'>@protocol</span><span class='dot token'>.</span><span class='find identifier id'>find</span><span class='lparen token'>(</span><span class='symbol val'>:create</span><span class='rparen token'>)</span>
   <span class='@hospital ivar id'>@hospital</span><span class='dot token'>.</span><span class='find identifier id'>find</span><span class='lparen token'>(</span><span class='symbol val'>:create</span><span class='rparen token'>)</span>
-  <span class='@freezer_type ivar id'>@freezer_type</span><span class='dot token'>.</span><span class='find identifier id'>find</span><span class='lparen token'>(</span><span class='symbol val'>:create</span><span class='rparen token'>)</span>
+  <span class='@surgeon ivar id'>@surgeon</span><span class='dot token'>.</span><span class='find identifier id'>find</span><span class='lparen token'>(</span><span class='symbol val'>:create</span><span class='rparen token'>)</span>
+  <span class='@box ivar id'>@box</span><span class='dot token'>.</span><span class='find identifier id'>find</span><span class='lparen token'>(</span><span class='symbol val'>:create</span><span class='rparen token'>)</span>
 <span class='end end kw'>end</span>
 </pre>
     </td>
@@ -637,7 +641,7 @@ Creates the Galena example administrative objects as necessary.
 </div>
     
     <div id="footer">
-  Generated on Tue Nov 23 11:38:43 2010 by 
+  Generated on Mon Nov 29 13:01:15 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.6.1 (ruby-1.8.6).
 </div>

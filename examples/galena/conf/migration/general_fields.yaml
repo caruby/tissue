@@ -29,6 +29,8 @@ Diagnosis: SpecimenCollectionGroup.clinical_diagnosis
 
 Anatomic Site: SpecimenCharacteristics.tissue_site
 
+Development: TissueSpecimen.pathological_status
+
 Label: TissueSpecimen.label
 
 Type: TissueSpecimen.specimen_type

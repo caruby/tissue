@@ -12,6 +12,6 @@ rescue LoadError
   $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 end
 
-require 'catissue/migration/command'
+require 'catissue/cli/migrate'
 
-CaTissue::MigrateCommand.new.execute
+CaTissue::CLI::Migrate.new.start

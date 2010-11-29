@@ -8,10 +8,13 @@ module CaTissue
   module Resource
     include CaRuby::Resource
     
+    # Returns whether each of the given attribute values either equals the
+    # respective other attribute value or one of the values is nil or 'Not Specified'.
+    #
     # @param [Resource] other the domain object to compare
     # @param [<Symbol>] attributes the  attributes to compare
-    # @return [Boolean} whether each of the given attribute values either equals the
-    #   respective other attribute value or one of the values is nil or 'Not Specified'
+    # @return [Boolean} whether this domain object is a tolerant match with the other
+    #   domain object on the given attributes
     def tolerant_match?(other, attributes)
       attributes.all? { |attr| Resource.tolerant_value_match?(send(attr), other.send(attr)) }
     end

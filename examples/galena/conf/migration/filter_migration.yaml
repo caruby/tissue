@@ -1,9 +1,0 @@
-# This is the Galena filter example migration configuration file.
-
-# The field heading => CaTissue mapping file.
-mapping: examples/galena/conf/migration/filter_fields.yaml
-
-# The filter code.
-shims: examples/galena/lib/galena/migration/filter_shims.rb
-
-target: TissueSpecimen

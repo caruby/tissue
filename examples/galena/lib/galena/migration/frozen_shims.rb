@@ -36,14 +36,13 @@ module CaTissue
     
     private
     
-    # Creates a new box of type {Galena::Migration::Defaults#box_type} in a
-    # freezer of type {Galena::Migration::Defaults#freezer_type}.
+    # Creates a new box of type {Galena::Seed::Defaults#box_type} in a freezer of type
+    # {Galena::Seed::Defaults#freezer_type}.
     # 
     # @return [StorageContainer] the new box
     def create_box
       defs = Galena::Seed.defaults
       self.storage_type = defs.box_type
-      self.site = defs.tissue_bank
       # A freezer with a spot for the box
       frz = defs.freezer_type.find_available(site, :create)
       if frz.nil? then raise CaRuby::MigrationError.new("Freezer not available to place #{self}") end

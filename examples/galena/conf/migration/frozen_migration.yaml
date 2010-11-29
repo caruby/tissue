@@ -1,9 +1,0 @@
-# This is the Galena frozen example migration configuration file.
-# The frozen example extends the simple example with storage fields
-# and shims.
-
-mapping: examples/galena/conf/migration/frozen_fields.yaml
-
-shims: examples/galena/lib/galena/migration/frozen_shims.rb
-
-target: TissueSpecimen

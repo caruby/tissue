@@ -26,24 +26,25 @@ module CaTissue
       # as well as the {SPECS} command line specifications.
       #
       # @param (see CaRuby::CLI::Command#initialize)
-      def initialize(specs={}, &factory)
-        super(specs.merge(SPECS)) { |opts| migrate(opts, &factory) }
+      # @yield [opts] optional migrator factory
+      # @yieldparam [{Symbol => Object}] the {CaTissue::Migrator#initialize} creation options
+      # @see CaRuby::Command#run
+      def initialize(&factory)
+        super(SPECS) { |opts| migrate(opts, &factory) }
       end
   
+      private
+      
       # Starts a Migrator with the command-line options.
       #
       # @yield [target] operation on the migration target
       # @yieldparam [CaRuby::Resource] the migrated domain object 
       # @see CaRuby::Command#run
-      def migrate(opts, &factory)
-        super do |opts|
-          validate(opts)
-          migrator = block_given ? yield(opts) : Migrator.new(opts)
-          migrator.migrate
-        end
+      def migrate(opts)
+        validate(opts)
+        migrator = block_given? ? yield(opts) : CaTissue::Migrator.new(opts)
+        migrator.migrate_to_database
       end
-  
-      private
       
       def validate(opts)
         tgt = opts[:target]

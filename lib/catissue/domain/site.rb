@@ -5,6 +5,9 @@ module CaTissue
   # The Site domain class.
   class Site
     include Resource
+    
+    # The default pre-defined caTissue site name.
+    DEF_SITE_NAME = 'In Transit'
 
     # caTissue alert - the Site SCG collection is ignored, since it is not fetched with the Site,
     # the caCORE query builder doesn't support abstract types, and even if it worked it would

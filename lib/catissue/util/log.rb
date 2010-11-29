@@ -12,15 +12,15 @@ module CaTissue
     # caTissue alert - avoid caTissue error by creating log subdirectory
     if File.directory?('log') then
       unless File.writable?('log') then
-        raise StandardError.new("caTissue log subdirectory #{File.expand_path('log')} is not writable.")
+        raise StandardError.new("caTissue log subdirectory #{File.expand_path('log')} is not writable")
       end
     elsif File.exists?('log') then
-      raise StandardError.new("Existing file #{File.expand_path('log')} prevents creation of the required caTissue log subdirectory.")
+      raise StandardError.new("Existing file #{File.expand_path('log')} prevents creation of the required caTissue log subdirectory")
     else
       begin
         Dir.mkdir('log')
       rescue Exception => e
-        raise StandardError.new("Cannot create the log subdirectory required by the caTissue client: #{File.expand_path('log')}.")
+        raise StandardError.new("Cannot create the log subdirectory required by the caTissue client: #{File.expand_path('log')}")
       end
     end
   end

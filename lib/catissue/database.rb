@@ -270,14 +270,20 @@ module CaTissue
     # * caTissue alert - Bug #161: Specimen API disposal not reflected in result activity status.
     #   DisposalEventParameters create sets the owner Specimen activity_status to +Closed+ as a side-effect.
     #   Reflect this side-effect in the submitted DisposalEventParameters owner Specimen object.
+    # * Ensure that a {CaTissue::Participant} obj registrations reference an existing protocol.
+    #   This compensates for a hole in the storable template logic which does not recognize the
+    #   CPR CP references as a pre-requisite. TODO - isolate, report and fix.
     def create_object(obj)
 #      if CaTissue::SCGEventParameters === obj and obj.specimen_collection_group then
 #        return create_scg_event_parameters(obj) { super }
 #      elsif CaTissue::Specimen === obj and obj.is_available == false then
-      if CaTissue::Specimen === obj and not obj.available? then
-        # Note that the obj.is_available == false test is required as opposed to obj.is_available?,
-        # since a nil is_available flag does not imply an unavailable specimen.
-        return create_unavailable_specimen(obj) { super }
+      if CaTissue::Specimen === obj then
+        obj.add_defaults
+        if obj.is_available == false or obj.available_quantity.zero? then
+          # Note that the obj.is_available == false test is required as opposed to obj.is_available?,
+          # since a nil is_available flag does not imply an unavailable specimen.
+          return create_unavailable_specimen(obj) { super }
+        end
       end
       
       # standard create
@@ -418,11 +424,28 @@ module CaTissue
     end
 
     def fetch_participant_using_mrn(pnt)
-      mid = pnt.medical_identifiers.first
-      return if mid.nil?
+      pmi = pnt.medical_identifiers.first
+      return if pmi.nil?
       logger.debug { "Using alternative Participant fetch strategy to find Participant by medical record number..." }
-      return unless exists?(mid)
-      candidates = query(mid.copy, :participant)
+      
+      #
+      # TODO - hack to work around intricate add_default logic; ties in with the create participant hack in this class.
+      # FIX THIS!!
+      #
+      if pmi.site.nil? then
+        # fetch Participant CPR protocols if necessary
+        pnt.registrations.each do |reg|
+          pcl = reg.protocol || next
+          pcl.find unless pcl.identifier
+          reg.add_defaults
+        end
+        pnt.add_defaults
+      end
+      
+      # END OF HACK
+      
+      return unless exists?(pmi)
+      candidates = query(pmi.copy, :participant)
       candidates.first if candidates.size == 1
     end
 

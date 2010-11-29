@@ -70,8 +70,8 @@ The use cases illustrate several common migration impediments:</p>
 <li><p>Copy the example into a location of your choosing.</p></li>
 <li><p>Configure a caTissue client to connect to a test caTissue instance, as described in the
 caTissue Technical Guide.</p></li>
-<li><p>Define the caRuby Tissue access property file as described in
-<a href="FAQ">http://caruby.tenderapp.com/faqs/getting-started/tissue_config</a>.</p></li>
+<li><p>Define the caRuby Tissue access property file as described in the configuration
+<a href="how-do-i-configure-caruby-to-work-with-catissue">FAQ</a>.</p></li>
 </ol>
 
 
@@ -90,16 +90,61 @@ For example, the <code>simple.csv</code> input file is migrated into caTissue us
 <li><p>Open a console in the copied Galena example location.</p></li>
 <li><p>Run the following:</p>
 
-<p>   crtmigrate --file conf/migration/simple.yaml data/simple.yaml</p></li>
-<li><p>Check the test database and verify that a there is a collection protocol
-named `Galena CP.</p></li>
+<p>   bin/seed</p>
+
+<p>This command initializes the administrative objects in the Galena test database,
+including the Galena collection protocol, site, cancer center, tissue bank and coordinator.</p></li>
+<li><p>Run the following:</p>
+
+<p>   crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv</p>
+
+<p>This command migrates the CSV record in the <code>simple.csv</code> input file into a caTissue
+<code>TissueSpecimen</code> based on the <code>simple_fields.yaml</code> mapping file.
+The command will take a couple of minutes to finish, since the less information
+you provide caRuby the more it works to fill in the missing bits. In the meantime,
+peruse the configuration and data files to see which data are migrated and
+where this data ends up in caTissue.</p></li>
+<li><p>Open the caTissue application on the test server and verify the content of the
+Galena CP collection protocol.</p></li>
 </ol>
 
 
-<p>The other examples are run in a similar manner.</p></div></div>
+<p>The other examples are run in a similar manner. Each example demonstrates different
+features of the caRuby Migration utility as follows:</p>
+
+<ul>
+<li>simple - a good starting point with limited input fields</li>
+<li>minimal - the fewest possible input fields without writing custom Ruby shim code</li>
+<li>general - lots of input fields, no custom Ruby code</li>
+<li>filter - a smattering of custom Ruby shim code to convert input values to caTissue values</li>
+<li>frozen - an example demonstrating how to import storage locations</li>
+</ul>
+
+
+<p>Try running an example with the <code>--debug</code> flag and look at the <code>log/migration.log</code> file to see
+what caRuby is up to behind the scenes (hint: a lot!).</p>
+
+<h2>Input data</h2>
+
+<p>The sample Galena Tissue Bank CSV input files hold one row for each specimen.
+Common fields are as follows:</p>
+
+<ul>
+<li>MRN - Patient Medical Record Number</li>
+<li>Initials - Patient name initials</li>
+<li>Frozen? - Flag indicating whether the specimen is frozen</li>
+<li>SPN - Surgical Pathology Number</li>
+<li>Collection Date - Date the specimen was acquired by the tissue bank</li>
+<li>Received Date - Date the specimen was donated by the participant</li>
+<li>Quantity - Amount collected</li>
+<li>Box - Tissue storage container</li>
+<li>X - the tissue box column</li>
+<li>Y - the tissue box row</li>
+</ul>
+</div></div>
     
     <div id="footer">
-  Generated on Tue Nov 23 11:38:42 2010 by 
+  Generated on Mon Nov 29 13:01:14 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.6.1 (ruby-1.8.6).
 </div>

@@ -33,6 +33,12 @@ module CaTissue
     # database or the migration must build a Participant and a CollectionProtocol.
     # 
     # @option (see CaRuby::Migrator#initialize)
+    # @option opts [String] :database target application {CaRuby::Database}
+    # @option opts [String] :target required target domain class
+    # @option opts [String] :input required source file to migrate
+    # @option opts [String] :shims optional array of shim files to load
+    # @option opts [String] :bad write each invalid record to the given file and continue migration
+    # @option opts [String] :offset zero-based starting source record number to process (default 0)
     def initialize(opts={})
       # if there is a configuration file, then add config options into the parameter options
       conf_file = opts.delete(:file)

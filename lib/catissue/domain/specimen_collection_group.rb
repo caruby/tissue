@@ -271,14 +271,11 @@ module CaTissue
       each_dependent { |dep| yield dep unless ReceivedEventParameters === dep }
     end
 
-    # The default In Transit collection site.
-    DEF_SITE = Site.new(:name => 'In Transit')
-
     # Adds defaults as follows:
     # * the default collection event is the first event in the protocol registered with this SCG.
     # * the default collection status is 'Complete' if there is a received event, 'Pending' otherwise.
     # * the default collection site is the CP site, if this SCG is {#received?} and there is only CP one,
-    #   otherwise the 'In Transit' site.
+    #   otherwise the {CaTissue::Site::DEF_SITE_NAME} site.
     # * the default conset tier status is 'Complete' if there is a received event, 'Pending' otherwise.
     # * a default ReceivedEventParameters is added to this SCG if the collection status is
     #   'Complete' and there is no other ReceivedEventParameters. The receiver is an arbitrary
@@ -334,7 +331,7 @@ module CaTissue
 
     def default_site
       cp = collection_event.protocol if collection_event
-      cp && cp.sites.size == 1 ? cp.sites.first : DEF_SITE
+      cp.default_site if cp
     end
 
     # Returns the first event in the protocol registered with this SCG.

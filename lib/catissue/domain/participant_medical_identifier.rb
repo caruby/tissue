@@ -32,7 +32,7 @@ module CaTissue
     def default_site
       cprs = participant.registrations if participant
       cp = cprs.first.protocol if cprs and cprs.size == 1
-      cp.sites.first if cp and cp.sites.size == 1
+      cp.default_site if cp
     end
   end
 end

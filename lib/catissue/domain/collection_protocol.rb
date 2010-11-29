@@ -93,25 +93,27 @@ module CaTissue
       reg.nil? ? Array::EMPTY_ARRAY : reg.specimens
     end
 
-    # Adds specimens to this protocol. Arguments:
-    # * participant - the Participant from whom the specimen is collected
-    # * biospecimens - the collected top-level underived specimens
-    # * params - additional SCG parameters as described in {SpecimenCollectionGroup#merge} method
-    # If params does not include a :collectionProtocolEvent parameter, then the SCG is assigned
-    # to the first collection event in this protocol.
-    # If params does not include a :specimen_collection_site parameter, then the SCG is assigned
-    # to the participant's collection site as determined by {Participant#collection_site}, if that
-    # can be uniquely determined.
+    # Adds specimens to this protocol. The following parameter options are supported:
+    # * :participant - the Participant from whom the specimen is collected
+    # * :biospecimens - the collected top-level underived specimens
+    # * additional SCG parameters as described in {SpecimenCollectionGroup#merge}.
     #
-    # This add_specimens method adds the following association to params before calling the
-    # SpecimenCollectionGroup constructor:
+    # If the options does not include a :collection_protocol_event, then the SCG is assigned
+    # to the first collection event in this protocol.
+    # If the options does not include a :specimen_collection_site, then the SCG is assigned
+    # to the participant's collection site as determined by {Participant#collection_site},
+    # if that can be uniquely determined.
+    #
+    # This add_specimens method adds the following parameter options before calling the
+    # {SpecimenCollectionGroup} constructor:
     # * :registration => a new CollectionProtocolRegistration for this protocol and the specified participant
     # If there is no :name parameter, then this method builds a new unique SCG name as this
     # CollectionProtocol's name followed by a unique suffix.
     #
-    # Returns a new SpecimenCollectionGroup for the given participant containing the specimens.
-    #
-    # Raises ArgumentError if the SpecimenCollectionGroup does not include all required attributes.
+    # @param [(<Specimen>, {Symbol => Object})] specimens_and_params the specimens to add followed
+    #   by the required parameter hash
+    # @return [SpecimenCollectionGroup] a new SCG for the given participant containing the specimens
+    # @raise [ArgumentError] if the {SpecimenCollectionGroup} does not include all required attributes
     def add_specimens(*specimens_and_params)
       params = specimens_and_params.pop
       spcs = specimens_and_params
@@ -135,6 +137,20 @@ module CaTissue
       # set each Specimen SCG
       spcs.each { |spc| spc.specimen_collection_group = scg }
       scg
+    end
+    
+    # Returns the default protocol site, determined as follows:
+    # * If there is exactly one authorized site for this protocol, then that is the default site.
+    # * If there is exactly two authorized sites for this protocol, then the site other than the
+    #   {CaTissue::Site::DEF_SITE_NAME} is returned.
+    # * Otherwise, this method returns nil.
+    #
+    # @return [CaTissue::Site, nil] the default site
+    def default_site
+     case sites.size
+      when 1 then sites.first
+      when 2 then sites.select { |site| site.name != CaTissue::Site::DEF_SITE_NAME }
+      end
     end
 
     private

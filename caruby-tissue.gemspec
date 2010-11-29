@@ -17,6 +17,7 @@ SPEC = Gem::Specification.new do |s|
   s.bindir = 'bin'
   s.executables = ['crtdump', 'crtexample', 'crtextract', 'crtmigrate', 'crtsmoke']
   s.add_dependency('caruby-core')
-  s.has_rdoc      = 'catissue'
+  s.has_rdoc      = 'yard'
+  s.license       = 'MIT'
   s.rubyforge_project = 'caruby'
 end

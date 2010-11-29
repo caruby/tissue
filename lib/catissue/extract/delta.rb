@@ -10,12 +10,6 @@ module CaTissue
   class Delta
     include Enumerable
 
-    private
-
-    SQL_FILE = File.join(File.dirname(__FILE__), '..', '..', '..', 'sql', 'delta.sql')
-
-    public
-
     # Creates a new Delta for objects of the given target type which changed
     # at or after the since Date and earlier but not at the before Date.
     # The default before Date is now.
@@ -35,6 +29,8 @@ module CaTissue
     end
 
     private
+
+    SQL_FILE = File.join(File.dirname(__FILE__), '..', '..', '..', 'sql', 'delta.sql')
 
     # Returns the result of running the delta SQL on the target CaTissue domain class.
     def execute_query
