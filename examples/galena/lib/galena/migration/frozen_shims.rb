@@ -1,7 +1,7 @@
-require 'galena/seed/defaults'
+# load the defaults file in the seed directory
+require File.join(File.dirname(__FILE__), '..', 'seed', 'defaults')
 
 module CaTissue
-
   # Declares the classes modified for migration.
   shims TissueSpecimen, CollectionProtocolRegistration, StorageContainer 
 
@@ -12,16 +12,6 @@ module CaTissue
     def migrate(row, migrated)
       super
       self.specimen_type = 'Frozen Tissue'
-    end
-  end
-  
-  class CollectionProtocolRegistration
-    # Sets this CPR's protocol to the pre-defined {Galena::Migration::Defaults#protocol}.
-    #
-    # @param (see CaRuby::Migratable#migrate)
-    def migrate(row, migrated)
-      super
-      self.protocol = Galena::Seed.defaults.protocol
     end
   end
 

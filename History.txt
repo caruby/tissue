@@ -2,3 +2,7 @@
 
 * Initial public release
 
+=== 1.2.2 / 2010-11-30
+
+* Enable Galena example
+

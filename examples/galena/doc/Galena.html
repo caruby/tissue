@@ -59,25 +59,12 @@
   
   
     <dt class="r1 last">Defined in:</dt>
-    <dd class="r1 last">examples/galena/lib/galena.rb<span class="defines">,<br />
-  examples/galena/lib/galena/seed/defaults.rb</span>
-</dd>
+    <dd class="r1 last">examples/galena/lib/galena/seed/defaults.rb</dd>
   
 </dl>
 <div class="clear"></div>
 
-<h2>Overview</h2><div class="docstring">
-  <div class="discussion">
-    <p>
-The caRuby Tissue Galena example module.
-</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-</div><h2>Defined Under Namespace</h2>
+<h2>Defined Under Namespace</h2>
 <p class="children">
    
     
@@ -97,30 +84,6 @@ The caRuby Tissue Galena example module.
     </h2>
 
     <ul class="summary">
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#resource-class_method" title="resource (class method)">+ (String<sup>?</sup>) <strong>resource</strong>(path) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>
-The file in this gem which matches the given path.
-</p>
-</div></span>
-  
-</li>
-
       
         <li class="public ">
   <span class="summary_signature">
@@ -156,88 +119,7 @@ Creates the <span class='object_link'><a href="Galena/Seed/Defaults.html" title=
     
     
       <div class="method_details first">
-  <p class="signature first" id="resource-class_method">
-  
-    + (<tt>String</tt><sup>?</sup>) <strong>resource</strong>(path) 
-  
-
-  
-</p><div class="docstring">
-  <div class="discussion">
-    <p>
-The file in this gem which matches the given path
-</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <h3>Parameters:</h3>
-<ul class="param">
-  
-    <li>
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-        <span class='name'>the</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>
-path (without wildcards) of the desired file relative to the gem root
-directory
-</p>
-</div>
-      
-    </li>
-  
-</ul>
-<h3>Returns:</h3>
-<ul class="return">
-  
-    <li>
-      
-        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
-      
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>
-the file in this gem which matches the given path
-</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-5
-6
-7</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'examples/galena/lib/galena.rb', line 5</span>
-
-<span class='def def kw'>def</span> <span class='self self kw'>self</span><span class='dot token'>.</span><span class='resource identifier id'>resource</span><span class='lparen token'>(</span><span class='path identifier id'>path</span><span class='rparen token'>)</span>
-  <span class='File constant id'>File</span><span class='dot token'>.</span><span class='expand_path identifier id'>expand_path</span><span class='lparen token'>(</span><span class='File constant id'>File</span><span class='dot token'>.</span><span class='join identifier id'>join</span><span class='lparen token'>(</span><span class='File constant id'>File</span><span class='dot token'>.</span><span class='dirname identifier id'>dirname</span><span class='lparen token'>(</span><span class='__FILE__ __file__ kw'>__FILE__</span><span class='rparen token'>)</span><span class='comma token'>,</span> <span class='string val'>'..'</span><span class='comma token'>,</span> <span class='path identifier id'>path</span><span class='rparen token'>)</span><span class='rparen token'>)</span>
-<span class='end end kw'>end</span>
-</pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <p class="signature " id="seed-class_method">
+  <p class="signature first" id="seed-class_method">
   
     + (<tt>Object</tt>) <strong>seed</strong> 
   
@@ -281,7 +163,7 @@ Creates the <span class='object_link'><a href="Galena/Seed/Defaults.html" title=
 </div>
     
     <div id="footer">
-  Generated on Mon Nov 29 13:01:15 2010 by 
+  Generated on Mon Nov 29 19:32:23 2010 by 
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.6.1 (ruby-1.8.6).
 </div>

@@ -190,7 +190,8 @@ module CaTissue
     end
 
     # Returns the Specimen in others which matches this Specimen in the scope of an owner SCG.
-    # This method relaxes {CaRuby::Resource#match_in_owner_scope} to include a match on at least one external identifier.
+    # This method relaxes {CaRuby::Resource#match_in_owner_scope} to include a match on at least
+    # one external identifier.
     def match_in_owner_scope(others)
       super or others.detect do |other|
          external_identifiers.any? do |eid|

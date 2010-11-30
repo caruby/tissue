@@ -23,7 +23,7 @@ module CaTissue
   
   class CollectionProtocolEvent
     # Augments {CaRuby::Migratable#migrate} for the example by adding the following defaults:
-    # * create a CaTissue::TissueSpecimenRequirement
+    # * create a {CaTissue::TissueSpecimenRequirement}
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
@@ -33,8 +33,8 @@ module CaTissue
   end
 
   class Site
-    # Augments {CaRuby::Migratable#migrate} for the example by merging the content of the Galena::Defaults
-    # site which matches on this Site's name, if any.
+    # Augments {CaRuby::Migratable#migrate} for the example by merging the content of the
+    # {Galena::Seed::Defaults} site which matches on this Site's name, if any.
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
@@ -50,8 +50,9 @@ module CaTissue
   end
 
   class StorageContainer
-    # Augments {CaRuby::Migratable#migrate} for the example by adding the Galena::Defaults
-    # box site and type.
+    # Augments {CaRuby::Migratable#migrate} for the example by setting the
+    # the container site and type to the {Galena::Seed::Defaults}
+    # box site and type, resp.
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
@@ -62,8 +63,9 @@ module CaTissue
   end
   
   class User
-    # Augments {CaRuby::Migratable#migrate} for the example by merging the content of the Galena::Defaults
-    # site which matches on this Site's name, if any.
+    # Augments {CaRuby::Migratable#migrate} for the example as follows:
+    # * infer the first and last name from the email address
+    # * copy the address and organizations from the tissue bank coordinator 
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)

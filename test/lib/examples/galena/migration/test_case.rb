@@ -3,7 +3,6 @@ $:.unshift 'examples/galena/lib'
 require 'test/lib/catissue/migration/test_case'
 require 'galena/seed/defaults'
 
-# 
 require File.join(File.dirname(__FILE__), 'uniquify')
 
 module Galena
