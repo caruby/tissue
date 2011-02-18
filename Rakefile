@@ -29,7 +29,7 @@ task :doc do
 end
 
 desc "Builds the gem"
-task :gem => :doc do
+task :gem do
   load "#{GEM}.gemspec"
   Gem::Builder.new(SPEC).build
 end

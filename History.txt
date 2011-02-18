@@ -10,3 +10,7 @@
 
 * Support Dynamic Extensions
 
+=== 1.3.1 / 2011-02-18
+
+* Full PCBIN DE support
+

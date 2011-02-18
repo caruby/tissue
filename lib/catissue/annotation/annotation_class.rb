@@ -1,4 +1,3 @@
-require 'xmlsimple'
 require 'catissue/annotation/annotation'
 require 'catissue/database/annotation/reference_writer'
 
