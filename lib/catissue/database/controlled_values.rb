@@ -28,18 +28,6 @@ module CaTissue
   class ControlledValues
     include Singleton
 
-    PUBLIC_ID_ROOTS_STMT = "select identifier, value from catissue_permissible_value where public_id = ? and parent_identifier is null or parent_identifier = 0"
-
-    CHILDREN_STMT = "select identifier, value from catissue_permissible_value where parent_identifier = ?"
-
-    INSERT_STMT = "insert into catissue_permissible_value (identifier, parent_identifier, public_id, value) values (?, ?, ?, ?)"
-
-    DELETE_STMT = "delete from catissue_permissible_value where identifier = ?"
-
-    MAX_ID_STMT = "select max(identifier) from catissue_permissible_value"
-
-    SEARCH_STMT = "select identifier from catissue_permissible_value where value collate latin1_bin = ?"
-
     def initialize
       # the default database name, used for direct database access
       CaTissue.access_properties[:database] ||= CaTissue::Database::DEF_DATABASE_NAME
@@ -98,6 +86,18 @@ module CaTissue
     end
 
     private
+
+    PUBLIC_ID_ROOTS_STMT = "select identifier, value from catissue_permissible_value where public_id = ? and parent_identifier is null or parent_identifier = 0"
+
+    CHILDREN_STMT = "select identifier, value from catissue_permissible_value where parent_identifier = ?"
+
+    INSERT_STMT = "insert into catissue_permissible_value (identifier, parent_identifier, public_id, value) values (?, ?, ?, ?)"
+
+    DELETE_STMT = "delete from catissue_permissible_value where identifier = ?"
+
+    MAX_ID_STMT = "select max(identifier) from catissue_permissible_value"
+
+    SEARCH_STMT = "select identifier from catissue_permissible_value where value collate latin1_bin = ?"
 
     def load_pid_cvs(pid)
       fetch_cvs_with_public_id(pid, @pid_value_cv_hash[pid])

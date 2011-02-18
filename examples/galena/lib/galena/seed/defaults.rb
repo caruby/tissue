@@ -98,11 +98,6 @@ module Galena
         @freezer_type << rack_type
         rack_type << box_type
         @box_type << 'Tissue'
-        
-        # a sample freezer and box
-        frz = CaTissue::StorageContainer.new(:name => 'GTB Freezer 1', :storage_type=>@freezer_type, :site=>@tissue_bank)
-        @box = CaTissue::StorageContainer.new(:name => 'GTB Box 1', :storage_type=>@box_type)
-        frz << @box
       end
     end
   end

@@ -41,7 +41,7 @@ module CaTissue
       super
       tmpl = TEMPLATES.detect { |site| name[site.name.gsub(' ', '_')] }
       # merge the default mandatory attribute values
-      if tmpl then merge(tmpl, self.class.mandatory_attributes) end
+      if tmpl then merge(tmpl, mandatory_attributes) end
     end
     
     private

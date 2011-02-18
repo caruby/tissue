@@ -8,9 +8,10 @@ module CaTissue
   # Each {ContainerType} subclass is required to implement the container_class method.
   #
   # caTissue alert - the ContainerType and Container class hierarchy is a confusing
-  # olio of entangled relationships. Conceptually, specimens are contained in boxes,
-  # vials and specimen arrays of various types. When specimens are frozen, these
-  # containers are placed on a rack in a freezer.
+  # olio of entangled relationships. The canonical use case is as follows:
+  # * A Specimen is contained in a box, vial or specimen array.
+  # * A vial or specimen array can also be placed in a box.
+  # * A frozen specimen container is placed on a rack in a freezer.
   #
   # This conceptual model is implemented in caTissue as follows:
   # * The specimen collection container type, e.g. +Citrate Vacutainer+, is captured
@@ -43,18 +44,24 @@ module CaTissue
   #   a specimen position in a box, whereas {CaTissue::SpecimenArrayContent} is functionally
   #   a specimen position in a specimen array.
   #
-  # The ContainerType/Container mish-mash is partially alleviated in caRuby as follows:
+  # The ContainerType/Container mish-mash is partially rationalized in caRuby as follows:
   # * {CaTissue::StorageType} and {CaTissue::StorageContainer} include the
   #   {CaTissue::StorageTypeHolder} module, which unifies treatment of contained
   #   types.
   # * Similarly, {CaTissue::AbstractPosition} and {CaTissue::SpecimenArrayContent} include
   #   the {CaTissue::Position} module, which unifies treatment of positions.
-  # * Contained child types are consolidated into {CaTissue::StorageTypeHolder#child_types}
+  # * Contained child types are consolidated into {CaTissue::StorageTypeHolder#child_types}.
   # * Similarly, {CaTissue::StorageContainer} child items are consolidated into
-  #   {CaTissue::StorageContainer#child_types}
+  #   {CaTissue::StorageContainer#child_types}.
   # * The various container and position classes are augmented with helper methods to
   #   add, move and find specimens and subcontainers. These methods hide the mind-numbing
   #   eccentricity of caTissue specimen storage interaction.
+  # The entire amalgamation is further simplifying by introducing the standard Ruby
+  # container add method {CaTissue::Container::<<}. The only call the caRuby client
+  # needs to make to add a specimen box to a freezer is:
+  #   freezer << box
+  # which places the box in the first available rack slot in the freezer, or:
+  #   freezer.add box :at => 
   class ContainerType
     include Resource
 

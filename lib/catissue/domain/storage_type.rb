@@ -41,7 +41,7 @@ module CaTissue
     # Returns a StorageType array from this StorageType to a descendant StorageType which can
     # hold the given storable, or nil if no such path exists.
     def path_to(storable)
-     return [self] if can_hold_child?(storable)
+      return [self] if can_hold_child?(storable)
       path = holds_storage_types.detect_value { |child| child.path_to(storable) }
       return path.unshift(self) if path
     end

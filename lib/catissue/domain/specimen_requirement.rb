@@ -34,7 +34,7 @@ module CaTissue
     # Unlike Specimen, a child SpecimenRequirement is not cascaded by caTissue.
     # It is not auto-generated, i.e. it is not created from a template when the
     # parent CPE is created.
-    add_dependent_attribute(:child_specimens, :logical)
+    qualify_attribute(:child_specimens, :logical)
     
     # Overrides {Resource#owner} to return the parent_specimen, if it exists, or the collection_protocol_event otherwise.
     def owner

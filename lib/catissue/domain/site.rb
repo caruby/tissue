@@ -5,9 +5,6 @@ module CaTissue
   # The Site domain class.
   class Site
     include Resource
-    
-    # The default pre-defined caTissue site name.
-    DEF_SITE_NAME = 'In Transit'
 
     # caTissue alert - the Site SCG collection is ignored, since it is not fetched with the Site,
     # the caCORE query builder doesn't support abstract types, and even if it worked it would
@@ -29,5 +26,14 @@ module CaTissue
       LABORATORY = 'Laboratory'
       REPOSITORY = 'Repository'
     end
+    
+    def self.default_site
+      @@def_site ||= new(:name => DEF_SITE_NAME)
+    end
+    
+    private
+        
+    # The default pre-defined caTissue site name.
+    DEF_SITE_NAME = 'In Transit'
   end
 end

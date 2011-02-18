@@ -17,5 +17,13 @@ module CaTissue
     set_attribute_inverse(:occupied_container, :located_at_position)
     
     qualify_attribute(:parent_container, :fetched)
+    
+    # @raise [ValidationError] if the parent is the same as the occupant 
+    def validate
+      super
+      if parent == occupant or (parent.identifier and parent.identifier == occupant.identifier) then
+         raise ValidationError.new("#{self} has a circular containment reference to subcontainer #{occupant}")
+      end
+    end
   end
 end

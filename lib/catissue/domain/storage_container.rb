@@ -17,24 +17,18 @@ module CaTissue
     def specimen_positions
       getSpecimenPositionCollection or (self.specimen_positions = Java::JavaUtil::LinkedHashSet.new)
     end
-
-    # Sets the storage type to the given value. Each empty holds collection is initialized
-    # from the corresponding StorageType holds collection.
-    def storage_type=(value)
-      if value and holds_storage_types and holds_storage_types.empty? then
-        holds_storage_types.merge!(value.holds_storage_types)
-      end
-      if value and holds_specimen_array_types and holds_specimen_array_types.empty? then
-        holds_specimen_array_types.merge!(value.holds_specimen_array_types)
-      end
-      if value and holds_specimen_classes and holds_specimen_classes.empty? then
-        holds_specimen_classes.merge!(value.holds_specimen_classes)
-      end
-      setStorageType(value)
-    end
-    
-    def located_at_position=(value)
-      setLocatedAtPosition(value)
+ 
+    # Copies the given container type child types to this container instance child types.
+    #
+    # caTissue alert - caTissue API does not initialize the container child types to
+    # the container type child types. This method copies the container type child types
+    # to this container instance before it is created.
+    #
+    # @param [<StorageType>] type the storage type to set
+    def storage_type=(type)
+      setStorageType(type)
+      copy_child_types(type) if type
+      type
     end
 
     add_attribute_aliases(:container_type => :storage_type)
@@ -42,7 +36,7 @@ module CaTissue
     # Aternative to the inherited secondary key +name+.
     set_alternate_key_attributes(:site, :barcode)
 
-    add_mandatory_attributes(:site, :storage_type)
+    add_mandatory_attributes(:storage_type)
 
     qualify_attribute(:collection_protocols, :fetched)
 
@@ -53,8 +47,9 @@ module CaTissue
     set_attribute_type(:holds_storage_types, CaTissue::StorageType)
 
     def initialize(params=nil)
+      # set params below to enable storage_type setter work-around
       super(params)
-      # JRuby alert - specimen_positions is sometimes unrecognized unless primed with respond_to? call
+      # JRuby alert - specimen_positions is not recognized unless primed with respond_to? call
       respond_to?(:specimen_positions)
       # work around caTissue Bug #64
       self.specimen_positions ||= Java::JavaUtil::LinkedHashSet.new
@@ -67,12 +62,18 @@ module CaTissue
 
     alias :add_local :add
 
-    # Moves the given Storable from its current Position, if any, to this Container at the optional
-    # coordinate. The default coordinate is the first available slot within this Container.
-    # The storable Storable position is updated to reflect the new location. Returns self.
+    # Adds the given storable to this container. If the storable has a current position, then
+    # the storable is moved from that position to this container. The new position is given
+    # by the given coordinate, if given to this method.
     #
-    # If there is no coordinate and this container cannot hold the storable type, then the
-    # storable is added to a subcontainer which can hold the storable type.
+    #The default coordinate is the first available slot within this Container.
+    # If this container cannot hold the storable type, then the storable is added to a
+    # subcontainer which can hold the storable type.
+    #
+    # @example
+    #   rack << box #=> places the tissue box on the rack
+    #   freezer << box #=> places the tissue box on a rack in the freezer
+    #   freezer << specimen #=> places the specimen in the first available box in the freezer
     #
     # @param [Storable] the item to add
     # @param [Coordinate] the storage location (default is first available location)
@@ -105,7 +106,7 @@ module CaTissue
       box
     end
 
-    # @return a new Container with the given name and type in this Container
+    # @return [Container] a new container with the given name and type, located in this container
     def create_subcontainer(name, type)
       logger.debug { "Creating #{qp} subcontainer of type #{type} with name #{name}..." }
       ctr = type.create_container(:name => name, :site => site)
@@ -115,6 +116,17 @@ module CaTissue
       ctr
     end
 
+    # Overrides {Container#can_hold_child?} to detect account for the potential instance-specific
+    # {StorageTypeHolder#child_types} override allowed by caTissue.
+    #
+    # @param [Storable] (see #add)
+    # @return [Boolean] whether this container is not full and can hold the given item's
+    #   {CaTissue::StorableType}
+    def can_hold_child?(storable)
+      st = storable.storable_type
+      not full? and child_types.any? { |ct| CaRuby::Resource.value_equal?(ct, st) }
+    end
+    
     protected
     
     # Returns the the content collection to which the storable is added, specimen_positions
@@ -127,14 +139,33 @@ module CaTissue
     #
     # @param @storable (see #add)
     # @return [StorageContainer, nil] self if added, nil otherwise
+    # @raise [ValidationError] if this container does not have a storage type, or if a circular
+    #   containment reference is detected
     def add_to_existing_container(storable)
+      if storage_type.nil? then raise ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.location <=> sc2.position.location }
+      logger.debug { "Looking for a #{self} subcontainer from among #{scs.pp_s} to place #{storable.qp}..." } unless scs.empty?
       # the first subcontainer that can hold the storable is preferred
-      if scs.detect { |ctr| ctr.add_to_existing_container(storable) if StorageContainer === ctr } then
+      sc = scs.detect do |sc|
+        # Check for circular reference. This occurred as a result of the caTissue bug described
+        # in CaTissue::Database#query_object. The work-around circumvents the bug for now, but
+        # it doesn't hurt to check again.
+        if identifier and sc.identifier == identifier then
+          raise ValidationError.new("#{self} has a circular containment reference to subcontainer #{sc}")
+        end
+        # No circular reference; add to subcontainer if possible
+        sc.add_to_existing_container(storable) if StorageContainer === sc
+      end
+      if sc then
+        logger.debug { "#{self} subcontainer #{sc} stored #{storable.qp}." }
         self
       elsif can_hold_child?(storable) then
+        logger.debug { "#{self} can hold #{storable.qp}." }
         add_local(storable)
+      else
+        logger.debug { "Neither #{self} of type #{storage_type.name} nor its subcontainers can hold #{storable.qp}." }
+        nil
       end
     end
 
@@ -145,31 +176,38 @@ module CaTissue
     def add_to_new_subcontainer(storable)
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.location <=> sc2.position.location }
+      logger.debug { "Looking for a #{self} subcontainer #{scs} to place a new #{storable.qp} container..." } unless scs.empty?
       # the first subcontainer that can hold the new subcontainer is preferred
-      if scs.detect { |ctr| ctr.add_to_new_subcontainer(storable) if StorageContainer === ctr } then
+      sc = scs.detect { |sc| sc.add_to_new_subcontainer(storable) if StorageContainer === sc }
+      if sc then
+        logger.debug { "#{self} subcontainer #{sc} stored #{storable.qp}." }
         self
       elsif not full? then
+        logger.debug { "Creating #{self} of type #{storage_type} subcontainer to hold #{storable.qp}..." }
         create_subcontainer_for(storable)
       end
     end
 
-    # @param [Storable] (see #add)
-    # @return whether this StorageContainer is not full and can hold the given item's StorableType
-    def can_hold_child?(storable)
-      st = storable.storable_type
-      not full? and child_types.any? { |ct| CaRuby::Resource.value_equal?(ct, st) }
+    def child_types
+      holds_storage_types.union(holds_specimen_classes).union(holds_specimen_array_types)
     end
-
+    
     private
-
-    # Adds the follwing defaults:
-    # * the default child_types are this container's CaTissue::ContainerType child_types.
+    
+    # Copies the other child types into this container's child types.
+    #
+    # @param [StorageTypeHolder] other the source child type holder
+    # @see #storage_type=
+    def copy_child_types(other)
+      child_storage_types.merge!(other.child_storage_types)
+      child_specimen_array_types.merge!(other.child_specimen_array_types)
+      child_specimen_classes.merge!(other.child_specimen_classes)
+    end
+    
+    # Adds the following defaults:
     # * the default site is the parent container site, if any.
     def add_defaults_local
       super
-      if child_types.empty? and container_type and not container_type.child_types.empty? then
-        container_type.child_types.each { |type| add_child_type(type) }
-      end
       # Although this default is set by the caTissue app, it is good practice to do so here
       # for clarity.
       self.site ||= parent.site if parent
@@ -180,23 +218,46 @@ module CaTissue
       # the StorageType path to storable
       type_path = type_path_to(storable) || return
       # create a container for each type leading to storable and add it to the parent container
-      ctr = type_path.reverse.inject(storable) do |occ, type|
-        subctr = type.create_container
-        subctr.site = site
-        logger.debug { "Created #{qp} #{subctr.container_type.name} subcontainer #{subctr} to hold #{occ}." }
-        subctr << occ
+      sc = type_path.reverse.inject(storable) do |occ, type|
+        ctr = type.create_container
+        ctr.site = site
+        logger.debug { "Created #{qp} #{ctr.container_type.name} subcontainer #{ctr} to hold #{occ}." }
+        ctr << occ
       end
-      add_local(ctr)
+      logger.debug { "Adding #{qp} subcontainer #{sc.qp} with stored #{storable.qp}." }
+      add_local(sc)
     end
 
     # Returns a StorageType array from a child StorageType to a descendant StorageType which can
     # hold the given storable, or nil if no such path exists.
+    #
+    # @param [Storable] the domain object to store in this container
+    # @return [<StorageType>] the {StorageType}s leading from this container to the storable holder
     def type_path_to(storable)
       holds_storage_types.detect_value { |type| type.path_to(storable) }
     end
 
-    private
-
+    # Adds the given storage type to the set of types which can be held.
+    #
+    # @param type [StorageType] the type to add
+    def add_storage_type(type)
+      storage_types << type
+    end    
+    
+    # Adds the given speicmen array type to the set of types which can be held.
+    #
+    # @param type [SpecimenArrayType] the type to add
+    def add_specimen_array_type(type)
+      storage_types << type
+    end    
+    
+    # Adds the given specimen class to the set of types which can be held.
+    #
+    # @param type [String] the type to add
+    def add_specimen_class(type)
+      storage_types << type
+    end
+    
     def out_of_bounds(storable)
       raise IndexError.new("Container #{name} does not have an available position for #{storable}")
     end

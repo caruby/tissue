@@ -33,30 +33,49 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_equal(collection_event, @scg.collection_event, 'Collection event not set to default')
   end
 
-# TODO - finish DE and enable
-#  def test_base_haematology_pathology
-#    assert(CaTissue::SpecimenCollectionGroup.class.annotation_attributes.include?(:base_haematology_pathology), "Missing base_haematology_pathology annotation attribute")
-#    assert(CaTissue::SpecimenCollectionGroup.const_defined?(:BaseHaematologyPathologyAnnotation), "Missing BaseHaematologyPathologyAnnotation annotation class")
-#    annotation = add_base_haematology_pathology_annotation
-#    assert_same(CaTissue::SpecimenCollectionGroup::HistologicType, annotation.class.domain_type(:histologic_type), "BaseHaematologyPathologyAnnotation histologic_type domain type incorrect")
-#  end
-#
+  def test_base_haematology_pathology
+    scg = CaTissue::SpecimenCollectionGroup.new
+    pths = scg.radical_prostatectomy_pathology_annotations
+    assert(pths.empty?, "Prostatectomy annotations not empty at start")
+    pth = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
+    pth.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => scg)
+    epx = CaTissue::SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.new
+    epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pth)
+    pths = scg.radical_prostatectomy_pathology_annotations
+    assert_not_nil(pths.first, "Prostatectomy annotation not added to #{scg} annotations")
+    assert_same(pth, pths.first, "Prostatectomy annotation incorrect")
+    assert_same(scg, pth.owner, "Prostatectomy annotation proxy hook not set")
+    assert_not_nil(pth.extraprostatic_extension, "#{pth} extraprostatic extension not set")
+    assert_same(epx, pth.extraprostatic_extension, "{pth} extraprostatic extension incorrect")
+  end
+
   def test_collect
     scg = CaTissue::SpecimenCollectionGroup.new
-    collection_date = DateTime.now
-    scg.collect(:collector => @scg.collector, :collection_date => collection_date, :receiver => @scg.receiver)
+    cdt = DateTime.now
+    scg.collect(:collector => @scg.collector, :collection_date => cdt, :receiver => @scg.receiver)
     assert_not_nil(scg.collection_event_parameters, "Collected SCG missing collection event parameters")
     assert_same(@scg.collector, scg.collection_event_parameters.user, "SCG collector incorrect")
-    assert(Resource.value_equal?(collection_date, scg.collection_event_parameters.timestamp), "SCG collection time incorrect")
+    assert_equal(cdt.to_s, scg.collection_event_parameters.timestamp.to_s, "SCG collection time incorrect")
     assert_not_nil(scg.received_event_parameters, "Received SCG missing received event parameters")
     assert_same(@scg.receiver, scg.received_event_parameters.user, "SCG receiver incorrect")
-    assert_equal(Resource.value_equal?(collection_date, scg.received_event_parameters.timestamp), "SCG received time not defaulted to collection time")
+    assert_equal(cdt.to_s, scg.received_event_parameters.timestamp.to_s, "SCG received time not defaulted to collection time")
   end
 
   def test_save
     logger.debug { "Verifying SCG create..." }
     verify_save(@scg)
     assert_equal('Complete', @scg.collection_status, "Collection status after store incorrect")
+    assert_equal(2, @scg.events.size, "#{@scg} events size incorrect")
+    tmpl = @scg.copy(:identifier)
+    verify_query(tmpl, :events) do |fetched|
+      assert_equal(2, fetched.size, "#{@scg} fetched events size incorrect")
+    end
+    assert_equal(1, @scg.specimens.size, "#{@scg} specimens size incorrect")
+    spc = @scg.specimens.first
+    assert_equal(2, spc.events.size, "#{@scg} #{spc} events size incorrect")
+    verify_query(spc, :events) do |fetched|
+      assert_equal(2, fetched.size, "#{@scg} #{spc} events query result size incorrect")
+    end
 
     # test update
     @scg.diagnosis = 'Pleomorphic carcinoma'
@@ -69,8 +88,9 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     logger.debug { "Verifying #{@scg.qp} specimens query..." }
     tmpl = @scg.copy(@scg.class.secondary_key_attributes)
     verify_query(tmpl, :specimens) do |fetched|
-      assert_equal(1, fetched.size, "Specimens query result size incorrect")
-      assert_equal(@scg.specimens.first.identifier, fetched.first.identifier, "Specimen identifier incorrect")
+      assert_equal(1, fetched.size, "#{@scg} specimens query result size incorrect")
+      spc = fetched.first
+      assert_equal(@scg.specimens.first.identifier, spc.identifier, "#{@scg} fetched #{spc} identifier incorrect")
     end
 
     # query the collection event parameters
@@ -102,7 +122,95 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     rqmt = defaults.specimen_requirement
     spc1 = CaTissue::Specimen.create_specimen(:requirement => rqmt, :initial_quantity => 1.0)
     spc2 = CaTissue::Specimen.create_specimen(:requirement => rqmt, :initial_quantity => 1.0)
-    scg = pcl.add_specimens(spc1, spc2, :participant => pnt, :collection_event => cpe, :receiver => rcvr)
+    site = defaults.tissue_bank
+    scg = pcl.add_specimens(spc1, spc2, :participant => pnt, :site => site, :collection_event => cpe, :receiver => rcvr)
     verify_save(scg)
+    spcs = scg.query(:specimens)
+    spc_ids = spcs.map { |spc| spc.identifier }
+    assert_equal(2, spcs.size, "#{scg} specimens size incorrect")
+    assert(spc_ids.include?(spc1.identifier), "#{scg} specimen #{spc1} not found")
+    assert(spc_ids.include?(spc2.identifier), "#{scg} specimen #{spc2} not found")
+  end
+
+  # This test follows caTissue SCG, SEP and Specimen auto-generation as follows:
+  # * Create CPR => SCG auto-generated with status Pending, new Specimen, no SCG SEP
+  # * Update SCG status to Complete => SCG SEP created
+  def test_autogenerated
+    # make a new registration
+    pnt = CaTissue::Participant.new(:name => 'Test Participant'.uniquify)
+    pcl = defaults.protocol
+    cpr = pcl.register(pnt)
+
+    # store the registration without an SCG
+    verify_save(cpr)
+    # the auto-generated SCG
+    scg = cpr.specimen_collection_groups.first
+    assert_not_nil(scg, "Missing auto-generated SCG")
+    assert_not_nil(scg.identifier, "Auto-generated SCG missing identifier")
+    assert_not_nil(scg.collection_event, "Auto-generated SCG missing collection event")
+    assert_equal('Pending', scg.collection_status, "Auto-generated SCG status is not Pending")
+    # the auto-generated Specimen
+    spc = scg.specimens.first
+    assert_not_nil(spc, "Auto-generated specimen was not fetched")
+    # SEP is not auto-generated
+    assert(scg.specimen_event_parameters.empty?, "SEP unexpectedly auto-generated")
+    # auto-generated SCG does not have a site, even though it is required for create or update
+    assert_nil(scg.collection_site, "SCG collection site unexpectedly auto-generated")
+
+    # update the SCG with site and SEPs
+    rcvr = defaults.tissue_bank.coordinator
+    site = defaults.specimen_collection_group.collection_site
+    scg.merge_attributes(:receiver => rcvr, :collection_site => site).add_defaults
+    logger.debug { "#{self.class.qp} updating the auto-generated #{scg.qp}..." }
+    scg.update
+    # clear and refetch the status
+    scg.collection_status = nil
+    logger.debug { "#{self.class.qp} refetching the updated #{scg.qp}..." }
+    scg.find
+    assert_equal('Pending', spc.collection_status, "Auto-generated specimen status is not Pending after update")
+
+    # reset some specimen fields and update
+    spc.collection_status = 'Collected'
+    spc.specimen_type = 'Frozen Tissue'
+    spc.initial_quantity = 0.1
+    spc.specimen_characteristics.tissue_site = 'Ileum'
+    logger.debug { "#{self.class.qp} updating auto-generated #{spc.qp}..." }
+    verify_save(spc)
+
+    # clear and refetch some specimen fields
+    spc.collection_status = nil
+    spc.specimen_characteristics.tissue_site = nil
+    logger.debug { "#{self.class.qp} verifying the persistent state of the updated #{scg.qp} auto-generated specimen..." }
+    database.find(spc)
+    assert_equal('Collected', spc.collection_status, "Specimen status not updated")
+    assert_equal('Ileum', spc.specimen_characteristics.tissue_site, "Specimen tissue site not updated")
+
+    # update the SCG with complete status
+    scg.collection_status = 'Complete'
+    logger.debug { "#{self.class.qp} updating the #{scg.qp} collection status #{scg.qp}..." }
+    scg.update
+    verify_save(scg)
+  end
+  
+  def test_save_prostate_annotation
+    pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
+    pa.specimen_collection_group = @scg
+    htype = CaTissue::SpecimenCollectionGroup::Pathology::HistologicType.new
+    htype.merge_attributes(:type => 3, :base_pathology_annotation => pa)
+    grade = CaTissue::SpecimenCollectionGroup::Pathology::HistologicGrade.new
+    grade.merge_attributes(:grade => 3, :base_solid_tissue_pathology_annotation => pa)
+    invn = CaTissue::SpecimenCollectionGroup::Pathology::Invasion.new
+    invn.merge_attributes(:lymphatic_invasion => 'Present', :base_solid_tissue_pathology_annotation => pa)
+    gleason = CaTissue::SpecimenCollectionGroup::Pathology::GleasonScore.new
+    gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_pathology_annotation => pa)
+    margin = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyMargin.new
+    margin.merge_attributes(:margin_status => 'Benign glands at surgical Margin', :radical_prostatectomy_pathology_annotation => pa)
+    verify_save(pa)
+    assert_not_nil(pa.identifier, "#{@scg} annotation #{pa} not saved")
+    assert_not_nil(htype.identifier, "#{@scg} annotation #{htype} not saved")
+    assert_not_nil(grade.identifier, "#{@scg} annotation #{grade} not saved")
+    assert_not_nil(invn.identifier, "#{@scg} annotation #{invn} not saved")
+    assert_not_nil(gleason.identifier, "#{@scg} annotation #{gleason} not saved")
+    assert_not_nil(margin.identifier, "#{@scg} annotation #{margin} not saved")
   end
 end

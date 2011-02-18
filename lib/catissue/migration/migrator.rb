@@ -5,13 +5,6 @@ require 'catissue/database/controlled_values'
 require 'catissue/database/controlled_value_finder'
 
 module CaTissue
-  # Even though Migratable is included in CaRuby::Resource, the Migratable methods
-  # are not appended to a CaTissue Resource class since the class already includes
-  # CaRuby::Resource. In Ruby, A include B followed by B include C does not imply
-  # that A includes C. Therefore, notify CaTissue that its mixin has changed and each
-  # loaded class must reinclude the mixin.
-  CaTissue.mixin_changed
-  
   # Migrates a CSV extract to caTissue. See the {#initialize} documentation for usage options.
   #
   # See the Galena Cancer Center Tissue Bank Migration Example for further information
@@ -88,19 +81,18 @@ module CaTissue
     def clear(target)
       pcl = target_protocol(target) || return
       logger.debug { "Clearing #{pcl.qp} CPR and SCG references..." }
-      pcl.suspend_lazy_loader do
+      @database.lazy_loader.suspend do
         pcl.registrations.clear
-        pcl.events.each { |event| event.suspend_lazy_loader { event.specimen_collection_groups.clear } }
+        pcl.events.each { |event| event.specimen_collection_groups.clear }
       end
     end
     
     def target_protocol(target)
       case target
-      when CaTissue::SpecimenCollectionGroup then
-        cpe = target.collection_protocol_event
-        cpe.collection_protocol if cpe
-      when CaTissue::Specimen then
-        target_protocol(target.specimen_collection_group)
+        when CaTissue::SpecimenCollectionGroup then
+          cpe = target.collection_protocol_event
+          cpe.collection_protocol if cpe
+        when CaTissue::Specimen then target_protocol(target.specimen_collection_group)
       end
     end
   end

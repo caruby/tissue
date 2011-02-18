@@ -20,9 +20,9 @@ class GeneralMigrationTest < Test::Unit::TestCase
       assert_not_nil(rep.timestamp, "Missing received date")
     end
   end
-  
+ 
   def test_save
-    # make the surgeon user, if necessary. copy the required User attributes from the coordinator.
+    # Make the surgeon user, if necessary, by copying the required attributes from the coordinator.
     srg = defaults.tissue_bank.coordinator.copy(:address, :cancer_research_group, :department, :institution)
     srg.email_address = 'serge.on@galena.edu'
     srg.first_name = 'Serge'
@@ -38,6 +38,7 @@ class GeneralMigrationTest < Test::Unit::TestCase
       assert_equal('Complete', scg.collection_status, "#{scg} collection status incorrect")
       spcs = scg.specimens
       assert_equal(1, spcs.size, "#{scg} specimen count incorrect")
+     assert_same(spc, spcs.first, "#{scg} specimen incorrect")
     end
   end
 end

@@ -1,0 +1,44 @@
+# This is the Galena general example migration field mapping file in the format:
+#   input field: caTissue property
+
+Protocol: CollectionProtocol.short_title
+
+Collection Site: Site.name
+
+SPN: SpecimenCollectionGroup.surgical_pathology_number
+
+PPI: CollectionProtocolRegistration.protocol_participant_identifier
+
+MRN: ParticipantMedicalIdentifier.medical_record_number
+
+First Name: Participant.first_name
+
+Last Name: Participant.last_name
+
+Collection Point: CollectionProtocolEvent.event_point
+
+Receiver: ReceivedEventParameters.user.login_name
+
+Received Timestamp: ReceivedEventParameters.timestamp
+
+Collector: CollectionEventParameters.user.login_name
+
+Collected Timestamp: CollectionEventParameters.timestamp
+
+Diagnosis: SpecimenCollectionGroup.clinical_diagnosis
+
+Anatomic Site: SpecimenCharacteristics.tissue_site
+
+Development: TissueSpecimen.pathological_status
+
+Label: TissueSpecimen.label
+
+Type: TissueSpecimen.specimen_type
+
+Quantity: TissueSpecimen.initial_quantity
+
+Box: SpecimenPosition.container.name
+
+X: SpecimenPosition.position_dimension_one
+
+Y: SpecimenPosition.position_dimension_two

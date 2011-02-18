@@ -48,6 +48,7 @@ module CaTissue
     # @return [CaTissue::Migrator]
     # @yield [opts] the optional Migrator factory
     def create_migrator(fixture, opts={}, &factory)
+      opts[:quiet] = true
       opts[:input] ||= File.join(@fixtures, fixture.to_s + '.csv')
       if opts[:unique] then
         # the current shims

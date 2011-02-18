@@ -1,9 +1,11 @@
 require 'catissue/util/location'
+require 'caruby/util/validation'
 
 module CaTissue
   # The Position mix-in encapsulates the location of an occupant in a holder.
   # Classes which include Position are required to implement the column, row, occupant
-  # and holder methods.
+  # and holder methods. The occupant must be a {Storable}. The holder must be
+  # a {Container}.
   module Position
     include Comparable
 
@@ -49,6 +51,14 @@ module CaTissue
     # @return [(Integer, Integer)] this Position's zero-based ({#column}, {#row}) tuple.
     def to_a
       [column, row]
+    end
+    
+    # @raise [ValidationError] if the holder cannot hold the occupant type
+    def validate
+      super
+      unless holder.can_hold_child?(occupant) then
+        raise ValidationError.new("#{self} cannot be occupied by #{occupant}")
+      end
     end
   end
 end

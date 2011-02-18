@@ -46,14 +46,11 @@ module CaTissue
       end
       event_params = klass.new(params)
       case scg_or_specimen
-      when SpecimenCollectionGroup then
-        event_params.specimen_collection_group = scg_or_specimen
-      when Specimen then
-        event_params.specimen = scg_or_specimen
-      when nil then
-        raise ArgumentError.new("Missing SpecimenEventParameters scg_or_specimen factory argument")
-      else
-        raise ArgumentError.new("Unsupported SpecimenEventParameters factory argument - expected SpecimenCollectionGroup or Specimen, found #{scg_or_specimen.class}")
+        when SpecimenCollectionGroup then event_params.specimen_collection_group = scg_or_specimen
+        when Specimen then event_params.specimen = scg_or_specimen
+        when nil then raise ArgumentError.new("Missing SpecimenEventParameters scg_or_specimen factory argument")
+        else
+          raise ArgumentError.new("Unsupported SpecimenEventParameters factory argument - expected SpecimenCollectionGroup or Specimen, found #{scg_or_specimen.class}")
       end
       event_params
     end

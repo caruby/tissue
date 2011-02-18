@@ -16,16 +16,24 @@ end
 DEF_LOG_FILE = 'log/catissue.log'
 
 require 'catissue/cli/command'
+      
+SPECS = [
+  [:class, "class", "The class of the object"],
+  [:id, "id", "The database identifier of the object"]
+]
 
+# Broken. TODO - fix.
 # run the command
-CaTissue::Command.new(:class, :id).execute do |opts, class_name, id|
+CaTissue::CLI::Command.new(SPECS).start do |opts|
+  class_name = opts[:class]
+  identifier = opts[:id].to_i
   # the search template
-  obj = CaTissue.const_get(class_name).new(:identifier=>id.to_i)
+  obj = CaTissue.const_get(class_name).new(:identifier=>identifier)
   unless obj.find then
     print("#{class_name} with identifier #{id} not found") and exit(-1)
   end
   # fetch the references
   obj.references
   # print the object graph
-  puts obj.dump
+  puts obj.database.lazy_loader.suspend { obj.dump }
 end

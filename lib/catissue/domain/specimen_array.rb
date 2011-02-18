@@ -9,7 +9,17 @@ module CaTissue
     
     # caTissue alert - the superclass Container occupied_positions does not apply to SpecimenArray.
     remove_attribute(:occupied_positions)
-    
+ 
+    # Initializes this instance's child storage types from the given type.
+    #
+    # @param [<StorageType>] the type to set
+    def specimen_array_type=(type)
+      setSpecimenArrayType(type)
+      unless type.nil? then
+        copy_container_type_capacity
+      end
+      type
+    end    
     add_attribute_aliases(:container_type => :specimen_array_type, :contents => :specimen_array_contents)
 
     set_attribute_type(:new_specimen_array_order_items, CaTissue::SpecimenArrayOrderItem)

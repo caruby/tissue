@@ -142,14 +142,14 @@ module CaTissue
     # Returns the default protocol site, determined as follows:
     # * If there is exactly one authorized site for this protocol, then that is the default site.
     # * If there is exactly two authorized sites for this protocol, then the site other than the
-    #   {CaTissue::Site::DEF_SITE_NAME} is returned.
+    #   {CaTissue::Site.default_site} is returned.
     # * Otherwise, this method returns nil.
     #
     # @return [CaTissue::Site, nil] the default site
     def default_site
      case sites.size
       when 1 then sites.first
-      when 2 then sites.select { |site| site.name != CaTissue::Site::DEF_SITE_NAME }
+      when 2 then sites.select { |site| site.name != CaTissue::Site.default_site.name }
       end
     end
 
@@ -167,14 +167,22 @@ module CaTissue
       self.title ||= short_title
       self.short_title ||= title
       self.start_date ||= Java::JavaUtil::Date.new
+      if sites.empty? then add_default_site end
       if coordinators.empty? and sites.size == 1 then
         coord = sites.first.coordinator
         coordinators << coord if coord
-      elsif sites.empty? and coordinators.size == 1 then
-        site = coordinators.first.sites.first
-        sites << site if site
       end
       make_default_collection_event unless events.detect { |evt| CollectionProtocolEvent === evt }
+    end
+    
+    def add_default_site
+      if coordinators.size == 1 then
+        site = coordinators.first.sites.first
+      else
+        site = CaTissue::Site.default_site
+        site.find unless site.identifier
+      end
+      sites << site
     end
 
     def make_default_collection_event

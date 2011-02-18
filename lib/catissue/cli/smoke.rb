@@ -11,7 +11,9 @@ module CaTissue
       
       private
       
-      DB_MSG = "Verifying database access by searching for the pre-defined #{CaTissue::Site::DEF_SITE_NAME} Site..."
+      DEF_SITE = CaTissue::Site.default_site
+      
+      DB_MSG = "Verifying database access by searching for the pre-defined #{DEF_SITE.name} Site..."
       
       # Runs the smoke test.
       def execute
@@ -23,7 +25,7 @@ module CaTissue
       
       def find_in_transit_site
         begin
-          site = CaTissue::Site.new(:name => CaTissue::Site::DEF_SITE_NAME).find
+          site = DEF_SITE.find
         rescue Exception => e
           logger.error("caTissue database access was unsuccessful - #{e}:\n#{e.backtrace.qp}")
           puts "caTissue database access was unsuccessful - #{e}."
@@ -31,11 +33,11 @@ module CaTissue
         end
         
         if site then
-          puts "The #{CaTissue::Site::DEF_SITE_NAME} Site was found with identifier #{site.identifier}."
+          puts "The #{DEF_SITE.name} Site was found with identifier #{site.identifier}."
           puts "Smoke test successful."
           exit 0
         else
-          puts "The #{CaTissue::Site::DEF_SITE_NAME} Site was not found."
+          puts "The #{DEF_SITE.name} Site was not found."
           puts "Smoke test unsuccessful."
           exit 69 # service unavailable error status
         end

@@ -5,6 +5,7 @@
 .yardoc
 *.gem
 *.tar*
-/doc/api
+/ext
+/doc
 **/log/*
 /test/results

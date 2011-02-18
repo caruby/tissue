@@ -1,26 +1,5 @@
 #!/usr/bin/env jruby
 #
-# == Synopsis
-#
-# catissue-seed-galena.rb: seeds the Galena example administrative objects in the database
-#
-# == Usage
-#
-# catissue-seed-galena.rb [options] file
-#
-# --help, -h:
-# print this help message and exit
-#
-# --log file, -l file:
-# log file (default ./log/migration.log)
-#
-# --debug, -d:
-# print debug messages to log (optional)
-#
-# == License
-#
-# This program is licensed under the terms of the +LEGAL+ file in
-# the source distribution.
 
 # load the required gems
 require 'rubygems'

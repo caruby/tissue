@@ -1,6 +1,3 @@
-$:.unshift 'lib'
-$:.unshift 'test/fixtures/lib'
-
 # load the core gem
 require 'rubygems'
 begin
@@ -13,13 +10,13 @@ end
 # open the logger
 LOG_FILE = 'test/results/log/catissue.log' unless defined?(LOG_FILE)
 require 'caruby/util/log' and
-CaRuby::Log.instance.open(LOG_FILE, :shift_age => 10, :shift_size => 1048576, :debug => true)
+  CaRuby::Log.instance.open(LOG_FILE, :shift_age => 10, :shift_size => 1048576, :debug => true)
 
+# Add the caruby-tissue source
 $:.unshift '../catissue/lib'
-$:.unshift '../catissue/test/fixtures/lib'
 
 require 'catissue'
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
+require '../catissue/test/fixtures/lib/catissue/defaults_test_fixture'
 
 module CaTissue
   module TestCase
@@ -51,16 +48,28 @@ module CaTissue
 
     # Tests saving the subject. Calls {Database#save} on the subject and verifies that subject and its
     # references were persisted.
+    #
+    # @param [Resource] subject the object to save
     def verify_save(subject)
-      logger.debug{ "Verifying #{subject.qp} save with content:\n#{subject.dump}" }
+      logger.debug{ "Verifying #{subject.qp} save with content:\n#{dump(subject)}" }
       # capture the save operation time
-      st = Stopwatch.measure { @database.save(subject) }.elapsed
+      @database.clear
+      st = Stopwatch.measure { @database.open { |db| db.save(subject) } }.elapsed
       # the database execution time
       dt = @database.execution_time
       logger.debug { "#{subject.qp} save took #{'%.2f' % st} seconds, of which #{'%.2f' % dt} were database operations." }
       verify_saved(subject)
     end
 
+    # Verifies that the given subject and its references were persisted.
+    #
+    # @param [Resource] subject the saved object to verify
+    def verify_saved(subject)
+      logger.debug { "Verifying saved content of #{subject}..." }
+      subject.dependent? ? verify_saved_dependent(subject) : verify_saved_independent(subject)
+      logger.debug { "Verified saved content of #{subject}." }
+    end
+    
     # Tests a query on the given template.
     # The block given to this method is called on the query result.
     def verify_query(template, *path) # :yields: result
@@ -76,6 +85,10 @@ module CaTissue
     end
 
     private
+    
+    def dump(obj)
+      @database.lazy_loader.suspend { obj.dump }
+    end
   
     # @param (see #mock_storable_template)
     # @return (see #mock_storable_template)
@@ -104,14 +117,13 @@ module CaTissue
       bldr.build_template(obj)
     end
 
-    # Verifies that the given subject and its references were persisted.
-    def verify_saved(subject)
-      logger.debug { "Verifying saved content of #{subject}..." }
-      subject.dependent? ? verify_saved_dependent(subject) : verify_saved_independent(subject)
-      logger.debug { "Verified saved content of #{subject}." }
-    end
-
     def verify_saved_dependent(dependent)
+      verify_dependency(dependent)
+      verify_saved_content(dependent)
+    end
+    
+    def verify_dependency(dependent)
+      return if dependent.class.owner_attribute.nil?
       owner = dependent.owner
       assert_not_nil(owner, "Owner missing for dependent: #{dependent}")
       attribute = owner.class.dependent_attribute(dependent.class)
@@ -122,14 +134,13 @@ module CaTissue
       else
         assert_not_nil(dependent.identifier, "Stored dependent #{dependent} identifier is not set")
       end
-      verify_saved_content(dependent)
     end
 
     # Verifies that the given dependent has an identifier and that the given owner dependent attribute value
     # contains the dependent.
     def verify_saved_dependent_collection_member(dependent, owner, attribute)
-      dependents = owner.send(attribute)
-      assert(dependents.include?(dependent), "Owner #{owner.qp} dependents collection #{attribute} does not contain #{dependent}")
+      deps = owner.send(attribute)
+      assert(deps.include?(dependent), "Owner #{owner.qp} #{attribute} value #{deps.pp_s} does not contain #{dependent}")
       assert_not_nil(dependent.identifier, "Identifier not set for stored owner #{owner.qp} #{attribute} dependent collection member #{dependent}")
     end
 
@@ -143,7 +154,7 @@ module CaTissue
     # Verifies that the given subject matches the database content. Does not verify subject unless it has
     # a secondary key.
     def verify_saved_content(subject)
-      attrs = subject.class.secondary_key_attributes
+      attrs = subject.class.secondary_key_attributes & subject.class.mandatory_attributes
       return if attrs.empty?
       missing = attrs.reject { |attr| subject.send(attr) }
       assert(missing.empty?, "#{subject} is missing values for secondary key attributes #{missing.to_series}")
@@ -157,7 +168,7 @@ module CaTissue
       logger.debug  { "Verifying #{subject.qp} by finding and comparing template #{tmpl.pp_s}..." }
       assert_not_nil(tmpl.find, "#{subject} not found in database")
       # compare the subject to the fetched template
-      verify_saved_matches_fetched(subject, tmpl)
+      verify_that_saved_matches_fetched(subject, tmpl)
     end
 
     # Verifies that the given expected domain object has the same content as actual,
@@ -165,12 +176,13 @@ module CaTissue
     #
     # @param [Resource] expected the saved value
     # @param [Resource] actual the fetched value
-    def verify_saved_matches_fetched(expected, actual)
+    def verify_that_saved_matches_fetched(expected, actual)
       expected.class.saved_nondomain_attributes.each do |attr|
         # compare attributes that are fetched and set on create
         attr_md = expected.class.attribute_metadata(attr)
         if verify_saved_attribute?(attr_md) then
-          eval = expected.send(attr)
+          eval = expected.database.lazy_loader.suspend { expected.send(attr) }
+          next if eval.nil_or_empty?
           aval = actual.send(attr)
           if eval.nil? then
             assert_nil(aval, "#{expected.qp} was saved without a #{attr} value, but was stored in the database with value #{actual.qp}")
@@ -192,19 +204,20 @@ module CaTissue
     # Verifies that each expected dependent matches an actual dependent and has the same content.
     def verify_dependents_match(expected, actual)
       expected.class.dependent_attributes.each do |attr|
-        edeps = expected.send(attr) || next
+        edeps = expected.database.lazy_loader.suspend { expected.send(attr) }
+        next if edeps.nil_or_empty?
         adeps = actual.send(attr)
         logger.debug { "Verifying #{expected.qp} dependent #{attr} #{edeps.qp} against #{actual.qp} #{adeps.qp}..." } unless edeps.nil_or_empty?
         if edeps.collection? then
           edeps.each do |edep|
             adep = edep.match_in_owner_scope(adeps)
             assert_not_nil(adep, "#{expected} #{attr} dependent #{edep} not found in fetched #{adeps.pp_s}")
-            verify_saved_matches_fetched(edep, adep)
+            verify_that_saved_matches_fetched(edep, adep)
           end
         else
           edep = edeps; adep = adeps;
           assert_not_nil(adep, "#{expected} #{attr} dependent #{edep} not found in database")
-          verify_saved_matches_fetched(edep, adep)
+          verify_that_saved_matches_fetched(edep, adep)
         end
       end
     end

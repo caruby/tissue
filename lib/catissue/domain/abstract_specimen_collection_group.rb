@@ -4,13 +4,11 @@ module CaTissue
   class AbstractSpecimenCollectionGroup
     include Resource
 
-    add_attribute_aliases(:site => :specimen_collection_site, :collection_site => :specimen_collection_site, :diagnosis => :clinical_diagnosis)
+    add_attribute_aliases(:diagnosis => :clinical_diagnosis)
 
     add_attribute_defaults(:activity_status => 'Active', :clinical_status => 'Not Specified', :clinical_diagnosis => 'Not Specified')
 
     add_mandatory_attributes(:activity_status)
-    
-    qualify_attribute(:collection_site, :fetched)
 
     # Overrides {CaRuby::Resource#each_dependent} to exclude Specimens or SpecimenRequirements with a parent,
     # since parent is the immediate Specimen or SpecimenRequirement owner.

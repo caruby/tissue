@@ -12,19 +12,26 @@ module CaTissue
       position and position.container
     end
 
-    # Moves this Storable from its current Position, if any, to the given container at the optional
-    # Coordinate coordinate. Returns the new position.
+    # Moves this storable from its current {Position}, if any, to the location given by the argument.
     #
+    # @param [CaTissue::Container, CaTissue::Location, Hash] arg the target container, location, or options
+    # @option arg [CaTissue::Container] :in the target container
+    # @option arg [CaRuby::Coordinate, (Integer, Integer)] :at the target coordinates
+    # @return [Position] the new position 
     # @see Container#add
-    def move_to(container_or_location)
-      case container_or_location
-      when CaTissue::Container then
-        container_or_location.add(self)
-      when CaTissue::Location then
-        loc = container_or_location
-        loc.container.add(self, loc.coordinate)
-      else
-        raise ArgumentError.new("Target location is neither a Container nor a Location: #{container_or_location.class.qp}")
+    def move_to(arg)
+      case arg
+        when CaTissue::Container then arg.add(self)
+        when CaTissue::Location then
+          loc = arg
+          loc.container.add(self, loc.coordinate)
+        when Hash then
+          dest = arg[:in]
+          if at.nil? then raise ArgumentError.new("#{self} move_to container :in option not found") end
+          coord = arg[:at]
+          dest = CaTissue::Location.new(dest, coord) if coord
+          move_to(dest)
+        else raise ArgumentError.new("Target location is neither a Container nor a Location: #{arg.class.qp}")
       end
       position
     end

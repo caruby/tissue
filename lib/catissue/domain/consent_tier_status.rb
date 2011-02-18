@@ -8,6 +8,8 @@ module CaTissue
     add_mandatory_attributes(:consent_tier, :status)
 
     add_attribute_defaults(:status => 'Not Specified')
+    
+    qualify_attribute(:consent_tier, :fetched)
 
     # Returns whether this ConsentTierStatus is minimally consistent with the other ConsentTierStatus.
     # This method returns whether the referenced ConsentTier has the same identifer or statement text
@@ -21,9 +23,9 @@ module CaTissue
     # Returns true if this ConsentTierStatus ConsentTier is nil, the other ConsentTierStatus ConsentTier is nil,
     # both ConsentTier identifiers are equal, or both ConsentTier statements are equal.
     def statement_match?(other)
-      ct = resume_lazy_loader { consent_tier }
-      oct = other.resume_lazy_loader { other.consent_tier }
-      ct and oct and (ct.identifier == oct.identifier or ct.statement == oct.statement)
+      ct = consent_tier
+      oct = other.consent_tier
+      (ct.nil? or oct.nil?) or (ct.identifier == oct.identifier or ct.statement == oct.statement)
     end
   end
 end

@@ -39,7 +39,7 @@ class CollectionProtocolRegistrationTest < Test::Unit::TestCase
     specimen = @reg.specimens.first
     child = specimen.derive(:specimen_class => :molecular, :specimen_requirement => defaults.specimen_requirement)
     attributes = [:specimen_collection_groups, :specimens, :child_specimens]
-    @reg.visit_path(attributes, :depth_first) { |obj| obj.activity_status = 'Disabled' }
+    @reg.visit_path(attributes) { |obj| obj.activity_status = 'Disabled' }
     assert_equal('Disabled', @reg.activity_status, "Registration not disabled")
     @reg.specimen_collection_groups.each { |scg| assert_equal('Disabled', scg.activity_status, "SCG #{scg} not disabled") }
     @reg.specimens.each { |spc| assert_equal('Disabled', spc.activity_status, "Specimen #{spc} not disabled") }

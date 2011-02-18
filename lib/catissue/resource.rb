@@ -1,12 +1,27 @@
 require 'caruby/resource'
+require 'caruby/domain/attribute_initializer'
 require 'caruby/domain/resource_module'
+require 'catissue/annotation/annotatable'
 
 module CaTissue
   extend CaRuby::ResourceModule
 
   # The module included by all CaTissue domain classes.
   module Resource
-    include CaRuby::Resource
+    include CaRuby::Resource, CaRuby::IdAlias, CaRuby::AttributeInitializer, Annotatable
+
+    # Adds the given domain class to the CaTissue domain module.
+    #
+    # @param [Class] klass the included class
+    def self.included(klass)
+      super
+      CaTissue.add_class(klass)
+      # defer loading AnnotatableClass to avoid pulling in Database, which in turn
+      # attempts to import java classes before the path is established. obscure
+      # detail, but don't know how to avoid it.
+      require 'catissue/annotation/annotatable_class'
+      klass.extend(AnnotatableClass)
+    end
     
     # Returns whether each of the given attribute values either equals the
     # respective other attribute value or one of the values is nil or 'Not Specified'.
@@ -21,7 +36,7 @@ module CaTissue
 
     # Returns the CaTissue::Database which stores this object.
     def database
-      @@database ||= Database.instance
+      CaTissue::Database.instance
     end
 
     protected
@@ -60,14 +75,9 @@ module CaTissue
     def self.unpsecified_value?(value)
       value.nil? or value == UNSPECIFIED
     end
-
-    # Adds the given domain class to the CaTissue CaRuby::ResourceModule.
-    def self.included(klass)
-      CaTissue.add_class(klass)
-    end
   end
 
-  # The required include mix-in module.
+  # The include mix-in module.
   @mixin = Resource
 
   # The required Java package name.

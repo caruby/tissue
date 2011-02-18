@@ -13,13 +13,13 @@ module CaTissue
       # objects. This is used for testing a migration dry run. It is recommended that the trial run
       # protocol is set to a test protocol as well.
       SPECS = [
-        [:input, "input", "Source file to migrate"],
+        [:input, "-i", "input", "Source file to migrate"],
         [:target, "-t", "--target CLASS", "Migration target class"],
         [:mapping, "-m", "--mapping FILE", "The input field => caTissue attribute mapping file"],
         [:shims, "-s", "--shims FILE[,FILE...]", Array, "Migration customization shim files to load"],
         [:bad, "-b", "--bad FILE", "Write each invalid record to the given file and continue migration"],
         [:unique, "-u", "--unique", "Make the migrated objects unique for testing"],
-        [:offset, "--offset N", Integer, "Number of input records to skip before starting the migration"]
+        [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"]
       ]
   
       # Creates a {CaTissue::CLI::Migrate} command with the given standard command line specifications
