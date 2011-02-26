@@ -46,7 +46,7 @@ module CaTissue
     # in others with the same class, specimen type, pathological_status and characteristics.
     def match_in_owner_scope(others)
       others.detect do |other|
-        self.class === other and specimen_type == other.specimen_type and pathological_status == other.pathological_status and
+        self.class == other.class and specimen_type == other.specimen_type and pathological_status == other.pathological_status and
          characteristics and characteristics.match?(other.characteristics)
       end
     end
