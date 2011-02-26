@@ -7,5 +7,5 @@
 *.tar*
 /ext
 /doc
-**/log/*
+**log
 /test/results
