@@ -91,3 +91,9 @@ Common fields are as follows:
 * Box - Tissue storage container
 * X - the tissue box column
 * Y - the tissue box row
+
+Copyright
+---------
+
+caRuby &copy; 2010, 2011 by [Oregon Health & Science University](http://www.ohsu.edu/xd/health/services/cancer/index.cfm).
+caRuby is licensed under the MIT license. Please see the LICENSE and LEGAL files for more information.
