@@ -217,9 +217,7 @@ module CaTissue
     # one external identifier.
     def match_in_owner_scope(others)
       super or others.detect do |other|
-         external_identifiers.any? do |eid|
-           other.external_identifiers.detect { |oeid| eid.name == oeid.name and eid.value == oeid.value }
-         end
+        other.class == self.class and external_identifier_match?(other)
       end
     end
 
@@ -368,6 +366,14 @@ module CaTissue
     MERGEABLE_RQMT_ATTRS = nondomain_java_attributes - primary_key_attributes
 
     MERGEABLE_SPC_CHR_ATTRS = SpecimenCharacteristics.nondomain_java_attributes - SpecimenCharacteristics.primary_key_attributes
+
+    # @param [Resource] other the object to match
+    # @return [Boolean] whether this specimen matches the other specimen on at least one external identifier
+    def external_identifier_match?(other)
+       external_identifiers.any? do |eid|
+         other.external_identifiers.detect { |oeid| eid.name == oeid.name and eid.value == oeid.value }
+      end
+    end
      
     # @see #fetch_saved
     def available_quantity_changed?
