@@ -1,23 +1,18 @@
 LOG_FILE = 'test/results/log/migration.log'
 
 require File.join(File.dirname(__FILE__), '..', 'test_case')
-
-require 'catissue/migration/migrator'
 require 'caruby/domain/uniquify'
+require 'catissue/migration/migrator'
 
 module CaTissue
   module MigrationTestCase
     include CaTissue::TestCase
 
-    private
-
-    UNIQUIFY_SHIM = File.join(File.dirname(__FILE__), 'uniquify.rb')
-
-    public
-
     #@param [String] fixtures the fixtures directory
     def setup(fixtures)
       @fixtures = fixtures
+      # Clear the uniquifier for this migration.
+      CaRuby::ResourceUniquifier.instance.clear
     end
 
     ## MIGRATION TEST UTILITY METHODS ##
@@ -50,14 +45,6 @@ module CaTissue
     def create_migrator(fixture, opts={}, &factory)
       opts[:quiet] = true
       opts[:input] ||= File.join(@fixtures, fixture.to_s + '.csv')
-      if opts[:unique] then
-        # the current shims
-        shims = opts[:shims] ||= []
-        # add the uniquify shim
-        shims << UNIQUIFY_SHIM
-        # clear the Uniquifier for this migration
-        CaRuby::ResourceUniquifier.instance.clear
-      end
       block_given? ? yield(opts) : CaTissue::Migrator.new(opts)
     end
 
