@@ -7,7 +7,7 @@ SPEC = Gem::Specification.new do |s|
     The caruby-tissue gem applies the caRuby facade to the caTissue application.
   eof
   s.version       = CaTissue::VERSION
-  s.date          = "2010-11-30"
+  s.date          = Date.today
   s.author        = "OHSU"
   s.email         = "caruby.org@gmail.com"
   s.homepage      = "http://rubyforge.org/projects/caruby/tissue"
