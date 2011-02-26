@@ -47,6 +47,11 @@ module CaTissue
       self.row = @location.row
       self.column = @location.column
     end
+    
+    # @return whether either the column or the row is nil
+    def unspecified?
+      column.nil? or row.nil?
+    end
 
     # @return [(Integer, Integer)] this Position's zero-based ({#column}, {#row}) tuple.
     def to_a
@@ -56,8 +61,15 @@ module CaTissue
     # @raise [ValidationError] if the holder cannot hold the occupant type
     def validate
       super
-      unless holder.can_hold_child?(occupant) then
-        raise ValidationError.new("#{self} cannot be occupied by #{occupant}")
+      logger.debug { "Validating that #{holder} can hold #{occupant}..." }
+      curr_occ = holder[column, row]
+      if curr_occ.nil? then
+        unless holder.can_hold_child?(occupant) then
+          reason = holder.full? ? "it is full" : "the occupant type is not among the supported types #{holder.container_type.child_types.qp}"
+          raise ValidationError.new("#{holder} cannot hold #{occupant} since #{reason}")
+        end
+      elsif curr_occ != occupant
+        raise ValidationError.new("#{holder} cannot hold #{occupant} since the location #{[colum, row]} is already occupied by #{curr_occ}")
       end
     end
   end
