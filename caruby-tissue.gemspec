@@ -1,3 +1,4 @@
+require 'date'
 require 'catissue/version'
 
 SPEC = Gem::Specification.new do |s|
