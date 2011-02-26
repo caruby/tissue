@@ -16,6 +16,7 @@ module CaTissue
         [:input, "-i", "input", "Source file to migrate"],
         [:target, "-t", "--target CLASS", "Migration target class"],
         [:mapping, "-m", "--mapping FILE", "The input field => caTissue attribute mapping file"],
+        [:defaults, "-d", "--defaults FILE", "The caTissue attribute => default value mapping file"],
         [:shims, "-s", "--shims FILE[,FILE...]", Array, "Migration customization shim files to load"],
         [:bad, "-b", "--bad FILE", "Write each invalid record to the given file and continue migration"],
         [:unique, "-u", "--unique", "Make the migrated objects unique for testing"],
