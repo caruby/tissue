@@ -93,15 +93,8 @@ module CaTissue
       self.user ||= default_user
     end
 
-    # Returns whether the given value is either nil, empty or equals other.
-    def missing_or_match?(attribute, other)
-      value = send(attr)
-      value.nil_or_empty? or value == other.send(attr)
-    end
-
     def default_user
-      scg = specimen_collection_group
-      scg ||= specimen.specimen_collection_group if specimen
+      scg = specimen_collection_group || (specimen.specimen_collection_group if specimen)
       scg.receiver if scg
     end
   end
