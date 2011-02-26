@@ -137,6 +137,7 @@ module CaTissue
 
     # @return the occupant at the given zero-based row and column, or nil if none
     def [](column, row)
+      return if column.nil? or row.nil?
       all_occupied_positions.detect_value do |pos|
         return if row < pos.row
         next unless row == pos.row
@@ -149,10 +150,10 @@ module CaTissue
     # The storable Storable position is updated to reflect the new location. Returns self.
     #
     # @param [Storable] storable the item to add
-    # @param [CaRuby::Coordinate, nil] coordinate the x-y coordinate to place the item
+    # @param [CaRuby::Coordinate, <Integer>] coordinate the x-y coordinate to place the item
     # @raise [IndexError] if this Container is full
     # @raise [IndexError] if the row and column are given but exceed the Container bounds
-    def add(storable, coordinate=nil)
+    def add(storable, *coordinate)
       validate_type(storable)
       loc = create_location(coordinate)
       pos = storable.position || storable.position_class.new
@@ -185,18 +186,22 @@ module CaTissue
     # @param [Storable] the item to store
     # @raise [TypeError] if this container cannot hold the storable
     def validate_type(storable)
+      unless container_type then
+        raise TypeError.new("Container #{self} is missing a type")
+      end
       unless container_type.can_hold_child?(storable) then
-        raise TypeError.new("Container #{self} cannot hold an item of the #{storable} type")
+        raise TypeError.new("Container #{self} cannot hold an item of the #{storable} type #{storable.container_type}")
       end
     end
 
-    # @param [Coordinate] coordinate the optional location to create
+    # @param coordinate (see #add)
     # @return [Location] the created location
-    def create_location(coordinate=nil)
-      if coordinate then
-        Location.new(:in => self, :at => coordinate)
-      else
+    def create_location(coordinate)
+      if coordinate.empty? then
         first_available_location or raise IndexError.new("Container #{qp} does not have an available location")
+      else
+        if coordinate.size == 1 then coordinate = coordinate.first end
+        Location.new(:in => self, :at => coordinate)
       end
     end
 
