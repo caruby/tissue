@@ -118,7 +118,7 @@ module CaTissue
     # Recurses the dependency hierarchy to this annotation class's dependents in a
     # breadth-first manner.
     #
-    # @param [<CaRuby::AttributeMetadata>] the visited attributes
+    # @param [<CaRuby::AttributeMetadata>] path the visited attributes
     def add_dependent_attribute_closure(path=[])
       return if path.include?(self)
       attrs = dependent_attributes(false)
