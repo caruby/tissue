@@ -1,4 +1,5 @@
 require 'date'
+require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
@@ -6,7 +7,7 @@ module CaTissue
 
   # The CollectionProtocol domain class.
   class CollectionProtocol
-    include Resource
+    include Resource, HashCode
     
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
     # Initialize consent_tiers if necessary. 
@@ -51,23 +52,6 @@ module CaTissue
     def participants
       registrations.nil? ? [] : registrations.map { |reg| reg.participant }
     end
-
-    # Overrides the Java CollectionProtocol hashCode to make the hash insensitive to identifier assignment.
-    #
-    # @see #==
-    def hash
-      # caTissue alert - bad caTissue API hashCode leads to ugly cascading errors when using a CP in a Set
-      (object_id * 31) + 17
-    end
-
-    # Returns whether other is {#equal?} to CollectionProtocol.
-    #
-    # This method is a work-around for caTissue Bug #70: CollectionProtocol and non-CollectionProtocol are equal in caTissue 1.1.
-    def ==(other)
-      object_id == other.object_id
-    end
-
-    alias :eql? :==
 
     # Returns a new CollectionProtocolRegistration for the specified participant in this CollectionProtocol with
     # optional +protocol_participant_identifier+ ppi.

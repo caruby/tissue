@@ -1,6 +1,7 @@
 require 'caruby/util/collection'
 require 'caruby/util/partial_order'
 require 'catissue/util/storage_type_holder'
+require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
@@ -8,7 +9,7 @@ module CaTissue
 
   # The StorageType domain class.
   class StorageType
-    include StorageTypeHolder, PartialOrder, Resource
+    include StorageTypeHolder, PartialOrder, Resource, HashCode
 
     add_attribute_aliases(:default_temperature => :default_temprature_in_centigrade)
 
@@ -69,14 +70,6 @@ module CaTissue
       return 0 if eql?(other)
       return 1 if holds_storage_types.detect { |child| child >= other }
       -1 if other > self
-    end
-
-    # Overrides the Java StorageType hashCode to make the hash insensitive to identifier assignment.
-    #
-    # @see #==
-    def hash
-      # caTissue alert - bad caTissue API hashCode leads to ugly cascading errors when using a CP in a Set
-      (object_id * 31) + 17
     end
   end
 end

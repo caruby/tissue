@@ -1,4 +1,5 @@
 require 'caruby/util/collection'
+require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
@@ -6,7 +7,7 @@ module CaTissue
 
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolEvent
-    include Resource
+    include Resource, HashCode
     
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
     # Initialize specimen_collection_groups if necessary.
@@ -45,25 +46,6 @@ module CaTissue
       # work around caTissue Bug #64
       self.specimen_collection_groups ||= Java::JavaUtil::LinkedHashSet.new
     end
-
-    # Overrides the Java CollectionProtocolEvent hashCode to make the hash insensitive to identifier assignment.
-    def hash
-      # caTissue alert - caTissue determines the hashCode from the identifier. Consequently, a CollectionProtocolEvent
-      # added to a HashSet without an identifier can no longer find the CPE when it is assigned an identifier.
-      # This bug results in obscure delayed cascade errors. Work-around is to override the hash method in the
-      # Ruby CPE wrapper class.
-      (object_id * 31) + 17
-    end
-
-    # Returns whether other is a CollectionProtocolEvent with the same identifier as this CollectionProtocolEvent,
-    # or the same object_id if this CollectionProtocolEvent's identifier is nil.
-    #
-    # This method is a work-around for caTissue bug: CollectionProtocolEvent and non-CollectionProtocolEvent are equal in caTissue 1.1.
-    def ==(other)
-      object_id == other.object_id
-    end
-
-    alias :eql? :==
 
     # Removes associations to this registration
     def delete
