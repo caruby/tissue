@@ -30,6 +30,8 @@ module CaTissue
     # @option opts [String] :target required target domain class
     # @option opts [String] :input required source file to migrate
     # @option opts [String] :shims optional array of shim files to load
+    # @option opts [String] :unique makes migrated objects unique object for testing
+    #   mix-in do not conflict with existing or future objects
     # @option opts [String] :bad write each invalid record to the given file and continue migration
     # @option opts [String] :offset zero-based starting source record number to process (default 0)
     def initialize(opts={})
@@ -40,12 +42,6 @@ module CaTissue
         # add config options but don't override the parameter options
         opts.merge!(conf, :deep) { |key, oldval, newval| oldval }
       end
-      
-      
-      # TODO - move opt parsing to CaTissue::CLI::Migrate and call that from test cases
-      # Migrate then calls this Migrator with parsed options
-      
-      
       # open the log file before building structure
       log_file = opts[:log]
       CaRuby::Log.instance.open(log_file, :debug => opts[:debug]) if log_file
@@ -60,12 +56,22 @@ module CaTissue
       # call the CaRuby::Migrator initializer with the augmented options
       super
 
-      # the options specific to this CaTissue::Migrator subclass
+      # The remaining options are specific to this CaTissue::Migrator subclass.
+
+      # If the unique option is set, then append the CaTissue-specific uniquifier shim.
+      if opts[:unique] then
+        # add the uniquify shim
+        @shims << UNIQUIFY_SHIM
+      end
+
+      # The tissue site CV look-up option.
       tissue_sites = opts[:tissue_sites]
       if tissue_sites then
         CaTissue::SpecimenCharacteristics.tissue_site_cv_finder = ControlledValueFinder.new(:tissue_site, tissue_sites)
         logger.info("Migrator enabled controlled value lookup.")
       end
+
+      # The clinical diagnosis CV look-up option.
       diagnoses = opts[:diagnoses]
       if diagnoses then
         CaTissue::SpecimenCollectionGroup.diagnosis_cv_finder = ControlledValueFinder.new(:clinical_diagnosis, diagnoses)
@@ -74,6 +80,8 @@ module CaTissue
     end
 
     private
+    
+    UNIQUIFY_SHIM = File.join(File.dirname(__FILE__), 'uniquify')
     
     # Clears the migration protocol CPR and SCG references.
     # This action frees up memory for the next iteration, thereby ensuring that migration is an
