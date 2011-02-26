@@ -61,6 +61,7 @@ module CaTissue
     end
 
     alias :add_local :add
+    private :add_local
 
     # Adds the given storable to this container. If the storable has a current position, then
     # the storable is moved from that position to this container. The new position is given
@@ -76,12 +77,12 @@ module CaTissue
     #   freezer << specimen #=> places the specimen in the first available box in the freezer
     #
     # @param [Storable] the item to add
-    # @param [Coordinate] the storage location (default is first available location)
+    # @param [Coordinate, <Integer>] the storage location (default is first available location)
     # @return [StorageContainer] self
     # @raise [IndexError] if this Container is full
     # @raise [IndexError] if the row and column are given but exceed the Container bounds
-    def add(storable, coordinate=nil)
-      return add_local(storable, coordinate) if coordinate
+    def add(storable, *coordinate)
+      return add_local(storable, *coordinate) if coordinate
       add_to_existing_container(storable) or add_to_new_subcontainer(storable) or out_of_bounds(storable)
       self
     end
