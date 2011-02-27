@@ -7,9 +7,7 @@ module CaTissue
     # @return [Integer] a unique hash code
     # @see #==
     def hash
-      # JRuby alert - JRuby 1.5 object_id can be a String, e.g. CollectionProtocol_null.
-      # Work-around to the work-around is to make a unique object id in this aberrant case.
-      @_hc ||= (Object.new.object_id * 31) + 17
+      proxy_object_id * 31 + 17
     end
 
     # Returns whether other is of type same type as this object with the same hash as this object.
