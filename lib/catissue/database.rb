@@ -395,7 +395,7 @@ module CaTissue
       specimen.is_available = true
       oiqty = specimen.initial_quantity
       oaqty = specimen.available_quantity
-      ostatus =  specimen.activity_status
+      ostatus = specimen.activity_status
       specimen.initial_quantity = 1.0
       specimen.available_quantity = 1.0
       specimen.activity_status = 'Active'
