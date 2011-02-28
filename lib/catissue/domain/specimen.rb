@@ -405,9 +405,9 @@ module CaTissue
     #
     # caTissue alert - initial_quantity cannot be null (cf. Bug #160).
     #
-    # caTissue alert - the default available status must be left nil rather than set to false, since
-    # caTissue allows a nil available status on insert but not a false value, even though a nil status
-    # is set to false (0 database value) when the record is inserted.
+    # caTissue alert - the available status cannot be set to to false. The status must be set to nil
+    # instead. caTissue allows a nil available status on insert but not a false value, even though a
+    # nil status is set to false (0 database value) when the record is inserted.
     #
     # caTissue alert - a collected Specimen without a collection and received event parameters
     # results in the dreaded 'Severe Error' caTissue server message. Create default SEPs if necessary.
@@ -417,14 +417,21 @@ module CaTissue
       add_default_event_parameters
       
       # The default available quantity is the initial quantity.
-      aq = available_quantity
-      if aq.nil? or aq.zero? then
-        self.available_quantity = is_available == false ? 0.0 : initial_quantity
-      end
+      self.available_quantity ||= is_available ? initial_quantity : 0
       
-      # The specimen is available by default if there is a positive available quantity.
-      # If is_available is set to false, then set it to nil to work around a caTissue bug.
-      self.is_available ||= available_quantity.zero? ? nil : true
+      if is_available.nil? then
+        self.is_available = default_availablility
+      elsif is_available == false then
+        # Reset is_available value from false to nil to work around caTissue bug but described in method doc.
+        self.is_available = nil
+      end
+    end
+    
+    # The specimen is available by default if there is a positive available quantity.
+    #
+    # @return [Boolean, nil] +nil+ if the available quantity is zero, +true+ otherwise
+    def default_availablility
+      available_quantity.zero? ? nil : true
     end
     
     # Adds the default collection and received event parameters if the collection status
