@@ -37,20 +37,27 @@ module CaTissue
       # @return [Annotation] the annotation
       def create(annotation)
         logger.debug { "Creating annotation #{annotation.qp}..." }
-        # get the hook
-        hook = annotation.hook
-        # If no hook, then this is not a primary annotation. In that case, find a referenced
-        # primary annotation.
-        if hook then
-          time { create_primary_annotation(annotation, hook) }
-        else
-          create_secondary_annotation(annotation)
-        end
+        time { create_annotation(annotation) }
         logger.debug { "Created annotation #{annotation}." }
         annotation
       end
       
       private
+
+      # @param [Annotation] (see #create)
+      def create_annotation(annotation)
+         # get the hook
+        hook = annotation.hook
+        # If no hook, then this is not a primary annotation. In that case, find a referenced
+        # primary annotation.
+       # If no hook, then this is not a primary annotation. In that case, find a referenced
+        # primary annotation.
+        if hook then
+          create_primary_annotation(annotation, hook)
+        else
+          create_secondary_annotation(annotation)
+        end
+      end
       
       # @param annotation (see #create)
       # @param [Annotable] the annotatable object referenced by this annotation
