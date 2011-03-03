@@ -68,14 +68,14 @@ module CaTissue
       tissue_sites = opts[:tissue_sites]
       if tissue_sites then
         CaTissue::SpecimenCharacteristics.tissue_site_cv_finder = ControlledValueFinder.new(:tissue_site, tissue_sites)
-        logger.info("Migrator enabled controlled value lookup.")
+        logger.info("Migrator enabled tissue site controlled value lookup.")
       end
 
       # The clinical diagnosis CV look-up option.
       diagnoses = opts[:diagnoses]
       if diagnoses then
         CaTissue::SpecimenCollectionGroup.diagnosis_cv_finder = ControlledValueFinder.new(:clinical_diagnosis, diagnoses)
-        logger.info("Migrator enabled controlled value lookup.")
+        logger.info("Migrator enabled clinical diagnosis controlled value lookup.")
       end
     end
 

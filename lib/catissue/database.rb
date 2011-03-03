@@ -17,7 +17,7 @@ module CaTissue
 
     # Creates a new Database with the {SERVICE_NAME} service and {CaTissue.access_properties}.
     def initialize
-      super(SERVICE_NAME, CaTissue.access_properties)
+      super(SERVICE_NAME, CaTissue.access_properties) {}
       @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
     end
 
