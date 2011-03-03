@@ -6,11 +6,11 @@ module CaTissue
     class IntegrationService < CaRuby::PersistenceService
       SERVICE_NAME = 'deintegration'
 
-      java_import('deintegration.EntityMap')
+      java_import 'deintegration.EntityMap'
       
-      java_import('deintegration.EntityMapRecord')
+      java_import 'deintegration.EntityMapRecord'
       
-      java_import('deintegration.FormContext')
+      java_import 'deintegration.FormContext'
 
       # @param [EntityFacade] the global entity manager
       def initialize
