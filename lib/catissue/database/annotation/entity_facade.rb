@@ -5,13 +5,7 @@ require 'catissue/database/annotation/id_generator'
 
 module CaTissue
   module Annotation
-    # Import this EntityManager dependency before EntityManager.
-    java_import('edu.wustl.common.security.exceptions.UserNotAuthorizedException')
-    
-    # Import the caTissue Java EntityManager.
-    java_import('edu.common.dynamicextensions.entitymanager.EntityManager')
-   
-    # EntityFacade is the caRuby interface to the caTissue EntityManager. EntityManager is
+    # EntityFacade is the caRuby substitue for the broken caTissue EntityManager. EntityManager is
     # the caTissue singleton Winnebago object for doing lots of things with dynamic extensions.
     class EntityFacade
       include Singleton
