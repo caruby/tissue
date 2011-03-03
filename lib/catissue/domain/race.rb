@@ -1,6 +1,6 @@
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.Race')
+  java_import Java::edu.wustl.catissuecore.domain.Race
 
   class Race
     include Resource

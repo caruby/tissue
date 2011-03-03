@@ -1,7 +1,7 @@
 require 'caruby/util/coordinate'
 
 module CaTissue
-  java_import('edu.wustl.catissuecore.domain.Capacity')
+  java_import Java::edu.wustl.catissuecore.domain.Capacity
 
   class Capacity
     include Resource

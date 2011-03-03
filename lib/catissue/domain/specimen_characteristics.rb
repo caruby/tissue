@@ -2,7 +2,7 @@
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenCharacteristics')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenCharacteristics
 
   class SpecimenCharacteristics
     include Resource

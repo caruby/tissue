@@ -2,7 +2,7 @@ require 'caruby/util/collection'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.CollectionProtocolRegistration')
+  java_import Java::edu.wustl.catissuecore.domain.CollectionProtocolRegistration
 
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolRegistration

@@ -1,6 +1,6 @@
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.FrozenEventParameters')
+  java_import Java::edu.wustl.catissuecore.domain.FrozenEventParameters
 
   class FrozenEventParameters
     include Resource

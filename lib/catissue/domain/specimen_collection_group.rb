@@ -2,7 +2,7 @@ require 'caruby/util/transitive_closure'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenCollectionGroup')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenCollectionGroup
 
   # The SpecimenCollectionGroup domain class.
   #
@@ -252,12 +252,6 @@ module CaTissue
       end
     end
 
-    def validate
-      super
-      validate_consent
-      validate_event_parameters
-    end
-
     # Relaxes the {CaRuby::Persistable#saved_fetch_attributes} condition for a SCG as follows:
     # * If the SCG status was updated from +Pending+ to +Collected+, then fetch the saved SCG event parameters.
     # 
@@ -279,6 +273,12 @@ module CaTissue
     private
     
     EVENT_PARAM_ATTRS = [:specimen_event_parameters]
+
+    def validate_local
+      super
+      validate_consent
+      validate_event_parameters
+    end
     
     # @see #fetch_saved
     def status_changed_to_complete?

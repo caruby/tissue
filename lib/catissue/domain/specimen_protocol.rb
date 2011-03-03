@@ -2,7 +2,7 @@ require 'date'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenProtocol')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenProtocol
 
   # The SpecimenProtocol domain class.
   class SpecimenProtocol

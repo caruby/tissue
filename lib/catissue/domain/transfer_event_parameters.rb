@@ -3,7 +3,7 @@ require 'catissue/util/location'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.TransferEventParameters')
+  java_import Java::edu.wustl.catissuecore.domain.TransferEventParameters
 
   # The +caTissue+ TransferEventParameters class is augmented with zero-based
   # +from_row+, +from_column+, +to_row+ and +to_column+ methods wrapping the corresponding one-based dimension attributes.

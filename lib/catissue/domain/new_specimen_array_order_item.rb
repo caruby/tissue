@@ -2,7 +2,7 @@ require 'catissue/resource'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.NewSpecimenArrayOrderItem')
+  java_import Java::edu.wustl.catissuecore.domain.NewSpecimenArrayOrderItem
 
   # The NewSpecimenArrayOrderItem domain class.
   class NewSpecimenArrayOrderItem

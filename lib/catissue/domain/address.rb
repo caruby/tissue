@@ -1,5 +1,5 @@
 module CaTissue
-  java_import('edu.wustl.catissuecore.domain.Address')
+  java_import Java::edu.wustl.catissuecore.domain.Address
 
   class Address
     include Resource

@@ -3,7 +3,7 @@ require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.CollectionProtocol')
+  java_import Java::edu.wustl.catissuecore.domain.CollectionProtocol
 
   # The CollectionProtocol domain class.
   class CollectionProtocol

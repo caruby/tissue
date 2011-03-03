@@ -3,7 +3,7 @@ require 'caruby/util/inflector'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenEventParameters')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenEventParameters
 
   class SpecimenEventParameters
     include Resource
@@ -73,16 +73,16 @@ module CaTissue
       specimen_collection_group.collection_protocol if specimen_collection_group
     end
 
-    def validate
+    private
+
+    SUBCLASS_SUFFIX = 'EventParameters'
+
+    def validate_local
       super
       if subject.nil? then
         raise ValidationError.new("Both specimen_collection_group and specimen are missing in SpecimenEventParameters #{self}")
       end
     end
-
-    private
-
-    SUBCLASS_SUFFIX = 'EventParameters'
 
     # Sets each missing value to a default as follows:
     # * default user is the SCG receiver

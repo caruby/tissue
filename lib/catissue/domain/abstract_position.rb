@@ -1,7 +1,7 @@
 require 'catissue/util/position'
 
 module CaTissue
-  java_import('edu.wustl.catissuecore.domain.AbstractPosition')
+  java_import Java::edu.wustl.catissuecore.domain.AbstractPosition
 
   # The +caTissue+ AbstractPosition class is augmented with a comparison operator and the
   # zero-based +row+ and +column+ methods wrapping the corresponding one-based dimension

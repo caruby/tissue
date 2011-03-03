@@ -4,7 +4,7 @@ require 'catissue/util/location'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.Container')
+  java_import Java::edu.wustl.catissuecore.domain.Container
 
   # The +caTissue+ +Container+ domain class wrapper.
   # Each Container subclass is required to implement the {#container_type} method.

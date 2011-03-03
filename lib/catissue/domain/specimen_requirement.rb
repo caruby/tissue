@@ -1,6 +1,6 @@
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenRequirement')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenRequirement
 
   # The SpecimenRequirement domain class.
   class SpecimenRequirement
@@ -75,18 +75,6 @@ module CaTissue
       self.specimens ||= Java::JavaUtil::LinkedHashSet.new
     end
 
-    # Augments {CaRuby::Resource#validate} to verify that this SpecimenRequirement does not have multiple non-aliquot
-    # derivatives, which is disallowed by caTissue.
-    #
-    # caTissue alert - multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
-    # in obscure downstream errors (cf. Bug #151).
-    #
-    # Raises ValidationError if this SpecimenRequirement has multiple non-aliquot derivatives.
-    def validate
-      super
-      if multiple_derivatives? then raise ValidationError.new("Multiple derivatives not supported by caTissue") end
-    end
-
     # Creates a SpecimenRequirement of the given subclass type for the given CollectionProtocolEvent event.
     # The type is a SpecimenRequirement subclass name without the +SpecimenRequirement+ suffix, e.g.
     # +Tissue+. Lower-case, underscore symbols are supported and preferred, e.g. the
@@ -129,6 +117,18 @@ module CaTissue
     # Returns whether this SpecimenRequirement has multiple non-aliquot derivatives.
     def multiple_derivatives?
       children.size > 1 and children.any? { |drv| not drv.aliquot? }
+    end
+
+    # Augments {CaRuby::Resource#validate} to verify that this SpecimenRequirement does not have multiple non-aliquot
+    # derivatives, which is disallowed by caTissue.
+    #
+    # caTissue alert - multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
+    # in obscure downstream errors (cf. Bug #151).
+    #
+    # Raises ValidationError if this SpecimenRequirement has multiple non-aliquot derivatives.
+    def validate_local
+      super
+      if multiple_derivatives? then raise ValidationError.new("Multiple derivatives not supported by caTissue") end
     end
 
     # Adds the following default values, if necessary:

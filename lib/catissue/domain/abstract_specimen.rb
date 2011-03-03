@@ -2,7 +2,7 @@ require 'set'
 require 'caruby/util/inflector'
 
 module CaTissue
-  java_import('edu.wustl.catissuecore.domain.AbstractSpecimen')
+  java_import Java::edu.wustl.catissuecore.domain.AbstractSpecimen
 
   class AbstractSpecimen
     include Resource

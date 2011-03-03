@@ -2,7 +2,7 @@ require 'catissue/domain/scg_event_parameters'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.ReceivedEventParameters')
+  java_import Java::edu.wustl.catissuecore.domain.ReceivedEventParameters
 
   class ReceivedEventParameters
     include Resource, SCGEventParameters

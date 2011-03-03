@@ -1,6 +1,6 @@
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.DisposalEventParameters')
+  java_import Java::edu.wustl.catissuecore.domain.DisposalEventParameters
 
   class DisposalEventParameters
     include Resource

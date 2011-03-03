@@ -2,7 +2,7 @@ require 'caruby/util/options'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.ContainerType')
+  java_import Java::edu.wustl.catissuecore.domain.ContainerType
 
   # The caTissue ContainerType domain class wrapper.
   # Each {ContainerType} subclass is required to implement the container_class method.

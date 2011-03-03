@@ -1,7 +1,7 @@
 
 
 module CaTissue
-  java_import('edu.wustl.catissuecore.domain.OrderDetails')
+  java_import Java::edu.wustl.catissuecore.domain.OrderDetails
 
   # The OrderDetails domain class.
   class OrderDetails

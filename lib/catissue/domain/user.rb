@@ -4,7 +4,7 @@ require 'catissue/util/person'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.User')
+  java_import Java::edu.wustl.catissuecore.domain.User
 
   # The User domain class.
   class User

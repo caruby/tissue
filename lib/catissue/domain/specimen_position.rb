@@ -1,6 +1,6 @@
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenPosition')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenPosition
 
   class SpecimenPosition
     include Resource

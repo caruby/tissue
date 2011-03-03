@@ -4,7 +4,7 @@ require 'catissue/util/storage_type_holder'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.StorageContainer')
+  java_import Java::edu.wustl.catissuecore.domain.StorageContainer
 
   # The +caTissue+ +StorageContainer+ domain class wrapper.
   class StorageContainer

@@ -1,5 +1,5 @@
 module CaTissue
-  java_import('edu.wustl.catissuecore.domain.AbstractSpecimenCollectionGroup')
+  java_import Java::edu.wustl.catissuecore.domain.AbstractSpecimenCollectionGroup
 
   class AbstractSpecimenCollectionGroup
     include Resource

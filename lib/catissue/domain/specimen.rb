@@ -5,7 +5,7 @@ require 'catissue/util/storable'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.Specimen')
+  java_import Java::edu.wustl.catissuecore.domain.Specimen
 
   # The Specimen domain class.
   class Specimen
@@ -183,35 +183,6 @@ module CaTissue
       self
     end
 
-    # Raises a ValidationError when one the following conditions holds:
-    # * a top-level Specimen does not have a SGC
-    # * the available_quantity exceeds the initial_quantity
-    # * the availability flag is set and the available_quantity is zero
-    #
-    # caTissue alert - Bug #160: Missing Is Available? validation.
-    # Updating Specimen with the availablity flag set and available_quantity zero
-    # silently leaves the availablity flag unset.
-    def validate
-      super
-      if parent.nil? and specimen_collection_group.nil? then
-        raise ValidationError.new("Top-level specimen #{self} is missing specimen collection group")
-      end
-      if available_quantity and initial_quantity and available_quantity > initial_quantity then
-        raise ValidationError.new("#{self} available quantity #{available_quantity} cannot exceed initial quantity #{initial_quantity}")
-      end
-      if available? and available_quantity.zero? then
-        raise ValidationError.new("#{self} availablility flag cannot be set when the avaialble quantity is zero")
-      end
-      if collected? then
-        unless event_parameters.detect { |ep| CaTissue::CollectionEventParameters === ep } then
-          raise ValidationError.new("#{self} is missing CollectionEventParameters")
-        end
-        unless event_parameters.detect { |ep| CaTissue::ReceivedEventParameters === ep } then
-          raise ValidationError.new("#{self} is missing ReceivedEventParameters")
-        end
-      end
-    end
-
     # Returns the Specimen in others which matches this Specimen in the scope of an owner SCG.
     # This method relaxes {CaRuby::Resource#match_in_owner_scope} to include a match on at least
     # one external identifier.
@@ -367,6 +338,37 @@ module CaTissue
 
     MERGEABLE_SPC_CHR_ATTRS = SpecimenCharacteristics.nondomain_java_attributes - SpecimenCharacteristics.primary_key_attributes
 
+    # Validates that the following conditions hold:
+    # * a top-level Specimen does not have a SGC
+    # * the available_quantity exceeds the initial_quantity
+    # * the availability flag is set and the available_quantity is zero
+    #
+    # caTissue alert - Bug #160: Missing Is Available? validation.
+    # Updating Specimen with the availablity flag set and available_quantity zero
+    # silently leaves the availablity flag unset.
+    #
+    #  @raise [ValidationError] if the validation fails
+    def validate_local
+      super
+      if parent.nil? and specimen_collection_group.nil? then
+        raise ValidationError.new("Top-level specimen #{self} is missing specimen collection group")
+      end
+      if available_quantity and initial_quantity and available_quantity > initial_quantity then
+        raise ValidationError.new("#{self} available quantity #{available_quantity} cannot exceed initial quantity #{initial_quantity}")
+      end
+      if available? and available_quantity.zero? then
+        raise ValidationError.new("#{self} availablility flag cannot be set when the avaialble quantity is zero")
+      end
+      if collected? then
+        unless event_parameters.detect { |ep| CaTissue::CollectionEventParameters === ep } then
+          raise ValidationError.new("#{self} is missing CollectionEventParameters")
+        end
+        unless event_parameters.detect { |ep| CaTissue::ReceivedEventParameters === ep } then
+          raise ValidationError.new("#{self} is missing ReceivedEventParameters")
+        end
+      end
+    end
+    
     # @param [Resource] other the object to match
     # @return [Boolean] whether this specimen matches the other specimen on at least one external identifier
     def external_identifier_match?(other)

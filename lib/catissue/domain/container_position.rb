@@ -1,6 +1,6 @@
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.ContainerPosition')
+  java_import Java::edu.wustl.catissuecore.domain.ContainerPosition
 
   class ContainerPosition
     include Resource
@@ -18,8 +18,10 @@ module CaTissue
     
     qualify_attribute(:parent_container, :fetched)
     
+    private
+    
     # @raise [ValidationError] if the parent is the same as the occupant 
-    def validate
+    def validate_local
       super
       if parent == occupant or (parent.identifier and parent.identifier == occupant.identifier) then
          raise ValidationError.new("#{self} has a circular containment reference to subcontainer #{occupant}")

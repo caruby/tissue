@@ -2,7 +2,7 @@
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.Department')
+  java_import Java::edu.wustl.catissuecore.domain.Department
 
   # The Department domain class.
   class Department

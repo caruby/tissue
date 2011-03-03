@@ -5,7 +5,7 @@ require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.StorageType')
+  java_import Java::edu.wustl.catissuecore.domain.StorageType
 
   # The StorageType domain class.
   class StorageType

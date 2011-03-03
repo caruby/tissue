@@ -2,7 +2,7 @@ require 'catissue/util/position'
 
 module CaTissue
   # import the Java class
-  java_import('edu.wustl.catissuecore.domain.SpecimenArrayContent')
+  java_import Java::edu.wustl.catissuecore.domain.SpecimenArrayContent
 
   # caTissue alert - #{CaTissue::SpecimenArrayContent} should be derived from
   # {CaTissue::AbstractPosition} but isn't (cf. {CaTissue::ContainerType}).
