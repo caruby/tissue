@@ -12,12 +12,9 @@ module CaTissue
       
       private
       
-      # Initializes the caTissue EntityManager, an id generator and a SQL executor. The id
-      # generator and executor are used for the caTissue bug work-arounds described in the
-      # method docs and {IdGenerator}.
+      # Initializes the id generator and a SQL executor. The id generator and executor are
+      # used for the caTissue bug work-arounds described in the method docs and {IdGenerator}.
       def initialize
-        # the encapsulated caTissue singleton
-        @emgr = EntityManager.instance
         # the work-around id generator
         @idgen = IdGenerator.new
         # a general-purpose SQL executor for calling the work-arounds
@@ -66,7 +63,11 @@ module CaTissue
       # @param [Class] klass the {Annotatable} class
       # @return [Integer] the class entity id
       def hook_entity_id(klass)
-        entity_id_for_class_designator(klass.java_class.name)
+        result = @executor.execute { |dbh| dbh.select_one(HOOK_ENTITY_ID_SQL, klass.java_class.name) }
+        if result.nil? then raise AnnotationError.new("Entity id not found for static hook class #{klass.qp}") end
+        eid = result[0].to_i
+        logger.debug { "Static hook class #{klass.qp} has entity id #{eid}." }
+        eid
       end
       
       # caTissue alert - call into caTissue to get entity id doesn't work for non-primary object.
@@ -110,7 +111,7 @@ module CaTissue
       # @return [Integer, nil] the parent entity id, if any
       def parent_entity_id(eid)
         result = @executor.execute { |dbh| dbh.select_one(PARENT_ENTITY_ID_SQL, eid) }
-        result[0] if result
+        result[0].to_i if result and result[0]
       end
       
       # Obtains the undocumented caTisue container id for the given primary entity id.
@@ -132,10 +133,10 @@ module CaTissue
         # EntityManager.instance.get_container_id_for_entity(eid)
         # Work-around caTissue bug with direct query.
         result = @executor.execute { |dbh| dbh.select_one(CTR_ID_SQL, eid) }
-        cid = result[0].to_i if result
-        if cid.nil? then
+        if result.nil? then
           raise AnnotationError.new("Dynamic extension container id not found for annotation #{annotation} with entity id #{eid}")
         end
+        cid = result[0].to_i
         logger.debug { "Annotation with entity id #{eid} has container id #{cid}." }
         cid
       end
@@ -157,7 +158,7 @@ module CaTissue
         pkg, cls_nm = klass.java_class.name.split('.')
         # Dive into some obscure SQL
         result = @executor.execute { |dbh| dbh.select_one(CTR_ENTITY_ID_SQL, pkg, cls_nm) }
-        result[0] if result
+        result[0].to_i if result
       end
       
       # @param (see #primary_entity_id)
@@ -207,20 +208,17 @@ module CaTissue
           logger.debug { "Attempting to find  entity id #{eid} #{role} associated entity id using variant #{alt}..." }
           result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, alt) }
         end
-        if result.nil? then
-          logger.debug { "Entity id #{eid} is not directly associated with #{role}." }
-        end
-        result[0] if result
+        if result.nil? then logger.debug { "Entity id #{eid} is not directly associated with #{role}." } end
+        result[0].to_i if result
       end
       
-      # @param [String] designator the class name, demodulized in the case of an annotation entity
-      # @return [Integer] the caTissue entity id for the given class name
-      # @raise [CaRuby::DatabaseError] if the DE entity id is not found for the given designator
-      def entity_id_for_class_designator(designator)
-        @emgr.getEntityId(designator) or
-          raise CaRuby::DatabaseError.new("Dynamic extension entity id not found for #{designator}")
-      end
-      
+      # The SQL to find an entity id for a primary entity.
+      HOOK_ENTITY_ID_SQL = <<EOS
+      select IDENTIFIER
+      from DYEXTN_ABSTRACT_METADATA
+      where NAME = ?
+EOS
+     
       # The SQL to find an entity id for a primary entity.
       CTR_ENTITY_ID_SQL = <<EOS
       select ctr.ABSTRACT_ENTITY_ID
