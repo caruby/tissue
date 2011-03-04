@@ -145,7 +145,6 @@ class SpecimenTest < Test::Unit::TestCase
     assert_same(grade, pth.histologic_grades.first, "Pathology annotation histologic grades incorrect")
     assert_same(htype, pth.histologic_types.first, "Pathology annotation histologic types incorrect")
   end
-
   
   ## DATABASE TEST CASES ##
 
