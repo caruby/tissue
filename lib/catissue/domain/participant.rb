@@ -137,7 +137,7 @@ module CaTissue
       # Make a new default Race which references this Participant, if necessary. Setting the Race
       # participant to self automatically adds the Race to this Participant's races collection.
       # The Race name defaults to Unknown.
-      if races.empty? then CaTissue::Race.new(:participant => self).add_defaults end
+      if races.empty? then CaTissue::Race.new(:participant => self).add_defaults_recursive end
     end
   end
 end
