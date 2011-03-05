@@ -13,7 +13,11 @@ module CaTissue
     def self.extended(klass)
       super
       # the annotation name => spec hash 
-      klass.class_eval { extend Forwardable; @ann_spec_hash = {} }
+      klass.class_eval do
+        extend Forwardable
+        @ann_spec_hash = {}
+        @local_ann_attrs = []
+      end
     end
     
     # @return [Integer, nil] this class's entity id, if it exists, otherwise the superclass effective entity id
@@ -76,6 +80,16 @@ module CaTissue
       else
         ensure_annotations_loaded
         const_get(symbol)
+      end
+    end
+    
+    def printable_attributes
+      @prbl_attrs ||= super.union(annotation_attributes)
+    end
+    
+    def annotation_attributes
+      @ann_attrs ||= append_ancestor_enum(@local_ann_attrs) do |sc|
+        sc.annotation_attributes if sc < Annotatable
       end
     end
     
@@ -250,6 +264,9 @@ module CaTissue
       
       # the annotation is a dependent
       add_dependent_attribute(attribute, :logical)
+      
+      # add the attribute to the local collection
+      @local_ann_attrs << attribute
     end
   end
 end

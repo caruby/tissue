@@ -31,6 +31,11 @@ module CaTissue
     
     # If there is no conventional owner, then try the hook.
     #
+    # caTissue alert - DE annotations have a physical dependency ownership model that is at odds
+    # with the logical model. An annotation does not directly reference its static hook owner
+    # instance. Rather, it references the hook proxy which stands in for the hook entity in the
+    # annotation package. 
+    #
     # @return the {CaRuby::Resource#owner} or the {#hook}
     def owner
       super or hook

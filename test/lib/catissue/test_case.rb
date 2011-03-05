@@ -124,13 +124,14 @@ module CaTissue
     
     def verify_dependency(dependent)
       return if dependent.class.owner_attribute.nil?
-      owner = dependent.owner
-      assert_not_nil(owner, "Owner missing for dependent: #{dependent}")
-      attribute = owner.class.dependent_attribute(dependent.class)
-      assert_not_nil(attribute, "Dependent attribute missing for #{dependent} owner #{owner}")
+      # kludge for annotation proxy nonsense (cf. Annotation#owner)
+      ownr = Annotation === dependent ? (dependent.hook or dependent.owner) : dependent.owner
+      assert_not_nil(ownr, "Owner missing for dependent: #{dependent}")
+      attribute = ownr.class.dependent_attribute(dependent.class)
+      assert_not_nil(attribute, "Dependent attribute missing for #{dependent} owner #{ownr}")
       # a dependent collection reference must be refetched
-      if owner.class.collection_attribute?(attribute) then
-        verify_saved_dependent_collection_member(dependent, owner, attribute)
+      if ownr.class.collection_attribute?(attribute) then
+        verify_saved_dependent_collection_member(dependent, ownr, attribute)
       else
         assert_not_nil(dependent.identifier, "Stored dependent #{dependent} identifier is not set")
       end
@@ -138,9 +139,12 @@ module CaTissue
 
     # Verifies that the given dependent has an identifier and that the given owner dependent attribute value
     # contains the dependent.
+    #
+    # JRuby alert - Set include? incorrectly returns false in the OHSU PSR samples_test test_save_grade
+    # call to this method. Work around by using Set detect rather than include?.
     def verify_saved_dependent_collection_member(dependent, owner, attribute)
       deps = owner.send(attribute)
-      assert(deps.include?(dependent), "Owner #{owner.qp} #{attribute} value #{deps.pp_s} does not contain #{dependent}")
+      assert(deps.detect { |dep| dep == dependent }, "Owner #{owner.qp} #{attribute} value #{deps.pp_s} does not contain #{dependent}")
       assert_not_nil(dependent.identifier, "Identifier not set for stored owner #{owner.qp} #{attribute} dependent collection member #{dependent}")
     end
 

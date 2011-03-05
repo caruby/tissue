@@ -37,10 +37,11 @@ module CaTissue
       
       # Adds each proxy => annotation reference as a dependent attribute.
       def add_annotation_dependents
+        # first add the direct dependents
         annotation_attributes.each_metadata do |attr_md|
           attr_md.type.add_dependent_attributes
-          attr_md.type.proxy = self
         end
+        # now add the recursive indirect dependents
         annotation_attributes.each_metadata do |attr_md|
           attr_md.type.add_dependent_attribute_closure
         end

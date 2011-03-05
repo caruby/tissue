@@ -17,7 +17,7 @@ module CaTissue
 
     # Creates a new Database with the {SERVICE_NAME} service and {CaTissue.access_properties}.
     def initialize
-      super(SERVICE_NAME, CaTissue.access_properties) {}
+      super(SERVICE_NAME, CaTissue.access_properties)
       @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
     end
 
@@ -313,7 +313,7 @@ module CaTissue
         end
         logger.debug { "Work around caTissue Bug #164 by setting the #{obj.qp} update template #{template.qp} external_identifiers to nil." }
         template.external_identifiers = nil
-      elsif Annotation === obj and obj.class.proxy_attribute then
+      elsif Annotation === obj and obj.class.secondary? then
         copy_annotation_proxy_owner_to_template(obj, template)
       end
       super

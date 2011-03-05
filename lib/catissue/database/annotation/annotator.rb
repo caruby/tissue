@@ -19,7 +19,9 @@ module CaTissue
     # @param [String] name the service name
     # @return [Annotation::AnnotationService] the annotation service
     def create_annotation_service(name)
-      Annotation::AnnotationService.new(@database, name, :integration_service => @integration_service)
+      host = CaTissue.access_properties[:host]
+      port = CaTissue.access_properties[:port]
+      Annotation::AnnotationService.new(@database, name, :host => host, :port => port, :integration_service => @integration_service)
     end
   end
 end

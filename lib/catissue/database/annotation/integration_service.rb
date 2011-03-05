@@ -14,7 +14,9 @@ module CaTissue
 
       # @param [EntityFacade] the global entity manager
       def initialize
-        super(SERVICE_NAME)
+      host = CaTissue.access_properties[:host]
+      port = CaTissue.access_properties[:port]
+        super(SERVICE_NAME, :host => host, :port => port)
         # SQL executor to handle caTissue DE API bug work-around 
         @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
       end

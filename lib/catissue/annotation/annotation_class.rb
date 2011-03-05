@@ -49,6 +49,16 @@ module CaTissue
       dependent_attributes.each { |attr| save_dependent_attribute(annotation, attr) }
     end
     
+    # @return [Boolean] whether this annotation refers to a {#primary?} annotation
+    def secondary?
+      not @proxy_attribute.nil?
+    end
+    
+    # @return [Boolean] whether this annotation is neither a {#primary?} nor a #{secondary} annotation
+    def tertiary_annotation
+      not (primary? or secondary?)
+    end
+    
     # Detects or creates the proxy attribute that references the given proxy class.
     # if this is a primary_entity annotation class which does not
     # have a caTissue proxy property.
@@ -62,7 +72,9 @@ module CaTissue
       # set the hook
       self.hook = proxy.hook
       # primary superclass gets a proxy as well
-      if superclass < Annotation and superclass.primary? then superclass.proxy = proxy end
+      if superclass < Annotation then
+        superclass.ensure_primary_has_proxy(proxy)
+      end
     end
     
     # @param [Class] klass the hook class for this primary annotation
@@ -184,7 +196,7 @@ module CaTissue
     
     def obtain_proxy_attribute(proxy)
       # parent proxy is reserved for RadiationTherapy use case described in ParticipantTest.
-      # TODO - either support this use case of delete the parent proxy call
+      # TODO - either support this use case or delete the parent proxy call
       detect_proxy_attribute(proxy) or create_proxy_attribute(proxy) or parent_proxy_attribute
     end
     
@@ -213,7 +225,7 @@ module CaTissue
     def create_proxy_attribute(proxy)
       # the proxy attribute symbol
       attr = proxy.name.demodulize.underscore.to_sym
-      logger.debug { "Creating primary annotation #{qp} proxy attribute #{attr}..." }
+      logger.debug { "Creating primary annotation #{qp} proxy #{proxy} attribute #{attr}..." }
       # make the attribute
       attr_accessor(attr)
       # Add the attribute. Setting the saved flag ensures that the save template passed to
