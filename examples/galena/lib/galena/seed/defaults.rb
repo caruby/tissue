@@ -41,7 +41,7 @@ module Galena
         @protocol.find(:create)
         @hospital.find(:create)
         @surgeon.find(:create)
-        @box.find(:create)
+        @box_type.find(:create)
       end
   
       private
