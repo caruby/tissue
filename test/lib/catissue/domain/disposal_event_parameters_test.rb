@@ -1,5 +1,4 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
-require 'catissue/defaults_test_fixture'
 
 class DisposalEventParametersTest < Test::Unit::TestCase
   include CaTissue::TestCase

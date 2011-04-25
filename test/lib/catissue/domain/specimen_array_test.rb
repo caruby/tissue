@@ -1,6 +1,5 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
 require 'caruby/util/uniquifier'
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
 
 class SpecimenArrayTest < Test::Unit::TestCase
   include CaTissue::TestCase

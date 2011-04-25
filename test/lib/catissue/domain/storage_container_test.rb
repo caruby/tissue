@@ -1,6 +1,5 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
 require 'caruby/util/uniquifier'
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
 
 class StorageContainerTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -49,7 +48,7 @@ class StorageContainerTest < Test::Unit::TestCase
     assert(!box.full?, "Box is incorrectly full")
 
     # add a new specimen
-    @frz << spc2 =  @spc.copy
+    @frz << spc2 = @spc.copy
     assert_same(box, spc2.position.container, "New specimen box incorrect")
     assert(!rack.full?, "Rack is incorrectly full")
     assert(box.full?, "Box is incorrectly not full")
@@ -81,7 +80,9 @@ class StorageContainerTest < Test::Unit::TestCase
     assert_not_nil(box, "Box not created")
     
     # make another box
-    @frz << box2 = box.copy(:container_type)
+    box2 = box.copy
+    box2.container_type = box.container_type
+    @frz << box2
     assert_equal(box2, rack[1, 0], "Rack index accessor incorrect")
 
     # add a specimen to the second box
@@ -116,35 +117,35 @@ class StorageContainerTest < Test::Unit::TestCase
     assert(box < @frz, "Box not < rack")
   end
 
-#  def test_save
-#    @frz << @spc
-#    rack = @frz.subcontainers.first
-#    assert_not_nil(rack, "Rack missing")
-#    box = rack.subcontainers.first
-#    assert_not_nil(box, "Box missing")
-#
-#    # verify that the box name can be set
-#    box.name = 'Test Box'.uniquify
-#    verify_save(box)
-#    assert_not_nil(@frz.identifier, "#{@frz.qp} not saved")
-#
-#    assert_not_nil(rack.identifier, "#{rack.qp} not saved")
-#    assert_not_nil(rack.position, "#{rack.qp} position missing")
-#    assert_not_nil(rack.position.identifier, "#{rack.qp} position not saved")
-#    assert_not_nil(@frz.subcontainers.first, "#{@frz.qp} subcontainer not found")
-#    assert_same(rack, @frz.subcontainers.first, "#{@frz.qp} subcontainer is not the rack")
-#    assert_same(@frz, rack.position.parent_container, "#{rack.qp} position container missing")
-#
-#    assert_not_nil(box.identifier, "#{box} not saved")
-#    assert_not_nil(box.position, "#{box} position missing")
-#    assert_not_nil(box.position.identifier, "#{box} position not saved")
-#    assert_same(rack, box.position.parent_container, "#{box} position container missing")
-#    assert_not_nil(rack.subcontainers.first, "#{rack.qp} subcontainer not found")
-#    assert_same(box, rack.subcontainers.first, "#{rack.qp} subcontainer is not the box")
-#
-#    assert(!box.specimens.empty?, "#{box} doesn't hold a specimen")
-#    assert_same(@spc, box.specimens.first, "#{box} specimen incorrect")
-#    assert_not_nil(@spc.identifier, "#{@spc} not saved")
-#    assert_not_nil(@spc.position, "#{@spc} missing position")
-#  end
+  def test_save
+    @frz << @spc
+    rack = @frz.subcontainers.first
+    assert_not_nil(rack, "Rack missing")
+    box = rack.subcontainers.first
+    assert_not_nil(box, "Box missing")
+
+    # verify that the box name can be set
+    box.name = 'Test Box'.uniquify
+    verify_save(box)
+    assert_not_nil(@frz.identifier, "#{@frz.qp} not saved")
+
+    assert_not_nil(rack.identifier, "#{rack.qp} not saved")
+    assert_not_nil(rack.position, "#{rack.qp} position missing")
+    assert_not_nil(rack.position.identifier, "#{rack.qp} position not saved")
+    assert_not_nil(@frz.subcontainers.first, "#{@frz.qp} subcontainer not found")
+    assert_same(rack, @frz.subcontainers.first, "#{@frz.qp} subcontainer is not the rack")
+    assert_same(@frz, rack.position.parent_container, "#{rack.qp} position container missing")
+
+    assert_not_nil(box.identifier, "#{box} not saved")
+    assert_not_nil(box.position, "#{box} position missing")
+    assert_not_nil(box.position.identifier, "#{box} position not saved")
+    assert_same(rack, box.position.parent_container, "#{box} position container missing")
+    assert_not_nil(rack.subcontainers.first, "#{rack.qp} subcontainer not found")
+    assert_same(box, rack.subcontainers.first, "#{rack.qp} subcontainer is not the box")
+
+    assert(!box.specimens.empty?, "#{box} doesn't hold a specimen")
+    assert_same(@spc, box.specimens.first, "#{box} specimen incorrect")
+    assert_not_nil(@spc.identifier, "#{@spc} not saved")
+    assert_not_nil(@spc.position, "#{@spc} missing position")
+  end
 end

@@ -1,5 +1,4 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
 
 class SpecimenCollectionGroupTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -33,22 +32,23 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_equal(collection_event, @scg.collection_event, 'Collection event not set to default')
   end
 
-  def test_base_haematology_pathology
+  def test_prostate_annotation
     scg = CaTissue::SpecimenCollectionGroup.new
-    pths = scg.radical_prostatectomy_pathology_annotations
-    assert(pths.empty?, "Prostatectomy annotations not empty at start")
-    pth = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
-    pth.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => scg)
+    assert(CaTissue::SpecimenCollectionGroup.annotation_attribute?(:radical_prostatectomy_pathology_annotations))
+    pas = scg.radical_prostatectomy_pathology_annotations
+    assert(pas.empty?, "Prostatectomy annotations not empty at start")
+    pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
+    pa.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => scg)
     epx = CaTissue::SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.new
-    epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pth)
-    pths = scg.radical_prostatectomy_pathology_annotations
-    assert_not_nil(pths.first, "Prostatectomy annotation not added to #{scg} annotations")
-    assert_same(pth, pths.first, "Prostatectomy annotation incorrect")
-    assert_same(scg, pth.owner, "Prostatectomy annotation proxy hook not set")
-    assert_not_nil(pth.extraprostatic_extension, "#{pth} extraprostatic extension not set")
-    assert_same(epx, pth.extraprostatic_extension, "{pth} extraprostatic extension incorrect")
+    epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pa)
+    pas = scg.radical_prostatectomy_pathology_annotations
+    assert_not_nil(pas.first, "Prostatectomy annotation not added to #{scg} annotations")
+    assert_same(pa, pas.first, "Prostatectomy annotation incorrect")
+    assert_same(scg, pa.owner, "Prostatectomy annotation proxy hook not set")
+    assert_not_nil(pa.extraprostatic_extension, "#{pa} extraprostatic extension not set")
+    assert_same(epx, pa.extraprostatic_extension, "{pa} extraprostatic extension incorrect")
   end
-
+  
   def test_collect
     scg = CaTissue::SpecimenCollectionGroup.new
     cdt = DateTime.now
@@ -144,16 +144,22 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     # store the registration without an SCG
     verify_save(cpr)
     # the auto-generated SCG
+    logger.debug { "#{self.class.qp} verifying the #{cpr} auto-generated SCG content..." }
     scg = cpr.specimen_collection_groups.first
-    assert_not_nil(scg, "Missing auto-generated SCG")
-    assert_not_nil(scg.identifier, "Auto-generated SCG missing identifier")
-    assert_not_nil(scg.collection_event, "Auto-generated SCG missing collection event")
-    assert_equal('Pending', scg.collection_status, "Auto-generated SCG status is not Pending")
+    assert_not_nil(scg, "Missing auto-generated #{cpr} SCG")
+    assert_not_nil(scg.identifier, "Auto-generated #{scg} missing identifier")
+    assert_not_nil(scg.collection_event, "Auto-generated #{scg} missing collection event")
+    assert_equal('Pending', scg.collection_status, "Auto-generated #{scg} status is not Pending")
     # the auto-generated Specimen
     spc = scg.specimens.first
-    assert_not_nil(spc, "Auto-generated specimen was not fetched")
+    assert_not_nil(spc, "Auto-generated #{scg} specimen was not fetched")
     # SEP is not auto-generated
-    assert(scg.specimen_event_parameters.empty?, "SEP unexpectedly auto-generated")
+    assert(scg.specimen_event_parameters.empty?, "#{scg} SEP unexpectedly auto-generated")
+    # auto-generated SCG CPR has a protocol and PPI
+    cpr = scg.collection_protocol_registration
+    assert_not_nil(cpr, "Auto-generated #{scg} CPR not set")
+    assert_not_nil(cpr.protocol, "Auto-generated #{scg} CPR #{cpr} protocol not set")
+    assert_not_nil(cpr.protocol_participant_identifier, "Auto-generated #{scg} #{cpr} PPI not set")
     # auto-generated SCG does not have a site, even though it is required for create or update
     assert_nil(scg.collection_site, "SCG collection site unexpectedly auto-generated")
 
@@ -162,12 +168,12 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     site = defaults.specimen_collection_group.collection_site
     scg.merge_attributes(:receiver => rcvr, :collection_site => site).add_defaults
     logger.debug { "#{self.class.qp} updating the auto-generated #{scg.qp}..." }
-    scg.update
+    verify_save(scg)
     # clear and refetch the status
     scg.collection_status = nil
     logger.debug { "#{self.class.qp} refetching the updated #{scg.qp}..." }
     scg.find
-    assert_equal('Pending', spc.collection_status, "Auto-generated specimen status is not Pending after update")
+    assert_equal('Pending', spc.collection_status, "Auto-generated #{spc} status is not Pending after update")
 
     # reset some specimen fields and update
     spc.collection_status = 'Collected'
@@ -182,8 +188,8 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     spc.specimen_characteristics.tissue_site = nil
     logger.debug { "#{self.class.qp} verifying the persistent state of the updated #{scg.qp} auto-generated specimen..." }
     database.find(spc)
-    assert_equal('Collected', spc.collection_status, "Specimen status not updated")
-    assert_equal('Ileum', spc.specimen_characteristics.tissue_site, "Specimen tissue site not updated")
+    assert_equal('Collected', spc.collection_status, "#{spc} status not updated")
+    assert_equal('Ileum', spc.specimen_characteristics.tissue_site, "#{spc} tissue site not updated")
 
     # update the SCG with complete status
     scg.collection_status = 'Complete'

@@ -1,5 +1,4 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
 require 'caruby/util/transitive_closure'
 
 class SpecimenTest < Test::Unit::TestCase
@@ -59,6 +58,7 @@ class SpecimenTest < Test::Unit::TestCase
     assert_same(@spc, pos.specimen, "Specimen position specimen incorrect")
     # test move from box to another box
     dest = box.copy
+    dest.container_type = box.container_type
     @spc >> dest
     assert_same(dest, @spc.position.container, "Specimen position container incorrect")
     assert(dest.include?(@spc), "Destination #{box.qp} doesn't hold specimen #{@spc.qp}")
@@ -95,11 +95,12 @@ class SpecimenTest < Test::Unit::TestCase
     # make the aliquots
     alqs = @spc.derive(:count => count, :initial_quantity => alq_qty)
     assert_equal(count, alqs.size, "Aliquot count incorrect")
-    assert_equal(par_qty, @spc.available_quantity, "Parent specimen quantity not decremented correctly")
+    assert_equal(par_qty, @spc.available_quantity, "Parent #{@spc} quantity not decremented correctly")
     alqs.each do |alq|
-      assert_same(@spc.class, alq.class, "Aliquot class incorrect")
-      assert_equal(alq_qty, alq.initial_quantity, "Aliquot quantity incorrect")
-      assert_same(@spc.specimen_characteristics, alq.specimen_characteristics, "Aliquot does not share parent characteristics")
+      assert_same(@spc.class, alq.class, "Aliquot #{alq}  class incorrect")
+      assert_equal(alq_qty, alq.initial_quantity, "Aliquot #{alq}  quantity incorrect")
+      assert_not_nil(alq.specimen_characteristics, "Aliquot #{alq} is missing characteristics")
+      assert_same(@spc.specimen_characteristics, alq.specimen_characteristics, "Aliquot #{alq} does not share parent characteristics")
     end
     # make a non-aliquot derived specimen
     @spc.derive(:specimen_class => :molecular, :specimen_type => 'DNA')
@@ -133,15 +134,15 @@ class SpecimenTest < Test::Unit::TestCase
     assert(pths.empty?, "Pathology annotations not empty at start")
     pth = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pth.merge_attributes(:specimen => @spc)
-    grade = CaTissue::Specimen::Pathology::HistologicGrade.new
+    grade = histologic_grade_class.new
     grade.merge_attributes(:grade => 3, :specimen_base_solid_tissue_pathology_annotation => pth)
-    htype = CaTissue::Specimen::Pathology::HistologicType.new
+    htype = histologic_type_class.new
     htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pth)
-    gleason = CaTissue::Specimen::Pathology::GleasonScore.new
+    gleason = gleason_class.new
     gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pth)
     assert_not_nil(pths.first, "Pathology annotation not added to participant pths")
     assert_same(pth, pths.first, "Pathology annotation incorrect")
-    assert_same(gleason, pth.gleason_score, "Pathology annotation gleason score incorrect")
+    assert_same(gleason, gleason_score(pth), "Pathology annotation gleason score incorrect")
     assert_same(grade, pth.histologic_grades.first, "Pathology annotation histologic grades incorrect")
     assert_same(htype, pth.histologic_types.first, "Pathology annotation histologic types incorrect")
   end
@@ -149,7 +150,6 @@ class SpecimenTest < Test::Unit::TestCase
   ## DATABASE TEST CASES ##
 
   def test_simple_save
-    # save the auto-generated specimen
     verify_save(@spc)
 
     # verify SCG specimens query
@@ -158,16 +158,39 @@ class SpecimenTest < Test::Unit::TestCase
     tmpl = scg.copy(:identifier)
     spcs = database.query(tmpl, :specimens)
     assert_equal(1, spcs.size, "SCG specimen query result count incorrect")
-    spc = spcs.first
-    spc.class.nondomain_attributes.each do |attr|
-      assert_equal(@spc.send(attr), spc.send(attr), "SCG specimen query result #{attr} incorrect")
-    end
     
     # make a new specimen in the same SCG
-    spc2 = @spc.copy
-    spc2.identifier = nil
+    spc2 = @spc.copy(:specimen_class, :specimen_type, :initial_quantity)
     spc2.specimen_collection_group = scg
     verify_save(spc2)
+  end
+  
+  def test_characteristics_save
+    chr = @spc.specimen_characteristics
+    original = chr.tissue_site = 'Lymph node, NOS'
+    verify_save(@spc)
+    # clear and refetch the characteristics
+    @spc.specimen_characteristics.tissue_site = nil
+    logger.debug { "#{self.class.qp} verifying the persistent state of the created #{@spc} #{chr} tissue site..." }
+    database.find(@spc)
+    assert_equal(original, chr.tissue_site, "#{@spc} #{chr} tissue site not updated")
+    
+    # reset the site and update
+    changed = chr.tissue_site = 'Lymph nodes of axilla or arm'
+    logger.debug { "#{self.class.qp} updating #{@spc} with #{chr} tissue site changed from #{original} to #{changed}..." }
+    verify_save(@spc)
+    # clear and refetch the characteristics
+    @spc.specimen_characteristics.tissue_site = nil
+    logger.debug { "#{self.class.qp} verifying the persistent state of the updated #{@spc} #{chr} tissue site..." }
+    database.find(@spc)
+    assert_equal(changed, chr.tissue_site, "#{@spc} #{chr} tissue site not updated")
+  end
+  
+  def test_event_save
+    # add an event
+    ev = CaTissue::SpunEventParameters.new(:specimen => @spc, :duration_in_minutes => 2, :gravity_force => 5)
+    verify_save(@spc)
+    assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
   end
   
   # Tests the work-around for caTissue Bug #159: Update pending Specimen ignores availableQuantity.
@@ -179,16 +202,31 @@ class SpecimenTest < Test::Unit::TestCase
 
   # Exercises the CaTissue::Specimen external_identifiers logical dependency work-around.
   def test_eid_save
+    verify_save(@spc)
     # add an EID
-    eid = CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :specimen => @spc, :value => 'Test Value'.uniquify)
-    verify_save(@spc)
-    # query on the EID
-    logger.debug { "Verifying Specimen EID query..." }
-    tmpl = @spc.copy(:external_identifiers)
+    CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :value => 'Test Value'.uniquify, :specimen => @spc)
+    # make a new specimen in the same SCG
+    spc2 = @spc.copy(:specimen_class, :specimen_type, :initial_quantity, :specimen_collection_group)
+    # add an EID
+    eid2 = CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :value => 'Test Value'.uniquify, :specimen => spc2)
+    # create the new specimen
+    logger.debug { "#{self} creating second EID specimen #{spc2}..." }
+    verify_save(spc2)
+    # query the Specimen EIDs
+    logger.debug { "#{self} verifying #{spc2} EID query..." }
+    tmpl = spc2.copy(:identifier)
+    tmpl.find
+    fetched = tmpl.external_identifiers.first
+    assert_not_nil(fetched, "#{tmpl} EID not found in database")
+    assert_same(eid2.identifier, fetched.identifier, "Fetched #{tmpl} #{eid2} identifier incorrect")
+    # query the Specimen based solely on the alternate search EID criterion
+    logger.debug { "#{self} verifying #{spc2} fetch based on EID criterion..." }
+    tmpl = spc2.copy(:external_identifiers)
     assert_not_nil(database.find(tmpl), "Specimen not found by external identifier")
-    assert_equal(@spc.identifier, tmpl.identifier, "Incorrect specimen found by external identifier")
-    # update the specimen to exercise Bug #164
-    verify_save(@spc)
+    assert_equal(spc2.identifier, tmpl.identifier, "Incorrect specimen found by external identifier")
+    # update the specimen to exercise Bug #164 fixed in 1.2
+    logger.debug { "#{self} updating second EID specimen #{spc2}..." }
+    verify_save(spc2)
   end
    
   def test_events_save
@@ -212,8 +250,6 @@ class SpecimenTest < Test::Unit::TestCase
     logger.debug { "Verifying creating a derived specimen..." }
     # derive a specimen
     drv = @spc.derive(:specimen_class => :molecular, :initial_quantity => 20, :specimen_type => 'DNA')
-    # add an event
-    CaTissue::SpunEventParameters.new(:specimen => drv, :duration_in_minutes => 2, :gravity_force => 5)
     # store the derived specimen
     verify_save(drv)
     # verify the derived specimen parent
@@ -245,13 +281,13 @@ class SpecimenTest < Test::Unit::TestCase
   def test_save_prostate_annotation
     pa = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pa.specimen = @spc
-    grade = CaTissue::Specimen::Pathology::HistologicGrade.new
+    grade = histologic_grade_class.new
     grade.merge_attributes(:grading_system_name => 'Not Specified', :grade => 3, :specimen_base_solid_tissue_pathology_annotation => pa)
-    htype = CaTissue::Specimen::Pathology::HistologicType.new
+    htype = histologic_type_class.new
     htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pa)
-    invn = CaTissue::Specimen::Pathology::Invasion.new
+    invn = invasion_class.new
     invn.merge_attributes(:lymphatic_invasion => 'Present', :specimen_base_solid_tissue_pathology_annotation => pa)
-    gleason = CaTissue::Specimen::Pathology::GleasonScore.new
+    gleason = gleason_class.new
     gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pa)
     verify_save(pa)
     assert_not_nil(pa.identifier, "#{@spc} annotation #{pa} not saved")
@@ -263,9 +299,49 @@ class SpecimenTest < Test::Unit::TestCase
 
   def test_save_melanoma_annotation
     ma = CaTissue::Specimen::Pathology::MelanomaSpecimenPathologyAnnotation.new
-    ma.merge_attributes(:specimen => @spc, :comments => "Test Comment", :depth_of_invasion => 2.0, :mitotic_index => "MitoticIndex",
-      :ulceration => "Ulceration", :tumor_regression => "TumorRegression", :tumor_infiltrating_lymphocytes => "TumorInfiltratingLymphocytes")
+    ma.merge_attributes(:specimen => @spc, :comments => "Test Comment", :depth_of_invasion => 2.0, :mitotic_index => "Less than 1 mitotic figure per mm-square",
+      :ulceration => "Absent", :tumor_regression => "Present involving 75% or more of lesion", :tumor_infiltrating_lymphocytes => "Brisk")
     verify_save(ma)
     assert_not_nil(ma.identifier, "#{ma} not saved")
+  end
+  
+  private
+  
+  ## caTissue 1.1 compatibility methods ##
+  
+  def gleason_score(pth)
+    pth.respond_to?(:prostate_specimen_gleason_score) ? pth.prostate_specimen_gleason_score : pth.gleason_score
+  end
+  
+  def histologic_grade_class
+    @@grade_class ||= begin
+      CaTissue::Specimen::Pathology::SpecimenHistologicGrade
+    rescue CaRuby::JavaIncludeError
+      CaTissue::Specimen::Pathology::HistologicGrade
+    end
+  end
+  
+  def invasion_class
+    @@invasion_class ||= begin
+      CaTissue::Specimen::Pathology::SpecimenInvasion
+    rescue CaRuby::JavaIncludeError
+      CaTissue::Specimen::Pathology::Invasion
+    end
+  end
+  
+  def histologic_type_class
+    @@htype_class ||= begin
+      CaTissue::Specimen::Pathology::SpecimenHistologicType
+    rescue CaRuby::JavaIncludeError
+      CaTissue::Specimen::Pathology::HistologicType
+    end
+  end
+  
+  def gleason_class
+    @@gleason_class ||= begin
+      CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore
+    rescue CaRuby::JavaIncludeError
+      CaTissue::Specimen::Pathology::GleasonScore
+    end
   end
 end

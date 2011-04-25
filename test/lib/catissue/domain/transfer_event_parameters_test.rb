@@ -1,5 +1,4 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
 require 'caruby/database/store_template_builder'
 
 class TransferEventParametersTest < Test::Unit::TestCase

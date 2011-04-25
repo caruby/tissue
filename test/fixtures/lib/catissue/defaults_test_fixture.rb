@@ -1,4 +1,5 @@
 require 'singleton'
+require 'caruby/util/validation'
 require 'caruby/util/uniquifier'
 require 'catissue'
 
@@ -16,12 +17,12 @@ module CaTissueTest
 
     attr_reader :tissue_bank, :protocol, :registration, :specimen,
       :specimen_requirement, :specimen_collection_group, :box
-
+    
     def initialize
       super
       populate
     end
-
+    
     # Retusns this fixture's domain objects.
     def domain_objects
       instance_variables.map { |iv| instance_eval iv }.select { |value| CaRuby::Resource === value }
@@ -38,7 +39,7 @@ module CaTissueTest
 
     # Fetches the default instances from the database. Creates new objects if necesssary.
     #
-    # Raises ValidationError if a domain object fails validation.
+    # @raise [ValidationError] if a domain object fails validation
     def validate
       # identifiers are required for validation; these are removed following validation
       objs_without_ids = domain_objects.select { |obj| obj.identifier.nil? }
@@ -76,6 +77,7 @@ module CaTissueTest
     # @return this fixture
     def populate
       logger.debug { "Populating the test fixture..." }
+ 
       # the test institution
       inst = CaTissue::Institution.new(:name => 'Test Institution')
 
@@ -140,7 +142,7 @@ module CaTissueTest
         :address => addr.copy,
         :coordinator => coord
       )
-
+      
       # the test participant
       pnt = CaTissue::Participant.new(:name => 'Test Participant')
 

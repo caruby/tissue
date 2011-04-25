@@ -1,5 +1,4 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
-require 'test/fixtures/lib/catissue/defaults_test_fixture'
 
 class CollectionProtocolRegistrationTest < Test::Unit::TestCase
   include CaTissue::TestCase

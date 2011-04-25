@@ -158,15 +158,18 @@ module CaTissue
     # Verifies that the given subject matches the database content. Does not verify subject unless it has
     # a secondary key.
     def verify_saved_content(subject)
-      attrs = subject.class.secondary_key_attributes & subject.class.mandatory_attributes
+      attrs = subject.class.secondary_key_attributes
       return if attrs.empty?
-      missing = attrs.reject { |attr| subject.send(attr) }
-      assert(missing.empty?, "#{subject} is missing values for secondary key attributes #{missing.to_series}")
+      rqd = attrs & subject.class.mandatory_attributes
+      missing = rqd.reject { |attr| subject.send(attr) }
+      assert(missing.empty?, "#{subject} is missing values for required secondary key attributes #{missing.to_series}")
       # make a secondary key search template
       vh = attrs.to_compact_hash do |attr|
          v = subject.send(attr)
          Resource === v ? v.copy : v
       end
+      # return if there is a missing optional secondary key attribute
+      return unless vh.size == attrs.size
       tmpl = subject.class.new(vh)
       # find the template in the database
       logger.debug  { "Verifying #{subject.qp} by finding and comparing template #{tmpl.pp_s}..." }
@@ -178,10 +181,18 @@ module CaTissue
     # Verifies that the given expected domain object has the same content as actual,
     # and that the dependents match.
     #
+    # caTissue alert - caTissue mutilates an unspecified specimen type available quantity, e.g.
+    # changing a Specimen with specimen type 'Not Specified' from available quantity 1, initial
+    # quantity 1 to available quantity 0, initial quantity 3 results in available quantity 2
+    # in database. The update is necessary when creating the Specimen with available quantity 0,
+    # initial quantity 3 to work around a different caTissue bug. Thus, the bug work-around
+    # is broken by a different caTissue bug.
+    #
     # @param [Resource] expected the saved value
     # @param [Resource] actual the fetched value
     def verify_that_saved_matches_fetched(expected, actual)
       expected.class.saved_nondomain_attributes.each do |attr|
+        # TODO - available_quantity broken for spc type Not Specified
         # compare attributes that are fetched and set on create
         attr_md = expected.class.attribute_metadata(attr)
         if verify_saved_attribute?(attr_md) then
@@ -192,7 +203,11 @@ module CaTissue
             assert_nil(aval, "#{expected.qp} was saved without a #{attr} value, but was stored in the database with value #{actual.qp}")
           else
             assert_not_nil(aval, "#{expected.qp} was saved with #{attr} value #{eval.qp}, but this value was not found in the database.")
-            assert(CaRuby::Resource.value_equal?(eval, aval), "#{expected.qp} was saved with #{attr} value #{eval.qp} that does not match the database value #{aval.qp}")
+            if attr == :available_quantity and expected.specimen_type == 'Not Specified' and eval != aval then
+              logger.warn("Skipped broken caTissue unspecified specimen type available comparison.")
+            else
+              assert(CaRuby::Resource.value_equal?(eval, aval), "#{expected.qp} was saved with #{attr} value #{eval.qp} that does not match the database value #{aval.qp}")
+            end
           end
         end
       end
@@ -207,12 +222,15 @@ module CaTissue
 
     # Verifies that each expected dependent matches an actual dependent and has the same content.
     def verify_dependents_match(expected, actual)
-      expected.class.dependent_attributes.each do |attr|
+      expected.class.dependent_attributes.each_pair do |attr, attr_md|
+        # annotation query not supported
+        # TODO - enable when supported
+        next if attr_md.type < Annotation
         edeps = expected.database.lazy_loader.suspend { expected.send(attr) }
         next if edeps.nil_or_empty?
         adeps = actual.send(attr)
         logger.debug { "Verifying #{expected.qp} dependent #{attr} #{edeps.qp} against #{actual.qp} #{adeps.qp}..." } unless edeps.nil_or_empty?
-        if edeps.collection? then
+        if attr_md.collection? then
           edeps.each do |edep|
             adep = edep.match_in_owner_scope(adeps)
             assert_not_nil(adep, "#{expected} #{attr} dependent #{edep} not found in fetched #{adeps.pp_s}")
