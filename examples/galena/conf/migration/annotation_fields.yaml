@@ -1,0 +1,8 @@
+# This is the Galena annotation example migration field mapping file.
+# This example extends the simple migration with annotation fields.
+
+Protocol: CollectionProtocol.short_title
+MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
+SPN: SpecimenCollectionGroup.surgical_pathology_number
+Gleason: Specimen::Pathology::GleasonScore.primary_pattern_score
+Grade: Specimen::Pathology::HistologicGrade.grade
