@@ -1,11 +1,11 @@
 require 'caruby/util/inflector'
 require 'caruby/migration/migratable'
-require 'galena/seed/defaults'
+require 'galena/tissue/seed/defaults'
 
 module CaTissue
   # Augment the classes below with sufficient content to pass the create mandatory attribute validation.
   #  This simulates an existing administrative object for testing purposes.
-  shims CollectionProtocol, CollectionProtocolEvent, Site, SpecimenPosition, User
+  shims CollectionProtocol, CollectionProtocolEvent, Site, StorageContainer, User
   
   class CollectionProtocol
     # Augments {CaRuby::Migratable#migrate} for the Galena example by adding the following defaults:
@@ -18,6 +18,7 @@ module CaTissue
       super
       self.principal_investigator ||= Galena::Seed.defaults.protocol.principal_investigator
       sites << Galena::Seed.defaults.tissue_bank if sites.empty?
+      coordinators << Galena::Seed.defaults.tissue_bank.coordinator if coordinators.empty?
     end
   end
   
@@ -39,7 +40,9 @@ module CaTissue
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
-      tmpl = TEMPLATES.detect { |site| name[site.name.gsub(' ', '_')] }
+      # Match the site by name. Account for uniquification by a partial match, e.g.
+      # 'Galena_Hospital_41893443' matches the site named 'Galena Hospital'.
+      tmpl = TEMPLATES.detect { |site| name[site.name.gsub('_', ' ')] }
       # merge the default mandatory attribute values
       if tmpl then merge(tmpl, mandatory_attributes) end
     end
