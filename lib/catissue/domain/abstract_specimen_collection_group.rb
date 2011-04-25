@@ -1,9 +1,7 @@
 module CaTissue
-  java_import Java::edu.wustl.catissuecore.domain.AbstractSpecimenCollectionGroup
+  resource_import Java::edu.wustl.catissuecore.domain.AbstractSpecimenCollectionGroup
 
   class AbstractSpecimenCollectionGroup
-    include Resource
-
     add_attribute_aliases(:diagnosis => :clinical_diagnosis)
 
     add_attribute_defaults(:activity_status => 'Active', :clinical_status => 'Not Specified', :clinical_diagnosis => 'Not Specified')

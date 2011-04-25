@@ -1,10 +1,10 @@
+require 'caruby/util/validation'
+
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.ContainerPosition
+  resource_import Java::edu.wustl.catissuecore.domain.ContainerPosition
 
-  class ContainerPosition
-    include Resource
-
+  class ContainerPosition < CaTissue::AbstractPosition
     add_mandatory_attributes(:parent_container)
 
     add_attribute_aliases(:parent => :parent_container, :holder => :parent_container, :occupant => :occupied_container)

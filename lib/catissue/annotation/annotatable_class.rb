@@ -38,7 +38,7 @@ module CaTissue
       # check for the annotation attribute
       annotation_defined?(symbol)
     end
-         
+
     # Refines the {CaRuby::ResourceAttributes#toxic_attributes} to exclude annotation attributes.
     #
     # @return [<Symbol>] the non-annotation unfetched attributes
@@ -46,8 +46,8 @@ module CaTissue
       @anntbl_toxic_attrs ||= unfetched_attributes.compose { |attr_md| not attr_md.type < Annotation } 
     end
     
-    def annotation_proxy_attribute(ann_attr)
-      annotatable_class_hierarchy.detect_value { |klass| klass.local_annotation_proxy_attribute(ann_attr) }
+    def annotation_proxy_attribute(attribute)
+      annotatable_class_hierarchy.detect_value { |klass| klass.local_annotation_proxy_attribute(attribute) }
     end
 
     # Makes a new attribute in this hook class for the given annotation proxy domain attribute.
@@ -87,6 +87,18 @@ module CaTissue
       @prbl_attrs ||= super.union(annotation_attributes)
     end
     
+    def attribute_metadata(attribute)
+      begin
+        super
+      rescue
+        if annotation_attribute?(attribute) then
+          attribute_metadata(attribute)
+        else
+          raise
+        end
+      end
+    end
+    
     def annotation_attributes
       @ann_attrs ||= append_ancestor_enum(@local_ann_attrs) do |sc|
         sc.annotation_attributes if sc < Annotatable
@@ -100,15 +112,15 @@ module CaTissue
       @ann_mods ||= load_annotations
     end
     
-    # @param [Symbol] ann_attr the annotation attribute
+    # @param [Symbol] attribute the annotation attribute
     # @return [Symbol] the annotation proxy attribute
     # @raise [TypeError] if the given attribute is not an annotation attribute
-    def local_annotation_proxy_attribute(ann_attr)
-      unless annotation_attribute?(ann_attr) then
-        raise TypeError.new("#{qp} #{ann_attr} is not an annotation attribute")
+    def local_annotation_proxy_attribute(attribute)
+      unless annotation_attribute?(attribute) then
+        raise TypeError.new("#{qp} #{attribute} is not an annotation attribute")
       end
       # the annotation class
-      klass = attribute_metadata(ann_attr).type
+      klass = attribute_metadata(attribute).type
       mod = klass.domain_module
       @ann_mod_pxy_hash[mod]
     end    
@@ -137,20 +149,21 @@ module CaTissue
       class_hierarchy.filter { |klass| klass < Annotatable }
     end
     
-    # Sets the annotation service name for the given hook proxy atttribute.
-    # The default service name is the camelized attribute.
+    # Declares an annotation scoped by this class.
     #
-    # @param [Symbol] attribute the hook proxy atttribute
+    # @param [String] name the name of the annotation module
     # @param [{Symbol => Object}] opts the annotation options
     # @option opts [String] :package the package name (default the decapitalized camelized name)
     # @option opts [String] :service the service name (default the decapitalized underscore name)
     def add_annotation(name, opts={})
+      # the module symbol
+      mod_sym = name.camelize.to_sym
       # the module spec defaults
-      opts[:package] ||= name.camelize(:lower)
-      opts[:service] ||= name.underscore
+      pkg = opts[:package] ||= name.camelize(:lower)
+      svc = opts[:service] ||= name.underscore
       # add the annotation entry
-      @ann_spec_hash[name.to_sym] = opts
-      logger.info("Added #{qp} annotation named #{name} with package #{opts[:package]} and service #{opts[:service]}.")
+      @ann_spec_hash[mod_sym] = opts
+      logger.info("Added #{qp} annotation #{name} with module #{mod_sym}, package #{pkg} and service #{svc}.")
     end
     
     # @return [Boolean] whether this annotatable class's annotations are loaded
@@ -178,9 +191,10 @@ module CaTissue
       annotation_modules.detect { |mod| mod.proxy.attribute_defined?(attribute) }
     end
 
-    # Builds a new annotation module for the given attribute.
+    # Builds a new annotation module for the given module name and options.
     #
-    # @param [<Symbol>] attribute the proxy attribute to import
+    # @param [String] name the attribute module name
+    # @param opts (see #add_annotation)
     # @return [Module] the annotation module
     # @raise [AnnotationError] if there is no annotation proxy class
     def import_annotation(name, opts)
@@ -264,9 +278,10 @@ module CaTissue
       
       # the annotation is a dependent
       add_dependent_attribute(attribute, :logical)
-      
       # add the attribute to the local collection
       @local_ann_attrs << attribute
+      
+      attribute
     end
   end
 end

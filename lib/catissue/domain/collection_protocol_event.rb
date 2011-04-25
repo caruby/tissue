@@ -3,11 +3,11 @@ require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.CollectionProtocolEvent
+  resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocolEvent
 
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolEvent
-    include Resource, HashCode
+    include HashCode
     
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
     # Initialize specimen_collection_groups if necessary.
@@ -40,7 +40,7 @@ module CaTissue
     # The event point used for saving this CollectionProtocolEvent if none other is set.
     DEFAULT_EVENT_POINT = 1.0
 
-    def initialize(params=nil)
+    def initialize
       super
       respond_to?(:specimen_collection_groups)
       # work around caTissue Bug #64

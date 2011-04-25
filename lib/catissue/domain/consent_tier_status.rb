@@ -1,10 +1,8 @@
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.ConsentTierStatus
+  resource_import Java::edu.wustl.catissuecore.domain.ConsentTierStatus
 
   class ConsentTierStatus
-    include Resource
-
     add_mandatory_attributes(:consent_tier, :status)
 
     add_attribute_defaults(:status => 'Not Specified')

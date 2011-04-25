@@ -1,27 +1,23 @@
 require 'caruby/resource'
-require 'caruby/domain/attribute_initializer'
 require 'caruby/domain/resource_module'
 require 'catissue/annotation/annotatable'
+require 'catissue/wustl/logger'
 
 module CaTissue
   extend CaRuby::ResourceModule
+  
+  # Set up the caTissue client logger.
+  Wustl::Logger.configure
 
   # The module included by all CaTissue domain classes.
+  #
+  # A Resource class is extended to support an attribute -> value hash argument
+  # to the initialize method. Subclasses which override the initialize method
+  # should not include the hash argument, since it is defined by a class
+  # instance new method override rather than initialize to work around a JRuby
+  # bug. 
   module Resource
-    include CaRuby::Resource, CaRuby::IdAlias, CaRuby::AttributeInitializer, Annotatable
-
-    # Adds the given domain class to the CaTissue domain module.
-    #
-    # @param [Class] klass the included class
-    def self.included(klass)
-      super
-      CaTissue.add_class(klass)
-      # defer loading AnnotatableClass to avoid pulling in Database, which in turn
-      # attempts to import java classes before the path is established. obscure
-      # detail, but don't know how to avoid it.
-      require 'catissue/annotation/annotatable_class'
-      klass.extend(AnnotatableClass)
-    end
+    include CaRuby::Resource, CaRuby::IdAlias, Annotatable
     
     # Returns whether each of the given attribute values either equals the
     # respective other attribute value or one of the values is nil or 'Not Specified'.
@@ -83,15 +79,19 @@ module CaTissue
   # The required Java package name.
   @java_package = 'edu.wustl.catissuecore.domain'
 
+  # Extends the given domain class as an #{AnnotatableClass}.
+  #
+  # @param [Class] klass the class that was added to this domain module
+  def self.class_added(klass)
+    # Defer loading AnnotatableClass to avoid pulling in Database, which in turn
+    # attempts to import java classes before the path is established. Obscure
+    # detail, but don't know how to avoid it.
+    require 'catissue/annotation/annotatable_class'
+    klass.extend(AnnotatableClass)
+  end
+
   # Load the domain class definitions.
   dir = File.join(File.dirname(__FILE__), 'domain')
   load_dir(dir)
 end
 
-module JavaLogger
-  # caTissue alert - the caTissue logger must be initialized before caTissue objects are created.
-  # The logger at issue is the caTissue client logger, not the caTissue server logger nor
-  # the caRuby logger. The caTissue logger facade class is edu.wustl.common.util.logger.Logger,
-  # which is wrapped in Ruby as EduWustlCommonUtilLogger::Logger. TODO - isolate and report.
-  Java::EduWustlCommonUtilLogger::Logger.configure("")
-end

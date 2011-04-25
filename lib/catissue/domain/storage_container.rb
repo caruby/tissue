@@ -1,14 +1,15 @@
 require 'enumerator'
+require 'caruby/util/validation'
 require 'caruby/util/partial_order'
 require 'catissue/util/storage_type_holder'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.StorageContainer
+  resource_import Java::edu.wustl.catissuecore.domain.StorageContainer
 
   # The +caTissue+ +StorageContainer+ domain class wrapper.
-  class StorageContainer
-    include StorageTypeHolder, Resource
+  class StorageContainer < CaTissue::Container
+    include StorageTypeHolder
     
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
     # Initialize specimen_positions if necessary. 
@@ -46,9 +47,8 @@ module CaTissue
 
     set_attribute_type(:holds_storage_types, CaTissue::StorageType)
 
-    def initialize(params=nil)
-      # set params below to enable storage_type setter work-around
-      super(params)
+    def initialize
+      super
       # JRuby alert - specimen_positions is not recognized unless primed with respond_to? call
       respond_to?(:specimen_positions)
       # work around caTissue Bug #64
@@ -67,7 +67,7 @@ module CaTissue
     # the storable is moved from that position to this container. The new position is given
     # by the given coordinate, if given to this method.
     #
-    #The default coordinate is the first available slot within this Container.
+    # The default coordinate is the first available slot within this Container.
     # If this container cannot hold the storable type, then the storable is added to a
     # subcontainer which can hold the storable type.
     #
@@ -82,7 +82,7 @@ module CaTissue
     # @raise [IndexError] if this Container is full
     # @raise [IndexError] if the row and column are given but exceed the Container bounds
     def add(storable, *coordinate)
-      return add_local(storable, *coordinate) if coordinate
+      return add_local(storable, *coordinate) unless coordinate.empty?
       add_to_existing_container(storable) or add_to_new_subcontainer(storable) or out_of_bounds(storable)
       self
     end
@@ -206,12 +206,25 @@ module CaTissue
     end
     
     # Adds the following defaults:
-    # * the default site is the parent container site, if any.
+    # * the default site is the parent container site, if any
+    # * the default capacity is copied from the storage type
+    #
+    # caTissue alert - caTissue 1.1.2 container create inferred the default container capacity from the
+    # storage type. caTissue 1.2 container create does not make a default capacity. Work-around is to
+    # emulate 1.1.2 behavior by making the default capacity.
     def add_defaults_local
       super
       # Although this default is set by the caTissue app, it is good practice to do so here
       # for clarity.
       self.site ||= parent.site if parent
+      self.capacity ||= create_default_capacity
+    end
+    
+    def create_default_capacity
+      stype = storage_type || return
+      cap = stype.capacity.copy
+      logger.debug { "Made #{qp} default capacity #{cap}." }
+      cap
     end
 
     # @see #add_to_new_subcontainer

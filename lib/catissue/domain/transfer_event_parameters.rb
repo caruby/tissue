@@ -3,13 +3,11 @@ require 'catissue/util/location'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.TransferEventParameters
+  resource_import Java::edu.wustl.catissuecore.domain.TransferEventParameters
 
   # The +caTissue+ TransferEventParameters class is augmented with zero-based
   # +from_row+, +from_column+, +to_row+ and +to_column+ methods wrapping the corresponding one-based dimension attributes.
-  class TransferEventParameters
-    include Resource
-
+  class TransferEventParameters < CaTissue::SpecimenEventParameters
     add_attribute_aliases(:from_container => :from_storage_container, :to_container => :to_storage_container)
 
     # column and row are the zero-offset counterparts of position_dimension_one and position_dimension_two, resp.

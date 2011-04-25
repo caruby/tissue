@@ -5,11 +5,11 @@ require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.StorageType
+  resource_import Java::edu.wustl.catissuecore.domain.StorageType
 
   # The StorageType domain class.
-  class StorageType
-    include StorageTypeHolder, PartialOrder, Resource, HashCode
+  class StorageType < CaTissue::ContainerType
+    include StorageTypeHolder, PartialOrder, HashCode
 
     add_attribute_aliases(:default_temperature => :default_temprature_in_centigrade)
 
@@ -71,5 +71,10 @@ module CaTissue
       return 1 if holds_storage_types.detect { |child| child >= other }
       -1 if other > self
     end
+    
+    alias :add_defaults_local :add_container_type_defaults_local
+    
+    alias :merge_attributes :merge_container_type_attributes
+    public :merge_attributes
   end
 end

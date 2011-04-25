@@ -1,10 +1,8 @@
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.SpecimenArrayType
+  resource_import Java::edu.wustl.catissuecore.domain.SpecimenArrayType
 
-  class SpecimenArrayType
-    include Resource
-
+  class SpecimenArrayType < CaTissue::ContainerType
     add_mandatory_attributes(:specimen_class, :specimen_types)
 
     # Returns SpecimenArray.
@@ -16,5 +14,10 @@ module CaTissue
     def can_hold_child?(storable)
       Specimen === storable and storable.specimen_class == specimen_class and specimen_types.include?(storable.specimen_type)
     end
+    
+    alias :add_defaults_local :add_container_type_defaults_local
+    
+    alias :merge_attributes :merge_container_type_attributes
+    public :merge_attributes
   end
 end

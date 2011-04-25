@@ -11,15 +11,12 @@ module CaTissue
       #
       # @param [CaTissue::Database] database the database
       # @param [String] name the caTissue DE service name
-      # @param (see CaRuby::PersistenceService#initialize)
-      # @option opts :hook the required hook class
-      # @option opts :integration_service the required IntegrationService
-      # @option opts (see CaRuby::PersistenceService#initialize)
-      def initialize(database, name, opts)
-        super(name, opts)
+      # @param [Integrator] integrator the caTissue annotation integrator
+      def initialize(database, name, integrator)
+        super(name, database.access_properties)
         @database = database
         @database.add_persistence_service(self)
-        @int_svc = opts[:integration_service]
+        @intgtr = integrator
       end
 
       # Augments the {CaRuby::PersistenceService} create method to handle caTissue annotation
@@ -55,29 +52,35 @@ module CaTissue
         if hook then
           create_primary_annotation(annotation, hook)
         else
-          create_secondary_annotation(annotation)
+          create_nonprimary_annotation(annotation)
         end
+        # Create the "cascaded" references.
+        annotation.class.save_dependent_attributes(annotation)
       end
       
       # @param annotation (see #create)
       # @param [Annotable] the annotatable object referenced by this annotation
       def create_primary_annotation(annotation, hook)
+        if @intgtr.order == :prefix then
+          @intgtr.associate(hook, annotation)
+        end
         # write the annotation records
         create_annotation_object(annotation)
-        # Create the "cascaded" references.
-        annotation.class.save_dependent_attributes(annotation)
         # If the annotation references a hook, then delegate to the integration service to associate
         # the hook to the annotation.
-        @int_svc.associate(hook, annotation)
+        if @intgtr.order == :postfix then
+          @intgtr.associate(hook, annotation)
+        end
       end
       
-      def create_secondary_annotation(annotation)
+      def create_nonprimary_annotation(annotation)
         # the owner annotation
         ownr = annotation.owner
         if ownr.nil? then
           raise AnnotationError.new("Cannot create secondary annotation #{annotation.qp} since it does not have an owner")
         end
         # creating the owner creates this secondary
+        logger.debug { "Created secondary annotation #{annotation} by creating the owner annotation #{ownr}..." }
         create(ownr)
       end
       
@@ -87,13 +90,14 @@ module CaTissue
         if Proxy === annotation then
           raise AnnotationError.new("#{annotation} annotation proxy create is not supported")
         end
-        # The sequence generator next id.
+        # The next database identifier.
         annotation.identifier = EntityFacade.instance.next_identifier(annotation)
         # Ensure that the proxy record is up-to-date.
         annotation.ensure_proxy_reflects_hook
         
         # Delegate to standard record create.
         app_service.create_object(annotation)
+        logger.debug { "Created annotation object #{annotation}." }
       end
     end
   end

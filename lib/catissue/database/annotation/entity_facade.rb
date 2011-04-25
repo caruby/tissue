@@ -10,29 +10,22 @@ module CaTissue
     class EntityFacade
       include Singleton
       
-      private
-      
       # Initializes the id generator and a SQL executor. The id generator and executor are
       # used for the caTissue bug work-arounds described in the method docs and {IdGenerator}.
       def initialize
         # the work-around id generator
         @idgen = IdGenerator.new
         # a general-purpose SQL executor for calling the work-arounds
-        @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
+        @executor = CaTissue::Database.instance.executor
         # the primary entity class => entity id hash
         @pr_eid_hash = {}
       end
-      
-      public
 
       # @param [Annotation] the annotation object
       # @return [Integer] a new identifier for the given annotation object
       def next_identifier(annotation)
-        # Commented line is broken - see IdGenerator doc.
-        # EntityManager.instance.getNextIdentifierForEntity(annotation.class.name.demodulize)
-        
         # The entity table name, which will be a cryptic value like DE_E_1283.
-        eid = primary_entity_id(annotation.class)
+        eid = annotation_entity_id(annotation.class)
         aeid = common_ancestor_entity_id(eid)
         tbl = annotation_table_for_entity_id(aeid)
         next_identifier_for_table(tbl)
@@ -54,10 +47,17 @@ module CaTissue
       # @param [Boolean] validate flag indicating whether to raise an exception if the class is not primary
       # @return [Integer] the caTissue entity id for the class
       # @raise [AnnotationError] if the validate flag is set and the class is not primary
-      def primary_entity_id(klass, validate=true)
-        eid = @pr_eid_hash[klass] ||= recursive_primary_entity_id(klass)
+      def annotation_entity_id(klass, validate=true)
+        eid = @pr_eid_hash[klass] ||= recursive_annotation_entity_id(klass)
         if eid.nil? and validate then raise AnnotationError.new("Entity not found for annotation #{klass}") end
         eid
+      end
+      
+      # @param [Integer] eid the entity id to check
+      # @return [Boolean] whether the entity is primary
+      def primary?(eid)
+        result = @executor.execute { |dbh| dbh.select_one(IS_PRIMARY_SQL, eid) }
+        not result.nil?
       end
       
       # @param [Class] klass the {Annotatable} class
@@ -71,7 +71,7 @@ module CaTissue
       end
       
       # caTissue alert - call into caTissue to get entity id doesn't work for non-primary object.
-      # Furthermore, the SQL used for the #{#primary_entity_id} doesn't work for associated annotation
+      # Furthermore, the SQL used for the #{#annotation_entity_id} doesn't work for associated annotation
       # classes. Use alternative SQL instead.
       #
       # @param [Integer] eid the referencing entity id
@@ -125,16 +125,18 @@ module CaTissue
       # The correct SQL is as follows:
       #   SELECT IDENTIFIER FROM dyextn_container WHERE ABSTRACT_ENTITY_ID = ?
       # The work-around is to call this SQL directly.
+      #
+      # caTissue alert - in 1.2, there are deprecated primary annotations with an entity id but no container id.
       # 
       # @return [Integer] eid the primary entity id
-      # @raise [AnnotationError] if no container id is found
       def container_id(eid)
         # The following call is broken (see method doc).
         # EntityManager.instance.get_container_id_for_entity(eid)
         # Work-around caTissue bug with direct query.
         result = @executor.execute { |dbh| dbh.select_one(CTR_ID_SQL, eid) }
         if result.nil? then
-          raise AnnotationError.new("Dynamic extension container id not found for annotation #{annotation} with entity id #{eid}")
+          logger.debug("Dynamic extension container id not found for annotation with entity id #{eid}")
+          return
         end
         cid = result[0].to_i
         logger.debug { "Annotation with entity id #{eid} has container id #{cid}." }
@@ -143,28 +145,46 @@ module CaTissue
       
       private
       
-      # @param (see #primary_entity_id)
-      # @return (see #primary_entity_id)
-      def recursive_primary_entity_id(klass)
-        eid = nonrecursive_primary_entity_id(klass) || parent_primary_entity_id(klass)
+      CORE_PKG_REGEX = /^edu.wustl.catissuecore.domain/
+      
+      CORE_GROUP = 'caTissueCore'
+      
+      # @param (see #annotation_entity_id)
+      # @return (see #annotation_entity_id)
+      def recursive_annotation_entity_id(klass)
+        eid = nonrecursive_annotation_entity_id(klass) || parent_annotation_entity_id(klass)
         if eid then logger.debug { "#{klass.qp} has entity id #{eid}." } end
         eid
       end
       
-      # @param (see #primary_entity_id)
-      # @return (see #primary_entity_id)
-      def nonrecursive_primary_entity_id(klass)
-        # The Java class package is the entity group, the Java class unqualified name is the caption.
-        pkg, cls_nm = klass.java_class.name.split('.')
-        # Dive into some obscure SQL
-        result = @executor.execute { |dbh| dbh.select_one(CTR_ENTITY_ID_SQL, pkg, cls_nm) }
+      # @param (see #recursive_annotation_entity_id)
+      # @return (see #recursive_annotation_entity_id)
+      def nonrecursive_annotation_entity_id(klass)
+        # The entity group and entity name.
+        grp, name = split_annotation_entity_class_name(klass)
+        # Dive into some obscure SQL.
+        result = @executor.execute { |dbh| dbh.select_one(ANN_ENTITY_ID_SQL, grp, name) }
         result[0].to_i if result
       end
       
-      # @param (see #primary_entity_id)
-      # @return (see #primary_entity_id)
-      def parent_primary_entity_id(klass)
-        nonrecursive_primary_entity_id(klass.superclass) if klass.superclass < Annotation
+      # @param (see #nonrecursive_annotation_entity_id)
+      # @return [(String, String)] the entity group name and the entity name 
+      def split_annotation_entity_class_name(klass)
+        jname = klass.java_class.name
+        pkg, base = Java.split_class_name(jname)
+        if pkg =~ CORE_PKG_REGEX then
+          [CORE_GROUP, jname]
+        elsif pkg.nil? or pkg['.'] then
+          raise AnnotationError.new("Entity group for Java class #{jname} could not be determined.")
+        else
+          [pkg, base]
+        end
+      end
+      
+      # @param (see #annotation_entity_id)
+      # @return (see #annotation_entity_id)
+      def parent_annotation_entity_id(klass)
+        nonrecursive_annotation_entity_id(klass.superclass) if klass.superclass < Annotation
       end
       
       # @param [Integer] the starting entity id
@@ -220,15 +240,16 @@ module CaTissue
 EOS
      
       # The SQL to find an entity id for a primary entity.
-      CTR_ENTITY_ID_SQL = <<EOS
-      select ctr.ABSTRACT_ENTITY_ID
-      from DYEXTN_CONTAINER ctr, DYEXTN_ENTITY_GROUP grp
-      where ctr.ENTITY_GROUP_ID = grp.IDENTIFIER
+      ANN_ENTITY_ID_SQL = <<EOS
+      select e.IDENTIFIER
+      from DYEXTN_ENTITY e, DYEXTN_ABSTRACT_METADATA md, DYEXTN_ENTITY_GROUP grp
+      where e.ENTITY_GROUP_ID = grp.IDENTIFIER
+      and e.IDENTIFIER = md.IDENTIFIER
       and grp.SHORT_NAME = ?
-      and ctr.CAPTION = ?
+      and md.NAME = ?
 EOS
 
-      # The SQL to find an entity id for a secondary annotation referenced by a primary annotation.
+      # The SQL to find an entity id for an annotation reference.
       ASSN_ENTITY_ID_SQL = <<EOS
       select assn.TARGET_ENTITY_ID
       from DYEXTN_ATTRIBUTE attr, DYEXTN_ABSTRACT_ENTITY ae, DYEXTN_ASSOCIATION assn, DYEXTN_ROLE role
@@ -237,6 +258,15 @@ EOS
       and assn.TARGET_ROLE_ID = role.IDENTIFIER
       and ae.id = ?
       and role.name = ?
+EOS
+
+      # The SQL to find an entity id for a secondary annotation referenced by a primary annotation.
+      IS_PRIMARY_SQL = <<EOS
+      select 1
+      from DYEXTN_ABSTRACT_ENTITY ae, dyextn_entity_map map, dyextn_container ctr
+      where map.CONTAINER_ID = ctr.IDENTIFIER
+      and ctr.ABSTRACT_ENTITY_ID = ae.id
+      and ae.id = ?
 EOS
 
       # The SQL to find a parent entity id for a given entity id.

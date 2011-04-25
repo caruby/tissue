@@ -1,10 +1,8 @@
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.DisposalEventParameters
+  resource_import Java::edu.wustl.catissuecore.domain.DisposalEventParameters
 
-  class DisposalEventParameters
-    include Resource
-
+  class DisposalEventParameters < CaTissue::SpecimenEventParameters
     add_attribute_defaults(:activity_status => 'Closed')
 
     # caTissue alert - DisposalEventParameters activity status is transient.

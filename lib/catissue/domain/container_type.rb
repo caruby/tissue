@@ -2,7 +2,7 @@ require 'caruby/util/options'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.ContainerType
+  resource_import Java::edu.wustl.catissuecore.domain.ContainerType
 
   # The caTissue ContainerType domain class wrapper.
   # Each {ContainerType} subclass is required to implement the container_class method.
@@ -61,10 +61,8 @@ module CaTissue
   # needs to make to add a specimen box to a freezer is:
   #   freezer << box
   # which places the box in the first available rack slot in the freezer, or:
-  #   freezer.add box :at => 
+  #   box >> freezer 
   class ContainerType
-    include Resource
-
     add_attribute_aliases(:column_label => :oneDimensionLabel, :row_label => :twoDimensionLabel)
 
     add_attribute_defaults(:activity_status => 'Active')
@@ -76,22 +74,30 @@ module CaTissue
     # caTissue alert - although capacity is not marked cascaded in Hibernate, it is created when the
     # ContainerType is created.
     add_dependent_attribute(:capacity)
-
+    
     # Override default {CaRuby::Resource#merge_attributes} to support the Capacity :rows and :columns
     # pseudo-attributes.
     #
-    # @param (see CaRuby::Resource#merge_attributes)
+    # JRuby alert - Subclasses do not pick up this class's Resource method overrides.
+    # Specimen picks up the AbstractSpecimen Resource overrides, but ContainerType subclasses do
+    # not pick up ContainerType Resource overrides. Work-around is that each ContainerType
+    # subclass must alias +merge_attributes+ to this method.
+    #
+    # @param (see #merge_attributes)
     def merge_attributes(other, attributes=nil)
       if Hash === other then
         # partition the other hash into the Capacity attributes and ContainerType attributes
         cp_hash, ct_hash = other.partition { |key, value| key == :rows or key == :columns }
-        self.capacity ||= Capacity.new(cp_hash).add_defaults unless cp_hash.empty?
+        self.capacity ||= CaTissue::Capacity.new(cp_hash).add_defaults unless cp_hash.empty?
         super(ct_hash, attributes)
       else
         super(other, attributes)
       end
     end
-
+    
+    alias :merge_container_type_attributes :merge_attributes
+    private :merge_container_type_attributes
+    
     # @param [CaTissue::Site] site the site where the candidate containers are located
     # @param opts (see CaRuby::Writer#find)
     # @option (see CaRuby::Writer#find)
@@ -124,15 +130,20 @@ module CaTissue
     end
 
     private
-
+    
     # Adds an empty capacity and default dimension labels, if necessary.
     # The default {#one_dimension_label} is 'Column' if there is a non-zero dimension capacity, 'Unused' otherwise.
     # The default {#two_dimension_label} is 'Row' if there is a non-zero dimension capacity, 'Unused' otherwise.
+    #
+    # JRuby alert - See {#merge_container_type_attributes}. Work-around is that each ContainerType
+    # subclass must alias +add_defaults_local+ to this method.
     def add_defaults_local
       super
       self.capacity ||= Capacity.new.add_defaults
       self.row_label ||= capacity.rows && capacity.rows > 0 ? 'Row' : 'Unused'
       self.column_label ||= capacity.columns && capacity.columns > 0 ? 'Column' : 'Unused'
     end
+    
+    alias :add_container_type_defaults_local :add_defaults_local
   end
 end

@@ -1,5 +1,6 @@
 require 'caruby/util/properties'
 require 'caruby/migration/migrator'
+require 'catissue/migration/migratable'
 require 'catissue/resource'
 require 'catissue/database/controlled_values'
 require 'catissue/database/controlled_value_finder'
@@ -52,17 +53,17 @@ module CaTissue
       # prepend this migrator's shims
       shims = opts[:shims] ||= []
       shims.unshift(SHIM_FILE)
+      # If the unique option is set, then append the CaTissue-specific uniquifier shim.
+      if opts[:unique] then
+        # add the uniquify shim
+        shims << UNIQUIFY_SHIM
+        logger.debug { "Migrator added uniquification shim #{UNIQUIFY_SHIM}." }
+      end
 
       # call the CaRuby::Migrator initializer with the augmented options
       super
 
-      # The remaining options are specific to this CaTissue::Migrator subclass.
-
-      # If the unique option is set, then append the CaTissue-specific uniquifier shim.
-      if opts[:unique] then
-        # add the uniquify shim
-        @shims << UNIQUIFY_SHIM
-      end
+      # The remaining options are handled by this CaTissue::Migrator subclass.
 
       # The tissue site CV look-up option.
       tissue_sites = opts[:tissue_sites]

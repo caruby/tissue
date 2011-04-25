@@ -13,7 +13,7 @@ module CaTissue
       # objects. This is used for testing a migration dry run. It is recommended that the trial run
       # protocol is set to a test protocol as well.
       SPECS = [
-        [:input, "-i", "input", "Source file to migrate"],
+        [:input, "input", "Source file to migrate"],
         [:target, "-t", "--target CLASS", "Migration target class"],
         [:mapping, "-m", "--mapping FILE", "The input field => caTissue attribute mapping file"],
         [:defaults, "-d", "--defaults FILE", "The caTissue attribute => default value mapping file"],

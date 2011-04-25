@@ -22,11 +22,11 @@ module CaTissue
       pxy.ensure_identifier_reflects_hook
     end
     
-    # @return [Annotatable] the hook object which owns this annotation, or nil if this annotation
+    # @return [Annotatable, nil] the hook object which owns this annotation, or nil if this annotation
     #   is not directly owned by a hook entity
     def hook
-      pxy_attr = self.class.proxy_attribute
-      send(pxy_attr) if pxy_attr
+      pxy_attr_md = self.class.proxy_attribute_metadata
+      send(pxy_attr_md.reader) if pxy_attr_md
     end
     
     # If there is no conventional owner, then try the hook.
@@ -41,12 +41,16 @@ module CaTissue
       super or hook
     end
     
-    # @return [Proxy] the proxy which references this annotation
+    # @return [Proxy, nil] the proxy which references this annotation, or nil if this is not a
+    #   primary annotation
     def proxy
       # the annotation owner hook instance 
       ownr = hook || return
       # the hook -> annotation reference attribute
       attr = self.class.hook_proxy_attribute
+      if attr.nil? then
+        raise AnnotationError.new("Primary annotation #{qp} references hook #{hook} but doesn't have a hook proxy attribute")
+      end
       # the owner proxy for the attribute
       ownr.annotation_proxy(attr)
     end

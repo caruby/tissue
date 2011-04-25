@@ -76,8 +76,8 @@ module CaTissue
   end
 
   class SpecimenEventParameters
-    # Returns nil by default, since only SCGEventParameters have a SCG owner.
-    # {SCGEventParameters#migrate_specimen_collection_group} overrides this method.
+    # Returns nil by default, since only CollectibleEventParameters have a SCG owner.
+    # {CollectibleEventParameters#migrate_specimen_collection_group} overrides this method.
     #
     # @return nil
     def migrate_specimen_collection_group(scg, row)
@@ -85,7 +85,7 @@ module CaTissue
     end
   end
 
-  module SCGEventParameters
+  module CollectibleEventParameters
     #@param [SpecimenCollectionGroup] scg the migrated owner SCG
     # @return [SpecimenCollectionGroup] scg
     # @see SpecimenEventParameters#migrate_specimen_collection_group
@@ -95,8 +95,8 @@ module CaTissue
       scg
     end
     
-    # Returns the given Specimen spc unless this SCGEventParameters already has a SCG owner.
-    # A SCGEventParameters is preferentially set to a migrated SCG rather than a migrated
+    # Returns the given Specimen spc unless this CollectibleEventParameters already has a SCG owner.
+    # A CollectibleEventParameters is preferentially set to a migrated SCG rather than a migrated
     # Specimen.
     #
     #@param [Specimen] spc the migrated owner specimen

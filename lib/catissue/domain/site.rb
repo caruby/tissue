@@ -1,16 +1,18 @@
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.Site
+  resource_import Java::edu.wustl.catissuecore.domain.Site
 
   # The Site domain class.
   class Site
-    include Resource
-
     # caTissue alert - the Site SCG collection is ignored, since it is not fetched with the Site,
     # the caCORE query builder doesn't support abstract types, and even if it worked it would
     # have limited value but high fetch cost. The work-around, which is also the more natural
     # mechanism, is to query on a concrete SCG subclass template which references the target Site.
     remove_attribute(:abstract_specimen_collection_groups)
+
+    # caTissue alert - caTissue 1.2 Site has a facility_id Java property, but caTissue throws an
+    # UnsupportedOperationException if they are called.
+    if attribute_defined?(:facility_id) then remove_attribute(:facility_id) end
 
     set_secondary_key_attributes(:name)
 

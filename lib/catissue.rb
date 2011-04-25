@@ -10,7 +10,6 @@ rescue LoadError
 end
 
 require 'caruby/util/log'
-require 'catissue/util/log'
 require 'catissue/resource'
 require 'catissue/database'
 

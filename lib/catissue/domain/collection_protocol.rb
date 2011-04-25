@@ -3,11 +3,11 @@ require 'catissue/domain/hash_code'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.CollectionProtocol
+  resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocol
 
   # The CollectionProtocol domain class.
   class CollectionProtocol
-    include Resource, HashCode
+    include HashCode
     
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
     # Initialize consent_tiers if necessary. 
@@ -41,7 +41,7 @@ module CaTissue
     # Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:coordinators, :fetched)
 
-    def initialize(params=nil)
+    def initialize
       super
       respond_to?(:consent_tiers)
       # work around caTissue Bug #64 - consent tiers is nil rather than an empty set

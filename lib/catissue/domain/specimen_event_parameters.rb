@@ -1,13 +1,12 @@
 require 'caruby/util/validation'
 require 'caruby/util/inflector'
+require 'catissue/util/collectible'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.SpecimenEventParameters
+  resource_import Java::edu.wustl.catissuecore.domain.SpecimenEventParameters
 
   class SpecimenEventParameters
-    include Resource
-    
     # date is a synonym for the more accurately titled timestamp attribute.
     add_attribute_aliases(:date => :timestamp)
 
@@ -55,12 +54,12 @@ module CaTissue
       event_params
     end
 
-    # Returns the Specimen or SpecimenCollectionGroup to which this event is attached.
+    # @return [CaTissue::Collectible] specimen or SCG to which this event is attached
     def subject
       specimen.nil? ? specimen_collection_group : specimen
     end
 
-    # Sets the scg_or_specimen subject to which this event is attached.
+    # @param [CaTissue::Collectible] specimen or SCG to attach with this event
     def subject=(scg_or_specimen)
       spc_subject = scg_or_specimen if Specimen === scg_or_specimen
       scg_subject = scg_or_specimen if SpecimenCollectionGroup === scg_or_specimen
@@ -69,10 +68,21 @@ module CaTissue
       scg_or_specimen
     end
 
+    # @return [CaTissue::CollectionProtocol] the SCG protocol
     def collection_protocol
       specimen_collection_group.collection_protocol if specimen_collection_group
     end
-
+    
+    def saved_fetch_attributes(operation)
+      attrs = super
+      # TODO - KLUDGE!!!! simple_test migration test fails to set user ---- FIX!!!!
+      if identifier and not attrs.include?(:user) then
+        attrs + [:user]
+      else
+        attrs
+      end
+    end
+    
     private
 
     SUBCLASS_SUFFIX = 'EventParameters'

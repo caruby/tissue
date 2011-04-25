@@ -1,14 +1,14 @@
 require 'catissue/util/position'
 
 module CaTissue
-  java_import Java::edu.wustl.catissuecore.domain.AbstractPosition
+  resource_import Java::edu.wustl.catissuecore.domain.AbstractPosition
 
   # The +caTissue+ AbstractPosition class is augmented with a comparison operator and the
   # zero-based +row+ and +column+ methods wrapping the corresponding one-based dimension
   # attributes. Each AbstractPosition is required to implement the +holder+ and +occupant+
   #Êmethods.
   class AbstractPosition
-    include Position, Resource
+    include Position
 
     add_mandatory_attributes(:position_dimension_one, :position_dimension_two)
 

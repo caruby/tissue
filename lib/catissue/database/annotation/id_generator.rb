@@ -1,11 +1,11 @@
-require 'caruby/database/sql_executor'
+require 'catissue/database'
 
 module CaTissue
   module Annotation
     # The IdGenerator delegates to the caTissue entity manager to create a new identifier for an annotation.
     class IdGenerator
       def initialize
-        @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
+        @executor = CaTissue::Database.instance.executor
       end
 
       # caTissue alert - DE API subquery search fails.

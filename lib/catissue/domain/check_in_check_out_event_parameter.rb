@@ -1,10 +1,8 @@
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.CheckInCheckOutEventParameter
+  resource_import Java::edu.wustl.catissuecore.domain.CheckInCheckOutEventParameter
 
-  class CheckInCheckOutEventParameter
-    include Resource
-
+  class CheckInCheckOutEventParameter < CaTissue::SpecimenEventParameters
     # The check-in/check-out status permissible values.
     module Status
       CHECKED_OUT = 'CHECK OUT'
@@ -14,6 +12,5 @@ module CaTissue
     add_attribute_aliases(:status => :storage_status, :state => :storage_status)
 
     add_mandatory_attributes(:storage_status)
-
   end
 end

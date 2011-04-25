@@ -4,7 +4,7 @@ require 'caruby/util/collection'
 require 'caruby/util/options'
 require 'caruby/util/visitor'
 require 'catissue/resource'
-require 'caruby/database/sql_executor'
+require 'catissue/database'
 require 'catissue/util/controlled_value'
 require 'caruby/util/transitive_closure'
 require 'caruby/domain/properties'
@@ -29,9 +29,7 @@ module CaTissue
     include Singleton
 
     def initialize
-      # the default database name, used for direct database access
-      CaTissue.access_properties[:database] ||= CaTissue::Database::DEF_DATABASE_NAME
-      @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
+      @executor = CaTissue::Database.instance.executor
       @pid_loaded_hash = LazyHash.new { |pid| load_pid_cvs(pid) }
       @pid_value_cv_hash = LazyHash.new do |pid|
         CaseInsensitiveHash.new { |hash, value| hash[value] = load_cv(pid, value) unless value.nil? }

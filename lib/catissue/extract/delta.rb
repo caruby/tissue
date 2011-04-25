@@ -3,7 +3,7 @@ require 'caruby/csv/csvio'
 require 'caruby/util/log'
 require 'caruby/util/collection'
 require 'caruby/util/pretty_print'
-require 'caruby/database/sql_executor'
+require 'catissue/database'
 
 module CaTissue
   # Delta determines caTissue objects which changed within a time interval.
@@ -36,7 +36,7 @@ module CaTissue
     def execute_query
       sql = File.open(SQL_FILE) { |file| file.read }
       logger.debug { "Executing identifier change set selection range #{@since} - #{@before}, SQL:\n#{sql}" }
-      CaRuby::SQLExecutor.new(CaTissue.access_properties).execute do |dbh|
+      CaTissue::Database.executor.execute do |dbh|
         dbh.select_all(sql, @since, @before) do |row|
           table, identifier = row
           yield identifier.to_i if table =~ @matcher

@@ -11,7 +11,7 @@ module CaTissue
 
     attr_accessor :container, :coordinate
 
-    define_attribute_alias(:holder, :container)
+    alias_attribute(:holder, :container)
 
     # @param [{Symbol => Object}] params the location fields
     # @option [Integer] params :in the container holding this location

@@ -2,12 +2,10 @@ require 'date'
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.SpecimenProtocol
+  resource_import Java::edu.wustl.catissuecore.domain.SpecimenProtocol
 
   # The SpecimenProtocol domain class.
   class SpecimenProtocol
-    include Resource
-
     set_secondary_key_attributes(:short_title)
 
     # caTissue alert - Bug #155: enrollment is incorrectly defined in SpecimenProtocol rather

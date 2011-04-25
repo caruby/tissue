@@ -1,11 +1,11 @@
+require 'caruby/util/validation'
+
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.SpecimenRequirement
+  resource_import Java::edu.wustl.catissuecore.domain.SpecimenRequirement
 
   # The SpecimenRequirement domain class.
-  class SpecimenRequirement
-    include Resource
-    
+  class SpecimenRequirement < CaTissue::AbstractSpecimen
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
     # Initialize specimens if necessary. 
      #
@@ -68,7 +68,7 @@ module CaTissue
 
     public
 
-    def initialize(params=nil)
+    def initialize
       super
       respond_to?(:specimens)
       # work around caTissue Bug #64

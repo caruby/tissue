@@ -16,9 +16,9 @@ module CaTissue
       end
       
       def annotation_attributes
-        @ann_attrs ||= domain_attributes.compose { |attr_md| attr_md.type < Annotation }
+        @ann_attrs ||= infer_annotation_attributes
       end
-
+      
       # Sets this proxy's hook to the given class. 
       # Creates the proxy => hook attribute with the given hook => proxy inverse.
       #
@@ -63,6 +63,16 @@ module CaTissue
         @hook.create_annotation_attribute(domain_module, attr)
         # set the attribute inverse
         set_attribute_inverse(attr, inverse)
+        attr
+      end
+      
+      private
+      
+      def infer_annotation_attributes
+        # Infer the domain attributes first. Do so with a copy of the attribute metadata objects
+        # since the domain type infereence can result in adding a new annotation attribute.
+        attribute_metadata_hash.values.each { |attr_md| attr_md.domain? }
+        domain_attributes.compose { |attr_md| attr_md.type < Annotation }
       end
     end
   end

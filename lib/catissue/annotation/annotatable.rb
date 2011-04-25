@@ -9,7 +9,14 @@ module CaTissue
       attr = name =~ /=$/ ? name.chop.to_sym : mth
       # If an annotation can be generated on demand, then resend the method.
       # Otherwise, delegate to super for the standard error.
-      self.class.annotation_attribute?(attr) ? send(mth, *args) : super
+      begin
+        self.class.annotation_attribute?(attr) ? send(mth, *args) : super
+      rescue AnnotationError
+        raise
+      rescue Exception
+        raise
+        super
+      end
     end
     
     # Creates a {Annotation::Proxy} whose hook reference is set to this annotatable object.

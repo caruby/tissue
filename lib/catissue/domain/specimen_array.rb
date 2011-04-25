@@ -2,11 +2,9 @@
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.SpecimenArray
+  resource_import Java::edu.wustl.catissuecore.domain.SpecimenArray
 
   class SpecimenArray
-    include Resource
-    
     # caTissue alert - the superclass Container occupied_positions does not apply to SpecimenArray.
     remove_attribute(:occupied_positions)
  

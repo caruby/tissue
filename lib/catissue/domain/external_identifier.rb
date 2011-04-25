@@ -2,12 +2,10 @@
 
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.ExternalIdentifier
+  resource_import Java::edu.wustl.catissuecore.domain.ExternalIdentifier
 
   # The ExternalIdentifier domain class.
   class ExternalIdentifier
-    include Resource
-
     # Sets this ExternalIdentifier value to the given value.
     # A Numeric value is converted to a String.
     def value=(value)

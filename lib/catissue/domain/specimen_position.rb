@@ -1,10 +1,8 @@
 module CaTissue
   # import the Java class
-  java_import Java::edu.wustl.catissuecore.domain.SpecimenPosition
+  resource_import Java::edu.wustl.catissuecore.domain.SpecimenPosition
 
-  class SpecimenPosition
-    include Resource
-
+  class SpecimenPosition < CaTissue::AbstractPosition
     add_mandatory_attributes(:storage_container)
 
     add_attribute_aliases(:holder => :storage_container, :container => :storage_container, :occupant => :specimen)

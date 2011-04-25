@@ -2,23 +2,17 @@ require 'caruby/database/persistence_service'
 
 module CaTissue
   module Annotation
-    # An IntegrationService fetches and saves CaTissue hook-annotation associations.
+    # An IntegrationService fetches and saves CaTissue 1.1.x hook-annotation associations.
     class IntegrationService < CaRuby::PersistenceService
       SERVICE_NAME = 'deintegration'
 
-      java_import 'deintegration.EntityMap'
-      
-      java_import 'deintegration.EntityMapRecord'
-      
-      java_import 'deintegration.FormContext'
+      # The caTissue 
+      java_import Java::deintegration.EntityMap
+      java_import Java::deintegration.EntityMapRecord
+      java_import Java::deintegration.FormContext
 
-      # @param [EntityFacade] the global entity manager
       def initialize
-      host = CaTissue.access_properties[:host]
-      port = CaTissue.access_properties[:port]
-        super(SERVICE_NAME, :host => host, :port => port)
-        # SQL executor to handle caTissue DE API bug work-around 
-        @executor = CaRuby::SQLExecutor.new(CaTissue.access_properties)
+        super(SERVICE_NAME, CaTissue::Database.instance.access_properties)
       end
 
       # Associates the given hook domain object to the annotation.
@@ -26,22 +20,17 @@ module CaTissue
       # @param [Annotatable] hook the hook entity 
       # @param [Annotation] annotation the annotation entity 
       def associate(hook, annotation)
-        logger.debug { "Associating annotation #{annotation} to owner #{hook}..." }
+        # the annotation must have an identifier
+        if annotation.identifier.nil? then
+          raise CaRuby::DatabaseError.new("Annotation to associate does not have an identifier: #{annotation}")
+        end
         emr = create_entity_map_record(hook, annotation)
         create(emr)
       end
 
-#      # Removes the existing association between the given hook domain object to annotation.
-#      #
-#      # @param (see #associate)
-#      def dissociate(hook, annotation)
-#        assn = find_entity_map_record(hook, annotation) # TODO - implement
-#        delete(assn)
-#      end
-
       private
 
-      #### The cruft below is adapted from caTissue ClientDemo_SCG.java and cleaned up (but still obscure). ####
+      #### The cruft below is adapted from caTissue 1.1.2 ClientDemo_SCG.java and cleaned up (but still obscure). ####
 
       # Creates an entity map record with content (annotation entity id, annotation id, form context id).
       # This record associates the static hook record to the annotation record qualified by the context.
@@ -51,17 +40,7 @@ module CaTissue
       def create_entity_map_record(hook, annotation)
         # the entity map record with content (annotation entity id, annotation id, context id)
         emr = EntityMapRecord.new
-        
-        # the hook id
-        if hook.identifier.nil? then
-          raise CaRuby::DatabaseError.new("Annotation entity map static entity does not have an identifier: #{hook}")
-        end
         emr.static_entity_record_id = hook.identifier
-        
-        # the annotation id
-        if annotation.identifier.nil? then
-          raise CaRuby::DatabaseError.new("Annotation entity map dynamic entity does not have an identifier: #{annotation}")
-        end
         emr.dynamic_entity_record_id = annotation.identifier
         
         # the form context
@@ -103,7 +82,7 @@ module CaTissue
       # @return [EntityMap] the entity map
       def entity_map(hook, annotation)
         klass = hook.class
-        while klass < CaTissue::AbstractDomainObject
+        while klass < Java::EduWustlCommonDomain::AbstractDomainObject
           map = entity_map_for_class(klass, annotation)
           return map if map
           klass = klass.superclass
