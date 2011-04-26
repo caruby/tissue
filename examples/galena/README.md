@@ -65,20 +65,20 @@ Migrate the Galena `simple` example as follows:
 The other examples are run in a similar manner. Each example demonstrates different
 features of the caRuby Migration utility as follows:
 
-* simple - a good starting point with limited input fields
-   crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv 
+* `simple` - a good starting point with limited input fields
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv` 
 
-* general - lots of input fields, no custom Ruby code
-   crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv 
+* `general` - lots of input fields, no custom Ruby code
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv`
 
-* filter - a smattering of custom Ruby shim code to convert input values to caTissue values
-   crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv 
+* `filter` - a smattering of custom Ruby shim code to convert input values to caTissue values
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv`
 
-* frozen - an example demonstrating how to import storage locations
-   crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv 
+* `frozen` - an example demonstrating how to import storage locations
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv` 
 
-* annotation - an example demonstrating how to import annotations
-   crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv 
+* `annotation` - an example demonstrating how to import annotations
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv `
 
 Try running an example with the `--debug` flag and look at the `log/migration.log` file to see
 what caRuby is up to behind the scenes (hint: a lot!).
@@ -86,15 +86,19 @@ what caRuby is up to behind the scenes (hint: a lot!).
 Input data
 ----------
 The sample Galena Tissue Bank CSV input files hold one row for each specimen.
-Common fields are as follows:
+The following input fields are included in the examples:
 
-* MRN - Patient Medical Record Number
-* Initials - Patient name initials
-* Frozen? - Flag indicating whether the specimen is frozen
-* SPN - Surgical Pathology Number
-* Collection Date - Date the specimen was acquired by the tissue bank
-* Received Date - Date the specimen was donated by the participant
-* Quantity - Amount collected
-* Box - Tissue storage container
-* X - the tissue box column
-* Y - the tissue box row
+* `Protocol` - Collection Protocol title
+* `MRN` - Patient Medical Record Number
+* `Initials` - Patient name initials
+* `Frozen?` - Flag indicating whether the specimen is frozen
+* `SPN` - Surgical Pathology Number
+* `Collection Date` - Date the specimen was acquired by the tissue bank
+* `Received Date` - Date the specimen was donated by the participant
+* `Quantity` - Amount collected
+* `Box` - Tissue storage container
+* `X` - the tissue box column
+* `Y` - the tissue box row
+* `Gleason`: Specimen primary gleason score
+* `Grade`: Specimen histologic WHO grade
+
