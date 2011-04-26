@@ -14,14 +14,15 @@ module CaTissue
 
     # Moves this storable from its current {Position}, if any, to the location given by the argument.
     #
-    # @param [CaTissue::Container, CaTissue::Location, Hash] arg the target container, location, or options
-    # @option arg [CaTissue::Container] :in the target container
-    # @option arg [CaRuby::Coordinate, (Integer, Integer)] :at the target coordinates
+    # @param [CaTissue::Container, (CaTissue::Container, Integer, Integer), CaTissue::Location, Hash] args the target container, location, or options
+    # @option args [CaTissue::Container] :in the target container
+    # @option args [CaRuby::Coordinate, (Integer, Integer)] :at the target coordinates
     # @return [Position] the new position 
     # @see Container#add
-    def move_to(arg)
+    def move_to(*args)
+      arg = args.shift
       case arg
-        when CaTissue::Container then arg.add(self)
+        when CaTissue::Container then arg.add(self, *args)
         when CaTissue::Location then
           loc = arg
           loc.container.add(self, loc.coordinate)

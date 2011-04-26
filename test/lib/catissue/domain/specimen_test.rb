@@ -63,6 +63,11 @@ class SpecimenTest < Test::Unit::TestCase
     assert_same(dest, @spc.position.container, "Specimen position container incorrect")
     assert(dest.include?(@spc), "Destination #{box.qp} doesn't hold specimen #{@spc.qp}")
     assert(!box.include?(@spc), "Old box #{box.qp} still holds specimen #{@spc.qp}")
+    # move back to original position
+    @spc.move_to(box, pos.column, pos.row)
+    assert_same(box, @spc.position.container, "Specimen position container incorrect")
+    assert(!dest.include?(@spc), "Move source #{dest.qp} still holds specimen #{@spc.qp}")
+    assert(box.include?(@spc), "Move destination #{box.qp} doesn't hold specimen #{@spc.qp}")
   end
 
   def test_derive
