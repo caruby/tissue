@@ -4,19 +4,19 @@
 
 === 1.2.2 / 2010-11-30
 
-* Enable Galena example.
+* Galena example.
 
 === 1.2.3 / 2011-02-18
 
-* Support Dynamic Extensions.
+* Dynamic Extensions Support.
 
 === 1.3.1 / 2011-02-18
 
-* Full PCBIN DE support.
+* Prostate Spore PCBIN DE support.
 
 === 1.3.2 / 2011-02-25
 
-* Minor migration bug fixes.
+* Migration bug fixes.
 
 === 1.3.3 / 2011-02-26
 
@@ -28,13 +28,14 @@
 
 === 1.3.5 / 2011-03-04
 
-* Support annotation migration.
+* Annotation migration.
 
 === 1.3.6 / 2011-03-04
 
-* Specify caruby-core version dependency.
+* Specify caruby-core gem version dependency.
 
 === 1.3.7 / 2011-04-20
 
 * caTissue 1.2 support.
 
+* JBridge Java-caRuby interface.
