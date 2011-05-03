@@ -358,7 +358,7 @@ module CaTissue
     # @raise [DatabaseError] if the annotation does not reference a hook entity
     def prepare_annotation_for_save(annotation)
       hook = annotation.owner
-      if hook.nil? then raise DatabaseError.new("Cannot save annotation #{annotation} since it does not reference a hook entity") end
+      if hook.nil? then raise CaRuby::DatabaseError.new("Cannot save annotation #{annotation} since it does not reference a hook entity") end
       if hook.identifier.nil? then
         logger.debug { "Ensuring that the annotation #{annotation.qp} hook entity #{hook.qp} exists in the database..." }
         ensure_exists(hook)
