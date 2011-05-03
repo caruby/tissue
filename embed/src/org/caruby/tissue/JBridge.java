@@ -26,7 +26,7 @@ public class JBridge {
      * 
      * @throws Exception if caRuby instances cannot be accessed.
      */
-    public void JBridge() throws Exception {
+    public JBridge() throws Exception {
         container = new ScriptingContainer();
         // load the JBridge facade definition
         load(FACADE_FILE);
@@ -64,7 +64,6 @@ public class JBridge {
      * @throws Exception if the file cannot be loaded.
      */
     public void load(String file) throws Exception {
-        ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETON, LocalVariableBehavior.TRANSIENT);
         EmbedEvalUnit scriptDef = container.parse(PathType.CLASSPATH, file);
         if (scriptDef == null) {
             throw new FileNotFoundException("caRuby file " + file + " not found on classpath");
