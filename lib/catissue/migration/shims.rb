@@ -18,11 +18,14 @@ module CaTissue
     #   then this method returns the remapped CV.
     # * Otherwise, if the value is a valid CV, then this method returns value.
     # * Otherwise, this method returns nil.
+    #
+    # @param [String] value the input diagnosis
+    # @return [String] the mapped CV
     def self.diagnosis_controlled_value(value)
       @@diagnosis_cv_finder.nil? ? value : @@diagnosis_cv_finder.controlled_value(value)
     end
 
-    # Returns the {#diagnosis_controlled_value}.
+    # @return [String] the {#diagnosis_controlled_value}
     def migrate_clinical_diagnosis(value, row)
       SpecimenCollectionGroup.diagnosis_controlled_value(value)
     end
