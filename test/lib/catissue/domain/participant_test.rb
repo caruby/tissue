@@ -63,6 +63,15 @@ class ParticipantTest < Test::Unit::TestCase
     assert_not_nil(lab.identifier, "Lab not saved")
   end
   
+  # Tests saving a participant lab annotation indirectly as a dependent. 
+  def test_save_lab_annotation_dependent
+    date = DateTime.new(2010, 10, 10)
+    lab = CaTissue::Participant::Clinical::LabAnnotation.new
+    lab.merge_attributes(:other_lab_test_name => 'Test Lab', :test_date => date, :participant => @pnt)
+    verify_save(@pnt)
+    assert_not_nil(lab.identifier, "Lab not saved")
+  end
+  
   # Exercises creation of both a HealthExaminationAnnotation and a NewDiagnosisHealthAnnotation.
   # These annotation classes are both primary and share a comman ancestor entity used
   # as the basis for generating database identifiers.
