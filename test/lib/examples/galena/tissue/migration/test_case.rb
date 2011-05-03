@@ -12,19 +12,21 @@ module Galena
     module MigrationTestCase
       include CaTissue::MigrationTestCase
     
-      # The migration input data directory.
+      # The default migration input data directory.
       FIXTURES = 'examples/galena/data'
     
-      # The migration input data directory.
+      # The default migration shims directory.
       SHIMS = 'examples/galena/lib/galena/tissue/migration'
       
-      # The migration configuration directory.
+      # The dfault migration configuration directory.
       CONFIGS = 'examples/galena/conf/migration'
     
       # The migration options are obtained from the file named _fixture_+_migration.yaml+
       # in the {CONFIGS} directory.
-      def setup
-        super(FIXTURES)
+      #
+      # @param [String, nil] the fixtures directory (default {FIXTURES})
+      def setup(fixtures=FIXTURES)
+        super(fixtures)
       end
       
       private
@@ -41,12 +43,15 @@ module Galena
       def create_migrator(fixture, opts={})
         opts[:target] ||= CaTissue::TissueSpecimen
         opts[:mapping] ||= File.join(CONFIGS, "#{fixture}_fields.yaml")
-        def_file = File.join(CONFIGS, "#{fixture}_defaults.yaml")
-        if File.exists?(def_file) then opts[:defaults] = def_file end
-        shims = File.join(SHIMS, "#{fixture}_shims.rb")
-        if File.exists?(shims) then
-          sopt = opts[:shims] ||= []
-          sopt << shims
+        unless opts.has_key?(:defaults) then
+          def_file = File.join(CONFIGS, "#{fixture}_defaults.yaml")
+          if File.exists?(def_file) then opts[:defaults] = def_file end
+        end
+        unless opts.has_key?(:shims) then
+          shims = File.join(SHIMS, "#{fixture}_shims.rb")
+          if File.exists?(shims) then
+            opts[:shims] = [shims]
+          end    
         end
         super
       end
