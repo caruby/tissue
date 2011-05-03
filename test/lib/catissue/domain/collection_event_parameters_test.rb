@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
+require 'caruby/util/validation'
 
 class CollectionEventParametersTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -7,6 +8,15 @@ class CollectionEventParametersTest < Test::Unit::TestCase
     super
     @scg = defaults.specimen_collection_group
     @spc = defaults.specimen
+  end
+  
+  def test_scg_owner_conflict
+    assert_raises(ValidationError, "Owner conflict allowed") { @scg.received_event_parameters.specimen = @spc }
+  end
+  
+  def test_specimen_owner_conflict
+    @spc.collect(:receiver => @scg.receiver)
+    assert_raises(ValidationError, "Owner conflict allowed") { @spc.received_event_parameters.specimen_collection_group = @scg }
   end
   
   def test_update_scg_cep
