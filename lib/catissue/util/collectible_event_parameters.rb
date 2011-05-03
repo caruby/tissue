@@ -12,6 +12,38 @@ module CaTissue
     
     private
     
+    # Injects validation to ensure that a CollectibleEventParameters instance cannot be owned by
+    # both a specimen and a SCG.
+    # 
+    # @param [Class] klass the including class
+    def self.included(klass)
+      klass.class_eval do
+        owner_attributes.each do |attr|
+          wtr = attribute_metadata(attr).writer
+          redefine_method(wtr) do |base|
+            lambda do |obj|
+              validate_no_owner_confict(attr, obj)
+              send(base, obj)
+            end
+          end
+        end
+      end
+    end
+    
+    # @param attribute the owner attribute to set
+    # @param obj the owner to set
+    # @raise [] if there is already a different owner attribute value
+    def validate_no_owner_confict(attribute, obj)
+      return if obj.nil?
+      self.class.owner_attributes.each do |attr|
+        next if attr == attribute
+        other = send(attr)
+        if other then
+          raise ValidationError.new("Cannot add #{qp} to #{attribute} #{obj.qp}, since it is already owned by #{attr} #{other}")
+        end
+      end
+    end
+    
     # Overrides {CaRuby::Migratable#migratable__migrate_owner} to give owner preference to a migrated SCG
     # over a migrated Specimen.
     #
