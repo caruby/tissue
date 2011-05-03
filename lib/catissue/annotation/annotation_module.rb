@@ -21,9 +21,9 @@ module CaTissue
     # @param [AnnotationModule] mod the annotation module to build
     # @param [Class] hook the static hook class
     # @param [{Symbol => Object}] the options
-    # @option opts :package the DE package name
-    # @option opts :service the DE service name
-    # @option opts :record_entry the record entry name class for post-1.1.x caTissue
+    # @option opts [String] :package the DE package name
+    # @option opts [String] :service the DE service name
+    # @option opts [String] :record_entry the record entry name class for post-1.1.x caTissue
     def self.extend_module(mod, hook, opts)
       mod.extend(self)
       mod.initialize_annotation(hook, opts)
