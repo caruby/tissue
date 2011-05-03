@@ -28,6 +28,9 @@ class SpecimenTest < Test::Unit::TestCase
     assert_equal("Tissue", @spc.specimen_class, "Specimen class incorrect")
     # the characteristics default is set as a default value
     assert_not_nil(@spc.specimen_characteristics, "Specimen characteristics not set to default")
+    # collectible events are propagated from the SCG
+    assert_not_nil(@spc.collection_event_parameters, "#{@spc} missing collection event")
+    assert_not_nil(@spc.received_event_parameters, "#{@spc} missing received event")
   end
 
   # Tests whether the child_specimens domain type is overridden in the configuration from the
@@ -48,6 +51,12 @@ class SpecimenTest < Test::Unit::TestCase
     closure = [@spc.parent].transitive_closure(:children)
     assert(closure.include?(@spc.parent), "Specimen transitive closure does not contain parent")
     assert(closure.include?(@spc), "Specimen transitive closure does not contain child")
+  end
+  
+  def test_collect
+    @spc.collect(:receiver => @spc.specimen_collection_group.receiver)
+    assert_not_nil(@spc.received_event_parameters, "Collected #{@spc} missing REP")
+    assert_not_nil(@spc.collection_event_parameters, "Collected #{@spc} missing CEP")
   end
 
   def test_move
