@@ -90,18 +90,17 @@ module CaTissue
       convert_hook_to_proxy(klass)
     end
     
-    # @return [Symbol, nil] the hook proxy class attribute which references this annotation, or nil if this
-    #   class is not a primary annotation class
+    # @return [Symbol, nil] the attribute which references the hook proxy,
+    #   or nil if this is not a primary annotation class
+    def proxy_attribute
+      @proxy_attribute_metadata.to_sym if @proxy_attribute_metadata
+    end
+    
+    # @return [Symbol, nil] the hook proxy class attribute which references this annotation class,
+    #   or nil if this is not a primary annotation class
     def hook_proxy_attribute
       # The hook => primary attribute symbol is the same as the proxy => primary attribute symbol.
       @proxy_attribute_metadata.inverse if @proxy_attribute_metadata
-    end
-    
-    # @return [Symbol, nil] the primary owner annotation, if it exists
-    def primary_owner_attributes
-      @pr_owr_attrs ||= domain_attributes.compose do |attr_md|
-        attr_md.type < Annotation and attr_md.type.method_defined?(:hook)
-      end
     end
     
     # @return [Boolean] whether this annotation class references a hook proxy
@@ -201,19 +200,10 @@ module CaTissue
     end
     
     def obtain_proxy_attribute_metadata(proxy)
-      # parent proxy is reserved for RadiationTherapy use case described in ParticipantTest.
-      # TODO - either support this use case or delete the parent proxy call
-      attr = detect_proxy_attribute(proxy) || create_proxy_attribute(proxy) || parent_proxy_attribute
+      attr = detect_proxy_attribute(proxy) || create_proxy_attribute(proxy)
       if attr.nil? then raise AnnotationError.new("Annotation #{qp} proxy attribute could not be found or created") end
       logger.debug { "Annotation class #{qp} has proxy reference attribute #{attr}." }
       attribute_metadata(attr)
-    end
-    
-    def parent_proxy_attribute
-      if superclass < Annotation then
-        attr_md = superclass.proxy_attribute_metadata
-        attr_md.to_sym if attr_md
-      end
     end
     
     # @return [Symbol] the annotation -> proxy attribute
