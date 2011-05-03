@@ -25,7 +25,13 @@ module CaTissue
     def effective_entity_id
       @entity_id or parent_entity_id
     end
-    
+ 
+    # Loads the annotations defined for this class if necessary.
+    def ensure_annotations_loaded
+      # referencing the annotations loads them
+      annotation_modules
+    end
+   
     # If there is an existing annotation whose proxy accessor is the
     # given symbol, then return true. Otherwise, attempt to import
     # an annotation and return whether the import was successful.
@@ -126,12 +132,6 @@ module CaTissue
     end    
     
     private
-
-    # Loads the annotations defined for this class if necessary.
-    def ensure_annotations_loaded
-      # referencing the annotations loads them
-      annotation_modules
-    end
     
     # Loads the annotation modules in the class hierarchy.
     #
