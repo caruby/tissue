@@ -22,6 +22,7 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
       cts = @scg.consent_tier_statuses.detect { |s| s.consent_tier == ct }
       assert_not_nil(cts, "Missing SCG consent tier status for #{ct}")
     end
+    assert_not_nil(@scg.collection_event_parameters, "#{@scg} default CEP not created")
   end
 
   def test_default_collection_event
@@ -60,6 +61,33 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_same(@scg.receiver, scg.received_event_parameters.user, "SCG receiver incorrect")
     assert_equal(cdt.to_s, scg.received_event_parameters.timestamp.to_s, "SCG received time not defaulted to collection time")
   end
+
+  def test_add_specimens
+    cpe = @scg.collection_event
+    rcvr = defaults.tissue_bank.coordinator
+    reg = @scg.registration
+    pnt = reg.participant
+    pcl = reg.protocol
+    rqmt = defaults.specimen_requirement
+    spc1 = CaTissue::Specimen.create_specimen(:requirement => rqmt, :initial_quantity => 1.0)
+    spc2 = CaTissue::Specimen.create_specimen(:requirement => rqmt, :initial_quantity => 1.0)
+    site = defaults.tissue_bank
+    scg = pcl.add_specimens(spc1, spc2, :participant => pnt, :site => site, :collection_event => cpe, :receiver => rcvr)
+    cpr = scg.registration
+    assert_not_nil(cpr, "#{scg} CPR not set")
+    assert_not_nil(cpr.participant, "#{cpr} participant not set")
+    assert_same(cpr.participant, pnt, "#{cpr} participant incorrect")
+    assert_not_nil(scg.receiver, "#{scg} receiver not set")
+    assert_same(rcvr, scg.receiver, "#{scg} receiver incorrect")
+    assert_not_nil(scg.site, "#{scg} site not set")
+    assert_same(site, scg.site, "#{scg} site incorrect")
+    spcs = scg.specimens
+    assert(spcs.include?(spc1), "#{spc1} not found in #{scg}")
+    assert(spcs.include?(spc2), "#{spc2} not found in #{scg}")
+  end
+
+   ## DATABASE TEST CASES ##
+  
 
   def test_save
     logger.debug { "Verifying SCG create..." }
@@ -197,6 +225,21 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     scg.update
     verify_save(scg)
   end
+
+  # Tests saving a SCG in a CPR which already has a different SCG.
+  def test_create_extra_scg
+    cpe = @scg.collection_event
+    rcvr = defaults.tissue_bank.coordinator
+    reg = @scg.registration
+    pnt = reg.participant
+    pcl = reg.protocol
+    rqmt = defaults.specimen_requirement
+    spc = CaTissue::Specimen.create_specimen(:requirement => rqmt, :initial_quantity => 1.0)
+    site = defaults.tissue_bank
+    scg = pcl.add_specimens(spc, :participant => pnt, :site => site, :collection_event => cpe, :receiver => rcvr)
+    assert_not_nil(scg.received_event_parameters, "#{scg} missing REP")
+    verify_save(scg)
+  end
   
   def test_save_prostate_annotation
     pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
@@ -218,5 +261,15 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_not_nil(invn.identifier, "#{@scg} annotation #{invn} not saved")
     assert_not_nil(gleason.identifier, "#{@scg} annotation #{gleason} not saved")
     assert_not_nil(margin.identifier, "#{@scg} annotation #{margin} not saved")
+  end
+  
+  # Tests saving a participant lab annotation indirectly by saving a SCG. 
+  def test_save_lab_annotation_by_saving_scg
+    pnt = @scg.collection_protocol_registration.participant
+    date = DateTime.new(2010, 10, 10)
+    lab = CaTissue::Participant::Clinical::LabAnnotation.new
+    lab.merge_attributes(:other_lab_test_name => 'Test Lab', :test_date => date, :participant => pnt)
+    verify_save(@scg)
+    assert_not_nil(lab.identifier, "#{@scg} participant #{pnt} lab not saved")
   end
 end
