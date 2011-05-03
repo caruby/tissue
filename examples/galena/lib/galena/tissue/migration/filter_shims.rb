@@ -1,19 +1,18 @@
 require 'uom'
 
 module CaTissue
-
   # Declares the classes modified for migration.
   shims Participant, TissueSpecimen, SpecimenCollectionGroup
 
   class Participant
     # Extracts the Participant first name from the +Initials+ input field.
     def migrate_first_name(value, row)
-      self.first_name = value[0, 1]
+      value[0, 1]
     end
 
     # Extracts the Participant last name from the +Initials+ input field.
     def migrate_last_name(value, row)
-      self.last_name = value[-1, 1]
+      value[-1, 1]
     end
   end
 
