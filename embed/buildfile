@@ -21,13 +21,13 @@ CATISSUE_GEM = File.join('..', 'catissue', "caruby-tissue-#{CaTissue::VERSION}.g
 # The maven repositories.
 repositories.remote << 'http://repo1.maven.org/maven2'
 
-# An ant-like layout with source in src, compilation in classes, product in dist.
-antish = Layout.new
-antish[:source, :main, :java] = 'src'
-antish[:target, :main, :classes] = 'classes'
+# The layout with source in src, compilation in classes.
+lo = Layout.new
+lo[:source, :main, :java] = 'src'
+lo[:target, :main, :classes] = 'classes'
 
 desc 'The top-level project'
-define 'caruby-tissue-embed', :layout => antish do
+define 'caruby-tissue-embed', :layout => lo do
   # The project version is the caTissue version.
   project.version = CaTissue::VERSION
   
@@ -40,13 +40,15 @@ define 'caruby-tissue-embed', :layout => antish do
   # Compile the Java source into the classes directory.
   compile.with JRUBY_JAR, FileList['lib/*.jar']
   
-  # Make the target jar file.
-  package(:jar, :file => bridge_jar)
+  # Make the JBridge jar file.
+  package(:jar, :file => bridge_jar).include _('classes/*'), _('ruby/*')
   
+  # Make the gem jar file.
   package(:gemjar, :file => gem_jar).with_gem('caruby-tissue', CaTissue::VERSION)
   
+  # Bundle up the jar files and README.
   package(:zip).include gem_jar, bridge_jar, _('doc/dist/*')
 end
 
-desc 'Builds the embed distribution.'
+desc 'Builds the distribution zip file.'
 task :default => 'caruby-tissue-embed:package'

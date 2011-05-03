@@ -9,14 +9,20 @@ Build
 -----
 Build embed as follows:
 
-* Install the following gems:
+1. Fork this caruby-tissue git project.
+
+2. Install or build the caruby-* gems.
+
+2. Install the following gems:
   * `buildr`
   * `buildr-gemjar`
 
-* Stage the gems as described in `staging/README.txt`.
+3. Stage the gems as described in `staging/README.txt`.
 
-* Run `buildr` in the `embed` directory.
+4. Copy the caTissue client file `lib/commonpackage.jar` to the embed `lib` directory.
+
+5. Run `buildr` in the `embed` directory.
 
 Usage
 -----
-See the distribution `README.md` file.
+See the `doc/dist/README.md` file.
