@@ -6,6 +6,11 @@
 *.gem
 *.tar*
 /ext
-/doc
+/doc/api
 **log
 /test/results
+/embed/gems
+/embed/staging
+/embed/target
+/embed/classes
+/embed/lib/*.jar
