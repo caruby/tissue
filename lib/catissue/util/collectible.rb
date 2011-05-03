@@ -3,12 +3,14 @@ require 'caruby/util/validation'
 module CaTissue
   # A Collectible mix-in instance can hold a #{ReceivedEventParameters} and a #{CollectedEventParameters}.
   module Collectible
-    # Merges the other object into this SpecimenCollectionGroup. This method augments the
-    # standard {CaRuby::Resource#merge_attributes} method as follows:
-    # * Builds the SpecimenEventParameter objects from atomic parameters, e.g.:
-    #     SpecimenCollectionGroup.create(:name = > name, ..., :collector => collector, :receiver => receiver)
+    # Builds this collectible domain object's SpecimenEventParameters from atomic parameters.
     #
-    # The supported collectible optons are described in {#collect}.
+    # @example
+    #   scg = CaTissue::SpecimenCollectionGroup.new(..., :collector => collector, :receiver => receiver)
+    #   scg.collection_event_parameters.user #=> collector
+    #   scg.received_event_parameters.user #=> receiver
+    # @param (see CaRuby::Resource#merge_attributes)
+    # @option opts (see #collect)
     def merge_attributes(other, attributes=nil)
       if Hash === other then
         # extract the event parameters
@@ -20,15 +22,10 @@ module CaTissue
 
     # Collects and receives this {Collectible} with the given options.
     #
-    # @param[{Symbol => Object}] opts the merge options
-    # @option opts :specimen_event_parameters the optional SEP merge collection to augment
-    # @option opts :receiver the required tissue bank #{CaTissue::User} who received the tissue
-    # @option opts :received_date the received date (defaults to now)
-    # @option opts :collector the optional #{CaTissue::User} who acquired the tissue from the
-    #   #{CaTissue::Participant} (defaults to the receiver)
-    # @option opts :collected_date the collection date (defaults to the received date)
+    # @param (see #extract_event_parameters)
+    # @option opts (see #extract_event_parameters)
     # @return [CaTissue::SpecimenEventParameters] the augmented SEPS
-    # @raise [ValidationError] if this SCG has already been received.
+    # @raise [ValidationError] if this SCG has already been received
     def collect(opts)
       raise ValidationError.new("#{self} is already collected") if received?
       specimen_event_parameters.merge!(extract_event_parameters(opts))
@@ -85,27 +82,31 @@ module CaTissue
      super { |dep| yield dep unless ReceivedEventParameters === dep }
     end
 
-    # Extracts #{CaTissue::ReceivedEventParameters} and #{CaTissue::CollectedEventParameters} from the given
-    # options. The options used to build these #{CaTissue::SpecimenEventParameters} are removed, since they
-    # are redundant.
+    # Extracts #{CaTissue::CollectibleEventParameters} from the given options.
+    # The options are removed from the opts paramater.
     #
-    # @param opts (see #collect)
+    # @param [{Symbol => Object}] opts the merge options
+    # @option opts [Enumerable] :specimen_event_parameters the optional SEP merge collection to augment
+    # @option opts [CaTissue::User] :receiver the required tissue bank user who received the tissue
+    # @option opts [Date] :received_date the received date (defaults to now)
+    # @option opts [CaTissue::User] :collector the optional user who acquired the tissue from the
+    #   #{CaTissue::Participant} (defaults to the receiver)
+    # @option opts [Date] :collected_date the collection date (defaults to the received date)
     # @return [CaTissue::SpecimenEventParameters] the augmented SEPS
    def extract_event_parameters(opts)
       # Check if there is an attribute association
       eps = opts.delete(:specimen_event_parameters) || []
       # collect additional parameter associations
       rcvr = opts.delete(:receiver)
-      clctr = opts.delete(:collector)
-      clctr ||= rcvr
+      cltr = opts.delete(:collector) || rcvr
       # if there is not at least a collector, then don't continue parsing
-      return eps if clctr.nil?
+      return eps if cltr.nil?
       rdate = opts.delete(:received_date)
       rdate ||= DateTime.now
       eps << CaTissue::SpecimenEventParameters.create_parameters(:received, self, :user => rcvr, :timestamp => rdate)
       cdate = opts.delete(:collected_date)
       cdate ||= rdate
-      eps << CaTissue::SpecimenEventParameters.create_parameters(:collection, self, :user => clctr, :timestamp => cdate)
+      eps << CaTissue::SpecimenEventParameters.create_parameters(:collection, self, :user => cltr, :timestamp => cdate)
       logger.debug { "SCG #{self} event parameters: #{eps.pp_s(:single_line)}" }
       eps
     end
