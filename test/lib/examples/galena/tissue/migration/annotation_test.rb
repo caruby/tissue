@@ -7,14 +7,13 @@ module Galena
       include MigrationTestCase
     
       def test_target
-        verify_target(:annotation) do |spc|
-          assert_not_nil(spc.initial_quantity, "Missing quantity")
-          pth = spc.pathology.prostate_specimen_pathology_annotations.first
-          assert_not_nil(pth, "Missing #{spc} annotation")
-          assert_not_nil(pth.comments, "Missing #{pth} comments")
+        verify_target(:annotation, :target => CaTissue::SpecimenCollectionGroup) do |scg|
+          pth = scg.pathology.radical_prostatectomy_pathology_annotations.first
+          assert_not_nil(pth, "Missing #{scg} annotation")
+          assert_not_nil(pth.comment, "Missing #{pth} comments")
           gls = pth.gleason_score
           assert_not_nil(pth, "Missing #{pth} gleason score")
-          assert_equal(3, gls.primary_pattern_score, "Gleason score incorrect")
+          assert_equal('3', gls.primary_pattern_score, "Gleason score incorrect")
           grd = pth.histologic_grades.first
           assert_not_nil(grd, "Missing #{pth} grade")
           assert_equal('2', grd.grade, "Grade incorrect")
@@ -22,7 +21,7 @@ module Galena
       end
     
       def test_save
-        verify_save(:annotation)
+        verify_save(:annotation, :target => CaTissue::SpecimenCollectionGroup)
       end
     end
   end
