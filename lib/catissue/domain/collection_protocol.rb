@@ -82,17 +82,16 @@ module CaTissue
     # * :biospecimens - the collected top-level underived specimens
     # * additional SCG parameters as described in {SpecimenCollectionGroup#merge}.
     #
-    # If the options does not include a :collection_protocol_event, then the SCG is assigned
+    # If the options does not include a +:collection_protocol_event+, then the SCG is assigned
     # to the first collection event in this protocol.
-    # If the options does not include a :specimen_collection_site, then the SCG is assigned
-    # to the participant's collection site as determined by {Participant#collection_site},
+    # If the options does not include a +:specimen_collection_site+, then the SCG is assigned
+    # to the participant's collection site as determined by {CaTissue::Participant#collection_site},
     # if that can be uniquely determined.
     #
     # This add_specimens method adds the following parameter options before calling the
-    # {SpecimenCollectionGroup} constructor:
-    # * :registration => a new CollectionProtocolRegistration for this protocol and the specified participant
-    # If there is no :name parameter, then this method builds a new unique SCG name as this
-    # CollectionProtocol's name followed by a unique suffix.
+    # {CaTissue::SpecimenCollectionGroup} constructor:
+    # * :registration => a new {CaTissue::CollectionProtocolRegistration} for this protocol
+    #   and the specified participant
     #
     # @param [(<Specimen>, {Symbol => Object})] specimens_and_params the specimens to add followed
     #   by the required parameter hash
@@ -115,7 +114,9 @@ module CaTissue
         raise ArgumentError.new("Receiver missing from collection parameters: #{params.qp}")
       end
       # the required registration
-      params[:registration] ||= registration(pnt) || make_cpr(pnt)
+      unless params.has_key?(:registration) || params.has_key?(:collection_protocol_registration) then
+        params[:registration] = registration(pnt) || make_cpr(pnt)
+      end
       # the new SCG
       scg = SpecimenCollectionGroup.new(params)
       # set each Specimen SCG
