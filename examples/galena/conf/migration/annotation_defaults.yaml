@@ -1,2 +1,2 @@
-Specimen::Pathology::ProstateSpecimenPathologyAnnotation.comments: Imported annotation
-Specimen::Pathology::HistologicGrade.grade_system: WHO Grade I
+SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.comment: Imported annotation
+SpecimenCollectionGroup::Pathology::HistologicGrade.grading_system_name: WHO Grade I
