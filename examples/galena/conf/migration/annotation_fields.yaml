@@ -4,5 +4,5 @@
 Protocol: CollectionProtocol.short_title
 MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
 SPN: SpecimenCollectionGroup.surgical_pathology_number
-Gleason: Specimen::Pathology::GleasonScore.primary_pattern_score
-Grade: Specimen::Pathology::HistologicGrade.grade
+Gleason: SpecimenCollectionGroup::Pathology::GleasonScore.primary_pattern_score
+Grade: SpecimenCollectionGroup::Pathology::HistologicGrade.grade
