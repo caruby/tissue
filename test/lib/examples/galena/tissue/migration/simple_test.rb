@@ -1,6 +1,5 @@
 require File.join(File.dirname(__FILE__), 'test_case')
 
-# Tests the Galena example migration.
 module Galena
   module Tissue
     class SimpleTest < Test::Unit::TestCase

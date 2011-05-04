@@ -1,7 +1,6 @@
 require File.join(File.dirname(__FILE__), 'test_case')
 require 'galena/tissue/seed/defaults'
 
-# Tests the Galena example migration.
 module Galena
   module Tissue
     class FrozenMigrationTest < Test::Unit::TestCase

@@ -21,7 +21,7 @@ module Galena
           assert_not_nil(rep.timestamp, "Missing received date")
         end
       end
-     
+      
       def test_save
         # Clear a space for the specimen
         box = CaTissue::StorageContainer.new(:name => 'GTB Box 1')

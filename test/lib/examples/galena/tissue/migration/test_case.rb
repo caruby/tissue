@@ -4,7 +4,7 @@ require 'test/lib/catissue/migration/test_case'
 require 'galena/tissue/seed/defaults'
 
 # Inject migrate methods that simulate administrative setup.
-require File.join(File.dirname(__FILE__), 'uniquify')
+require File.join(File.dirname(__FILE__), 'seedify')
 
 module Galena
   module Tissue
@@ -53,7 +53,14 @@ module Galena
             opts[:shims] = [shims]
           end    
         end
-        super
+        mgtr = super
+        if opts[:unique] then
+          defaults.protocols.each do |pcl|
+            pcl.uniquify
+            pcl.events.each { |cpe| cpe.uniquify }
+          end
+        end
+        mgtr
       end
     end
   end
