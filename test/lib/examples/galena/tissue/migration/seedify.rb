@@ -16,20 +16,43 @@ module CaTissue
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
+      self.short_title ||= migration_default_short_title(migrated)
       self.principal_investigator ||= Galena::Seed.defaults.protocol.principal_investigator
       sites << Galena::Seed.defaults.tissue_bank if sites.empty?
       coordinators << Galena::Seed.defaults.tissue_bank.coordinator if coordinators.empty?
+    end
+    
+    private
+    
+    # @param (see #migrate)
+    # @return [String, nil] the short title of the {Galena::Seed::Defaults} protocol which
+    #   matches this protocol's event, or nil if no match 
+    def migration_default_short_title(migrated)
+      cpe = migrated.detect { |obj| CaTissue::CollectionProtocolEvent === obj } || return
+      pcl = Galena::Seed.defaults.protocols.detect { |p| p.events.first.label == cpe.label } || return
+      pcl.short_title
     end
   end
   
   class CollectionProtocolEvent
     # Augments {CaRuby::Migratable#migrate} for the example by adding the following defaults:
     # * create a {CaTissue::TissueSpecimenRequirement}
+    # * copy the event point from the matching {Galena::Seed::Defaults} CPE, if any
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
-      CaTissue::TissueSpecimenRequirement.new(:collection_event => self)
+      match = Galena::Seed.defaults.protocols.detect_value do |pcl|
+        cpe = pcl.events.first
+        cpe if cpe.label == label
+      end
+      if match then
+        self.event_point ||= match.event_point
+        rqmt = match.requirements.first
+        CaTissue::TissueSpecimenRequirement.new(:collection_event => self, :specimen_type => rqmt.specimen_type)
+      else
+        CaTissue::TissueSpecimenRequirement.new(:collection_event => self)
+      end
     end
   end
 
