@@ -11,6 +11,10 @@ module CaTissue
     end
   end
 
+  class CollectionProtocolEvent
+    include CaRuby::Resource::Unique
+  end
+
   class Container
     include CaRuby::Resource::Unique
     
