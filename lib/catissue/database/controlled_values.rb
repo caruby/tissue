@@ -11,20 +11,8 @@ require 'caruby/domain/properties'
 
 module CaTissue
   # This ControlledValues class loads caTissue permissible values from the database.
-  # Use of this class requires the +dbi+ gem and the following caTissue database access
-  # properties are defined in the
-  # home directory .catissue.yaml file:
-  # * :database_host - the database host
-  # * :database - the database name
-  # * :database_user - the database username (not the caTissue login name)
-  # * :database_password - the database password (not the caTissue login password)
-  #
-  # The default :database_host is the application :host property value, which in turn
-  # defaults to +localhost+.
-  #
-  # The optional :database_port property overrides the default MySQL port.
-  #
-  # ControlledValues is an auxiliary utility class and is not used by the CaTissue Ruby API.
+  # Use of this class requires the +dbi+ gem. See {CaRuby::SQLExecutor#initialize}
+  # for a description of the database access properties.
   class ControlledValues
     include Singleton
 
