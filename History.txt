@@ -39,3 +39,7 @@
 * caTissue 1.2 support.
 
 * embed Java-caRuby bridge subproject.
+
+=== 1.4.2 / 2011-05-04
+
+* Support Oracle driver.
