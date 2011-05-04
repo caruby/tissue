@@ -98,11 +98,12 @@ module CaTissue
     # CPE is fetched but not cascaded.
     qualify_attribute(:collection_protocol_event, :fetched)
 
-    # caTissue alert - Augment the cascaded reference attributes to work around a CaTissue bug that requires that a
-    # SpecimenCollectionGroup update object references a CollectionProtocolRegistration with a Participant reference.
-    # The CPR identifier should be sufficient for a SCG update, but caTissue bizlogic requires an extraneous
-    # CPR -> Participant reference.
-    qualify_attribute(:collection_protocol_registration, :cascaded)
+    # caTissue alert - caTissue requires that a SpecimenCollectionGroup update object references a
+    # CollectionProtocolRegistration with a Participant reference. This is a caTissue bug, since the
+    # CPR identifier should be sufficient for a SCG update, but caTissue bizlogic requires an extraneous
+    # CPR -> Participant reference. The work-around is too mark the attribute with a special
+    # +:include_in_save_template+ flag.
+    qualify_attribute(:collection_protocol_registration, :include_in_save_template)
 
     # caTissue alert - Bug #65: Although SCG name uniquely identifies a SCG, the SCG name is auto-generated on create
     # and cannnot be set by the client. Therefore, name is marked as update_only.
