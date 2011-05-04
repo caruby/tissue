@@ -28,20 +28,26 @@ module Galena
     class Defaults
       include Singleton
   
-      attr_reader :protocol, :hospital, :tissue_bank, :freezer_type, :box_type
+      attr_reader :protocols, :hospital, :tissue_bank, :freezer_type, :box_type
   
       # Creates the Galena example Defaults singleton and populates the attributes.
       def initialize
         super
+        @protocols = []
         populate
       end
       
       # Creates the Galena example administrative objects as necessary.
       def ensure_exists
-        @protocol.find(:create)
+        @protocols.each { |pcl| pcl.find(:create) }
         @hospital.find(:create)
         @surgeon.find(:create)
         @box_type.find(:create)
+      end
+      
+      # @return [CaTissue::CollectionProtocol] the primary example protocol
+      def protocol
+        @protocols.first
       end
   
       private
@@ -81,15 +87,25 @@ module Galena
           :first_name => 'Serge', :last_name => 'On', :address => addr.copy,
           :institution => galena, :department => dept, :cancer_research_group => crg)
   
-        @protocol = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration', 
+        @protocols << pcl = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration', 
           :principal_investigator => pi, :sites => [@tissue_bank])
   
         # CPE has default 1.0 event point and label
-        cpe = CaTissue::CollectionProtocolEvent.new(:collection_protocol => @protocol)
+        cpe = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl, :event_point => 1.0, :label => 'Galena Migration_1')
         
-        # the sole specimen requirement. Setting the requirement collection_event attribute to a CPE automatically
+        # The sole specimen requirement. Setting the requirement collection_event attribute to a CPE automatically
         # sets the CPE requirement inverse attribute in caRuby.
         CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe, :specimen_type => 'Fixed Tissue')
+  
+        @protocols << pcl2 = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration 2', 
+          :principal_investigator => pi, :sites => [@tissue_bank])
+        cpe2 = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl2, :event_point => 2.0, :label => 'Galena Migration_2')
+        CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe2, :specimen_type => 'Frozen Tissue')
+  
+        @protocols << pcl3 = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration 3', 
+          :principal_investigator => pi, :sites => [@tissue_bank])
+        cpe3 = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl3, :event_point => 3.0, :label => 'Galena Migration_3')
+        CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe3, :specimen_type => 'Frozen Tissue')
   
         # the storage container type hierarchy
         @freezer_type = CaTissue::StorageType.new(:name => 'GTB Freezer', :columns => 10, :rows => 1, :column_label => 'Rack')
