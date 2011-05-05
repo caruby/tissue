@@ -428,7 +428,7 @@ module CaTissue
     def add_defaults_local
       super
       self.specimen_collection_group ||= parent.specimen_collection_group if parent
-      add_default_event_parameters
+      add_default_event_parameters if collected?
       
       # The default available quantity is the initial quantity.
       self.available_quantity ||= is_available ? initial_quantity : 0
@@ -448,29 +448,45 @@ module CaTissue
       available_quantity.zero? ? nil : true
     end
     
-    # Adds the default collection and received event parameters if the collection status
-    # is +Collected+.
+    # Adds default collection and received event parameters.
     #
     # The specimen receiver is the SCG receiver.
     # The specimen collector is the SCG collector, if it exists, otherwise the receiver.
     def add_default_event_parameters
-      if collected? and specimen_collection_group then
-        rep = event_parameters.detect { |ep| CaTissue::ReceivedEventParameters === ep } ||
-          create_default_received_event_parameters
-        unless event_parameters.detect { |ep| CaTissue::CollectionEventParameters === ep } then
-          user = specimen_collection_group.collector || rep.user
-          cep = CaTissue::CollectionEventParameters.new(:specimen => self, :user => user)
-          logger.debug { "Created default #{qp} collection event #{cep.qp}." }
-        end
+      rep = received_event_parameters || create_default_received_event_parameters || return
+      if collection_event_parameters.nil? then
+        create_default_collection_event_parameters(rep)
       end
     end
     
+    # @return [CaTissue::ReceivedEventParameters] the default REP
     def create_default_received_event_parameters
-      user = specimen_collection_group.receiver || specimen_collection_group.collection_protocol.coordinators.first
+      user = specimen_collection_group.receiver || default_scg_coordinator || return
       rep = CaTissue::ReceivedEventParameters.new(:specimen => self, :user => user)
       logger.debug { "Created default #{qp} received event #{rep.qp}." }
       rep
-    end    
+    end
+    
+    # @param [CaTissue::ReceivedEventParameters] the required REP
+    # @return [CaTissue::CollectionEventParameters] the default CEP
+    def create_default_collection_event_parameters(rep)
+      user = scg_collector || rep.user || return
+      cep = CaTissue::CollectionEventParameters.new(:specimen => self, :user => user)
+      logger.debug { "Created default #{qp} collection event #{cep.qp}." }
+      cep
+    end
+    
+    # @return [CaTissue::User, nil] the SCG collector, if any
+    def scg_collector
+      specimen_collection_group.collector if specimen_collection_group
+    end
+    
+    # @return [CaTissue::User, nil] the first SCG protocol coordinator
+    def default_scg_coordinator
+      scg = specimen_collection_group || return
+      cp = scg.collection_protocol || return
+      cp.coordinators.first
+    end
 
     # Sets the :specimen_class parameter to a permissible caTissue value.
     def self.standardize_class_parameter(params)
