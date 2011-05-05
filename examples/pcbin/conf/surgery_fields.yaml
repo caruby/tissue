@@ -1,0 +1,15 @@
+Protocol: CollectionProtocol.short_title
+Patient: CollectionProtocolRegistration.protocol_participant_identifier
+Specimen Type: TissueSpecimen.specimen_type
+Year of Surgery: Participant::Clinical::Duration.start_date
+# Age requires a custom DE
+#Age at Surgery: SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.age_at_surgery
+Gleason Primary: SpecimenCollectionGroup::Pathology::GleasonScore.primary_pattern_score
+Gleason Secondary: SpecimenCollectionGroup::Pathology::GleasonScore.secondary_pattern_score
+Gleason Tertiary: SpecimenCollectionGroup::Pathology::GleasonScore.tertiary_pattern_score
+Surgical Margin Status: SpecimenCollectionGroup::Pathology::RadicalProstatectomyMargin.margin_status
+Seminal Vesicle Involvement: SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.seminal_vesicle_invasion
+Extra-Prostatic Extension Focal?: SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.is_focal
+Extra-Prostatic Extension Status: SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.status
+Lymph Node Metastases: SpecimenCollectionGroup::Pathology::Invasion.lymphatic_invasion
+

@@ -1,0 +1,2 @@
+Participant::Clinical::LabAnnotation.other_lab_test_name: Pre-Treatment PSA
+Participant::Clinical::LabAnnotation.result_units: ng/ml

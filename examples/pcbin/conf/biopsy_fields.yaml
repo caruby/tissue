@@ -1,0 +1,9 @@
+Protocol: CollectionProtocol.short_title
+Patient: CollectionProtocolRegistration.protocol_participant_identifier
+Specimen Type: TissueSpecimen.specimen_type
+Year of Diagnosis: Participant::Clinical::NewDiagnosisHealthAnnotation.date_of_examination
+# Age requires a custom DE
+#Age at Diagnosis: Participant::Clinical::NewDiagnosisHealthAnnotation.age_at_diagnosis
+Gleason Primary: SpecimenCollectionGroup::Pathology::GleasonScore.primary_pattern_score
+Gleason Secondary: SpecimenCollectionGroup::Pathology::GleasonScore.secondary_pattern_score
+Gleason Tertiary: SpecimenCollectionGroup::Pathology::GleasonScore.tertiary_pattern_score

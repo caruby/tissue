@@ -1,0 +1,3 @@
+Participant::Clinical::NewDiagnosisHealthAnnotation.name_of_procedure: Biopsy of Prostate
+SpecimenCollectionGroup.clinical_status: New Diagnosis
+SpecimenCollectionGroup.collection_status: Complete
