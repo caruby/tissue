@@ -27,10 +27,10 @@ Migration
 Run the following commands in the copied example location:
 
     crtmigrate --target Participant --mapping conf/patient_fields.yaml --defaults conf/patient_defaults.yaml data/patient.csv
-    crtmigrate --target Participant --mapping conf/t_stage_fields.yaml --defaults conf/t_stage_defaults.yaml data/t_stage.csv
-    crtmigrate --target Participant --mapping conf/therapy_fields.yaml --defaults conf/neoadjuvant_hormone_defaults.yaml data/neoadjuvant_hormone.csv
-    crtmigrate --target Participant --mapping conf/therapy_fields.yaml --defaults conf/neoadjuvant_radiation_defaults.yaml data/neoadjuvant_radiation.csv
-    crtmigrate --target Participant --mapping conf/therapy_fields.yaml --defaults conf/adjuvant_hormone_defaults.yaml data/adjuvant_hormone.csv
-    crtmigrate --target Participant --mapping conf/therapy_fields.yaml --defaults conf/adjuvant_radiation_defaults.yaml data/adjuvant_radiation.csv
     crtmigrate --target SpecimenCollectionGroup --mapping conf/biopsy_fields.yaml --defaults conf/biopsy_defaults.yaml data/biopsy.csv
     crtmigrate --target SpecimenCollectionGroup --mapping conf/surgery_fields.yaml --defaults conf/surgery_defaults.yaml data/surgery.csv
+    crtmigrate --target Participant::Clinical::LabAnnotation --mapping conf/t_stage_fields.yaml --defaults conf/t_stage_defaults.yaml data/t_stage.csv
+    crtmigrate --target Participant::Clinical::TreatmentAnnotation --mapping conf/therapy_fields.yaml --defaults conf/neoadjuvant_hormone_defaults.yaml data/neoadjuvant_hormone.csv
+    crtmigrate --target Participant::Clinical::RadRXAnnotation --mapping conf/therapy_fields.yaml --defaults conf/neoadjuvant_radiation_defaults.yaml data/neoadjuvant_radiation.csv
+    crtmigrate --target Participant::Clinical::TreatmentAnnotation --mapping conf/therapy_fields.yaml --defaults conf/adjuvant_hormone_defaults.yaml data/adjuvant_hormone.csv
+    crtmigrate --target Participant::Clinical::RadRXAnnotation --mapping conf/therapy_fields.yaml --defaults conf/adjuvant_radiation_defaults.yaml data/adjuvant_radiation.csv
