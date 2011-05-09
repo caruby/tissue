@@ -48,15 +48,28 @@ module PCBIN
     
     ## DATABASE TEST CASES ##
     
+    # Tests saving the biopsy, prostatectomy and associated annotations for a single patient.
+    # Note that saving the patient first results in an extra caTissue junk anticipated SCG,
+    # since the patient migration does not create an SCG and therefore cannot fill in the
+    # anticipated SCG. Otherwise, the migrations can be run in any order with the same
+    # result.
     def test_save
-#      verify_save(:patient, PATIENT_OPTS)
+      logger.debug { "#{qp} saving biopsy SCG..." }
       verify_save(:biopsy, BIOPSY_OPTS)
-#      verify_save(:surgery, SURGERY_OPTS) 
-#      verify_save(:t_stage, T_STAGE_OPTS) 
-#      verify_save(:adjuvant_hormone, ADJ_HORMONE_OPTS) 
-#      verify_save(:adjuvant_radiation, ADJ_RADIATION_OPTS) 
-#      verify_save(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS) 
-#      verify_save(:neoadjuvant_radiation, NEOADJ_RADIATION_OPTS) 
+      logger.debug { "#{qp} saving surgery SCG..." }
+      verify_save(:surgery, SURGERY_OPTS) 
+      logger.debug { "#{qp} saving patient..." }
+      verify_save(:patient, PATIENT_OPTS)
+      logger.debug { "#{qp} saving T Stage..." }
+      verify_save(:t_stage, T_STAGE_OPTS) 
+      logger.debug { "#{qp} saving adjuvant hormone therapy..." }
+      verify_save(:adjuvant_hormone, ADJ_HORMONE_OPTS) 
+      logger.debug { "#{qp} saving adjuvant radiation therapy..." }
+      verify_save(:adjuvant_radiation, ADJ_RADIATION_OPTS) 
+      logger.debug { "#{qp} saving neoadjuvant hormone therapy..." }
+      verify_save(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS) 
+      logger.debug { "#{qp} saving neoadjuvant radiation therapy..." }
+      verify_save(:neoadjuvant_radiation, NEOADJ_RADIATION_OPTS)
     end
     
     private
@@ -91,18 +104,18 @@ module PCBIN
     }
     
     T_STAGE_OPTS = {
-      :target => CaTissue::Participant,
+      :target => CaTissue::Participant::Clinical::LabAnnotation,
       :mapping => File.join(CONFIGS, 't_stage_fields.yaml'),
       :defaults => File.join(CONFIGS, 't_stage_defaults.yaml'),
-    } 
+    }
     
     def self.therapy_options(timing, agent)
       target = case agent
-        when :hormone then CaTissue::Participant::Clinical::RadRXAnnotation
-        when :radiation then CaTissue::Participant::Clinical::TreatmentAnnotation
+        when :hormone then CaTissue::Participant::Clinical::TreatmentAnnotation
+        when :radiation then CaTissue::Participant::Clinical::RadRXAnnotation
       end
       {
-        :target => CaTissue::Participant,
+        :target => target,
         :mapping => File.join(CONFIGS, 'therapy_fields.yaml'),
         :defaults => File.join(CONFIGS, "#{timing}_#{agent}_defaults.yaml")
       }
