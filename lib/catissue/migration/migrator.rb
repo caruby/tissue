@@ -14,8 +14,6 @@ module CaTissue
     # The default name of this migrator.
     NAME = 'caTissue Migrator'
 
-    DEF_CONF_FILE = File.join('conf', 'migration.yaml')
-
     # The built-in caTissue migration shims.
     SHIM_FILE = File.join(File.dirname(__FILE__), 'shims.rb')
 
@@ -83,6 +81,15 @@ module CaTissue
     private
     
     UNIQUIFY_SHIM = File.join(File.dirname(__FILE__), 'uniquify')
+        
+    # The context module is determined as follows:
+    # * for an {Annotation} target class, the context module is the annotated class's {ResourceClass#domain_module}
+    # * otherwise, delegate to {CaRuby::Migrator}.
+    #
+    # @return (see CaRuby::Migrator#context_module)
+    def context_module
+      @target_class < Annotation ? @target_class.hook.domain_module : super
+    end
     
     # Clears the migration protocol CPR and SCG references.
     # This action frees up memory for the next iteration, thereby ensuring that migration is an
