@@ -34,9 +34,10 @@ module CaTissue
     # for the object {AnnotationModule}, otherwise this method returns the standard {CaTissue::Database}
     # service.
     #
+    # @param (see CaRuby::Database#persistence_service)
     # @return (see CaRuby::Database#persistence_service)
-    def persistence_service(obj)
-      Annotation === obj ? obj.class.domain_module.persistence_service : super
+    def persistence_service(klass)
+      klass < Annotation ? klass.domain_module.persistence_service : super
     end
     
     # Augments {CaRuby::Database#ensure_exists} to ensure that an {Annotation::Proxy} reference identifier
