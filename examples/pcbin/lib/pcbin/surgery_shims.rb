@@ -12,7 +12,4 @@ module CaTissue
       Date.new(year, 7, 2)
     end
   end
-
-  class SpecimenCollectionGroup
-  end
 end
