@@ -80,6 +80,11 @@ module CaTissue
       end
     end
     
+    # @return [AnnotatableClass] the annotated domain object class
+    def hook
+      domain_module.proxy.hook
+    end
+    
     # @param [Class] klass the hook class for this primary annotation
     def hook=(klass)
       # only a primary can have a hook
@@ -220,7 +225,10 @@ module CaTissue
       end
       # make the inverse proxy -> annotation dependent attribute if necessary
       inverse = attr_md.inverse || proxy.create_annotation_attribute(self, attr)
-      logger.debug { "Detected primary annotation #{qp} proxy #{proxy} attribute #{attr} with inverse #{inverse}." }
+      logger.debug { "Detected primary annotation #{qp} proxy #{proxy} attribute #{attr} with owner inverse #{inverse}." }
+      # the annotation is already dependent on the hook, but now it has an inverse,
+      # so record the owner attribute
+      add_owner_attribute(attr)
 
       attr
     end
