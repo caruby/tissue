@@ -4,23 +4,31 @@ PCBIN caRuby Tissue example
 Synopsis
 --------
 This directory contains the caRuby Tissue example for the Prostate SPORE PCBIN initiative.
-PCBIN shares participant cancer center data in caTissue instances with common data elements.
+The PCBIN initiative shares participant cancer center data in caTissue instances with common
+data elements. The official PCBIN import utility is a Java program which operates on a
+special-purpose input XML file and calls caRuby to create annotations. The example shown
+here is a caRuby Tissue Migrator import which operates on CSV files.
 
-There are three migration input files, which map to +caTissue+ entities as follows:
+The migration input files are in the `data` directory. The input maps to caTissue entities as follows:
 
-* +patient+ => +Participant+
+* `patient` => `Participant`
 
-* +biopsy+ => prostate biopsy +SpecimenCollectionGroup+
+* `biopsy` => prostate biopsy `SpecimenCollectionGroup`
 
-* +surgery+ => prostatectomy +SpecimenCollectionGroup+
+* `surgery` => prostatectomy `SpecimenCollectionGroup`
 
+* `t_stage` => the tumor stage as a lab annotation
+
+* (`neo`)`adjuvant_hormone` => (neo)adjuvant hormone therapy annotation
+
+* (`neo`)`adjuvant_radiation` => (neo)adjuvant radiation therapy annotation
 
 Setup
 -----
 Configure caRuby and copy the PCBIN example as described in the Galena examples
 [Setup](https://github.com/caruby/tissue/blob/master/examples/galena/README.md).
 
-Create a +Prostate SPORE+ caTissue collection protocol in a test database.
+Create a simple `Prostate SPORE` caTissue collection protocol in a test database.
 
 Migration
 ---------
