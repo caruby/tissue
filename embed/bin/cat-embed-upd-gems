@@ -1,0 +1,12 @@
+inst_dir=`gem environment | grep 'INSTALLATION DIRECTORY' | grep -oE '[^ ]*$'`
+gems=`cat gems.txt | tr '\n' ' '`
+tgt_dir='target/gem_home'
+sub_dirs='cache gems specifications'
+for d in $sub_dirs; do
+    mkdir -p $tgt_dir/$d
+    rm -rf $tgt_dir/$d/*
+    for g in $gems; do
+    	cp -R $inst_dir/$d/$g* $tgt_dir/$d
+    done
+done
+tar czf gem_home.tar.gz $tgt_dir

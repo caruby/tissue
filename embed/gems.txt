@@ -1,0 +1,8 @@
+caruby-tissue
+caruby-core
+dbd-jdbc
+dbi
+deprecated
+extensional
+fastercsv
+uom

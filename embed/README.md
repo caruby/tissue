@@ -9,20 +9,30 @@ Build
 -----
 Build embed as follows:
 
-1. Fork this caruby-tissue git project.
-
-2. Install or build the caruby-* gems.
+1. Install the caruby-* gems.
 
 2. Install the following gems:
   * `buildr`
   * `buildr-gemjar`
 
-3. Stage the gems as described in `staging/README.txt`.
+6. Copy the caTissue client file `lib/commonpackage.jar` to the embed `lib` directory.
 
-4. Copy the caTissue client file `lib/commonpackage.jar` to the embed `lib` directory.
+3. Fork this `caruby-tissue` git project.
 
-5. Run `buildr` in the `embed` directory.
+4. cd to the `embed` subdirectory.
+
+5. Run `bin/cat-embed-upd-gems`.
+
+5. Run `buildr`.
 
 Usage
 -----
 See the `doc/dist/README.md` file.
+
+Bugs
+----
+* `buildr-gemjar` only operates on gems that are installed in the `target/gem_home` directory.
+  This error occurs with the JRuby 1.6.0RC2 releases, and perhaps others.
+  The error largely defeats the purpose of `buildr-gemjar`, but so it goes.
+  The work-around is to manually update `target/gem_home` as described in the
+  Build section above.
