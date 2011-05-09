@@ -45,14 +45,14 @@ Migrate the Galena `simple` example as follows:
 
 2. Run the following:
 
-      bin/seed
+       bin/seed  
    
    This command initializes the administrative objects in the Galena test database,
    including the Galena collection protocol, site, cancer center, tissue bank and coordinator.
 
 3. Run the following:
 
-      crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv
+       crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv
 
    This command migrates the CSV record in the `simple.csv` input file into a caTissue
    `TissueSpecimen` based on the `simple_fields.yaml` mapping file.
@@ -65,20 +65,20 @@ Migrate the Galena `simple` example as follows:
 The other examples are run in a similar manner. Each example demonstrates different
 features of the caRuby Migration utility as follows:
 
-* `simple` - a good starting point with limited input fields
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv` 
+* <tt>simple</tt> - a good starting point with limited input fields
+      crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv
 
-* `general` - lots of input fields, no custom Ruby code
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv`
+* <tt>general</tt> - lots of input fields, no custom Ruby code
+      crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv
 
-* `filter` - a smattering of custom Ruby shim code to convert input values to caTissue values
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv`
+* <tt>filter</tt> - a smattering of custom Ruby shim code to convert input values to caTissue values
+      crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv
 
-* `frozen` - an example demonstrating how to import storage locations
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv` 
+* <tt>frozen</tt> - an example demonstrating how to import storage locations
+      crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv
 
-* `annotation` - an example demonstrating how to import annotations
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv `
+* <tt>annotation</tt> - an example demonstrating how to import annotations
+      crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv
 
 Try running an example with the `--debug` flag and look at the `log/migration.log` file to see
 what caRuby is up to behind the scenes (hint: a lot!).
@@ -88,17 +88,17 @@ Input data
 The sample Galena Tissue Bank CSV input files hold one row for each specimen.
 The following input fields are included in the examples:
 
-* `Protocol` - Collection Protocol title
-* `MRN` - Patient Medical Record Number
-* `Initials` - Patient name initials
-* `Frozen?` - Flag indicating whether the specimen is frozen
-* `SPN` - Surgical Pathology Number
-* `Collection Date` - Date the specimen was acquired by the tissue bank
-* `Received Date` - Date the specimen was donated by the participant
-* `Quantity` - Amount collected
-* `Box` - Tissue storage container
-* `X` - the tissue box column
-* `Y` - the tissue box row
-* `Gleason`: Specimen primary gleason score
-* `Grade`: Specimen histologic WHO grade
+* <tt>Protocol</tt> - Collection Protocol title
+* <tt>MRN</tt> - Patient Medical Record Number
+* <tt>Initials</tt> - Patient name initials
+* <tt>Frozen?</tt> - Flag indicating whether the specimen is frozen
+* <tt>SPN</tt> - Surgical Pathology Number
+* <tt>Collection Date</tt> - Date the specimen was acquired by the tissue bank
+* <tt>Received Date</tt> - Date the specimen was donated by the participant
+* <tt>Quantity</tt> - Amount collected
+* <tt>Box</tt> - Tissue storage container
+* <tt>X</tt> - the tissue box column
+* <tt>Y</tt> - the tissue box row
+* <tt>Gleason</tt>: Specimen primary gleason score
+* <tt>Grade</tt>: Specimen histologic WHO grade
 
