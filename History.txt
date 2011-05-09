@@ -1,3 +1,6 @@
+This history lists major release themes. See the GitHub source (https://github.com/caruby/tissue)
+for change details.
+
 === 1.2.1 / 2010-11-23
 
 * Initial public release.
@@ -42,4 +45,6 @@
 
 === 1.4.2 / 2011-05-04
 
-* Add registration test case.
+* Add registration and PCBIN examples.
+
+
