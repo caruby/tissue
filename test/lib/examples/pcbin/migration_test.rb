@@ -10,41 +10,41 @@ module PCBIN
       super(FIXTURES)
     end
 
-#    def test_patient_target
-#      verify_target(:patient, PATIENT_OPTS)
-#    end
-#
-#    def test_biopsy_target
-#      verify_target(:biopsy, BIOPSY_OPTS)
-#    end
-#
-#    def test_surgery_target
-#      verify_target(:surgery, SURGERY_OPTS)
-#    end
-#    
-#    def test_surgery_target
-#      verify_target(:surgery, SURGERY_OPTS)
-#    end
-#    
-#    def test_t_stage_target
-#      verify_target(:t_stage, T_STAGE_OPTS)
-#    end
-#    
-#    def test_adj_hormone_target
-#      verify_target(:adjuvant_hormone, ADJ_HORMONE_OPTS) 
-#    end    
-#    
-#    def test_adj_radiation_target
-#      verify_target(:adjuvant_radiation, ADJ_RADIATION_OPTS) 
-#    end    
-#    
-#    def test_neoadj_hormone_target
-#      verify_target(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS) 
-#    end    
-#    
-#    def test_neoadj_radiation_target
-#      verify_target(:neoadjuvant_radiation, NEOADJ_RADIATION_OPTS) 
-#    end
+    def test_patient_target
+      verify_target(:patient, PATIENT_OPTS)
+    end
+
+    def test_biopsy_target
+      verify_target(:biopsy, BIOPSY_OPTS)
+    end
+
+    def test_surgery_target
+      verify_target(:surgery, SURGERY_OPTS)
+    end
+    
+    def test_surgery_target
+      verify_target(:surgery, SURGERY_OPTS)
+    end
+    
+    def test_t_stage_target
+      verify_target(:t_stage, T_STAGE_OPTS)
+    end
+    
+    def test_adj_hormone_target
+      verify_target(:adjuvant_hormone, ADJ_HORMONE_OPTS) 
+    end    
+    
+    def test_adj_radiation_target
+      verify_target(:adjuvant_radiation, ADJ_RADIATION_OPTS) 
+    end    
+    
+    def test_neoadj_hormone_target
+      verify_target(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS) 
+    end    
+    
+    def test_neoadj_radiation_target
+      verify_target(:neoadjuvant_radiation, NEOADJ_RADIATION_OPTS) 
+    end
     
     ## DATABASE TEST CASES ##
     
