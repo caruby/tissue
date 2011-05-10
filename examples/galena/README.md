@@ -45,14 +45,14 @@ Migrate the Galena `simple` example as follows:
 
 2. Run the following:
 
-       bin/seed  
+   `bin/seed`
    
    This command initializes the administrative objects in the Galena test database,
    including the Galena collection protocol, site, cancer center, tissue bank and coordinator.
 
 3. Run the following:
 
-       crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv`
 
    This command migrates the CSV record in the `simple.csv` input file into a caTissue
    `TissueSpecimen` based on the `simple_fields.yaml` mapping file.
@@ -66,19 +66,28 @@ The other examples are run in a similar manner. Each example demonstrates differ
 features of the caRuby Migration utility as follows:
 
 * <tt>simple</tt> - a good starting point with limited input fields
-      crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv
+
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv`
 
 * <tt>general</tt> - lots of input fields, no custom Ruby code
-      crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv
+
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv`
 
 * <tt>filter</tt> - a smattering of custom Ruby shim code to convert input values to caTissue values
-      crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv
 
-* <tt>frozen</tt> - an example demonstrating how to import storage locations
-      crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv`
 
-* <tt>annotation</tt> - an example demonstrating how to import annotations
-      crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv
+* <tt>frozen</tt> - storage locations
+
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv`
+
+* <tt>annotation</tt> - Dynamic Extension annotations
+
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv`
+
+* <tt>registration</tt> - register participants in a Collection Protocol without specimens
+
+  `crtmigrate --target SpecimenCollectionGroup --mapping conf/migration/registration_fields.yaml data/registration.csv`
 
 Try running an example with the `--debug` flag and look at the `log/migration.log` file to see
 what caRuby is up to behind the scenes (hint: a lot!).
