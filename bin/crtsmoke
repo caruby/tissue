@@ -12,12 +12,7 @@ puts "Loading the caruby-tissue gem..." unless quiet
 
 # load the caruby-tissue gem
 require 'rubygems'
-begin
-  gem 'caruby-tissue'
-rescue LoadError
-  # if the gem is not available, then try a local source
-  $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
-end
+gem 'caruby-tissue'
 
 puts "Loading the caTissue client..." unless quiet
 
