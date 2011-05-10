@@ -5,12 +5,7 @@
 
 # load the caRuby Tissue gem
 require 'rubygems'
-begin
-  gem 'caruby-tissue'
-rescue LoadError
-  # if the gem is not available, then try a local source
-  $:.unshift File.join(File.dirname(__FILE__), '..', '..', '..', 'lib')
-end
+gem 'caruby-tissue'
 
 # add the Galena lib to the path
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
@@ -21,6 +16,6 @@ DEF_LOG_FILE = 'log/migration.log'
 require 'catissue'
 require 'catissue/cli/command'
 
-require 'galena/seed/defaults'
+require 'galena/tissue/seed/defaults'
 
 CaTissue::CLI::Command.new.start { Galena::Seed.defaults.ensure_exists }
