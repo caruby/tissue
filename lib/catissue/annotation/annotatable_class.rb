@@ -1,6 +1,7 @@
 require 'forwardable'
 require 'caruby/util/inflector'
 require 'catissue/annotation/annotation_module'
+require 'catissue/annotation/de_integration'
 
 module CaTissue
   # Mix-in for extending a caTissue domain class with annotations.
@@ -9,6 +10,9 @@ module CaTissue
     # @return [Integer, nil] the the hook class designator that is used by caTissue to persist primary
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
+      
+    # @return [Class] the {DEIntegration} proxy class, or nil for 1.1.x caTissue
+    attr_reader :de_integration_proxy_class
     
     def self.extended(klass)
       super
@@ -19,19 +23,19 @@ module CaTissue
         @local_ann_attrs = []
       end
     end
-    
+
     # @return [Integer, nil] this class's entity id, if it exists, otherwise the superclass effective entity id
     #   if the superclass is an annotation class
     def effective_entity_id
       @entity_id or parent_entity_id
     end
- 
+
     # Loads the annotations defined for this class if necessary.
     def ensure_annotations_loaded
       # referencing the annotations loads them
       annotation_modules
     end
-   
+
     # If there is an existing annotation whose proxy accessor is the
     # given symbol, then return true. Otherwise, attempt to import
     # an annotation and return whether the import was successful.
@@ -51,29 +55,31 @@ module CaTissue
     def toxic_attributes
       @anntbl_toxic_attrs ||= unfetched_attributes.compose { |attr_md| not attr_md.type < Annotation } 
     end
-    
-    def annotation_proxy_attribute(attribute)
-      annotatable_class_hierarchy.detect_value { |klass| klass.local_annotation_proxy_attribute(attribute) }
+
+    # @param [AnnotationModule] mod the annotation module
+    # @return [Symbol] the corresponding annotation proxy reference attribute
+    def annotation_proxy_attribute(mod)
+      @ann_mod_pxy_hash[mod] or (superclass.annotation_proxy_attribute(mod) if superclass < Annotatable)
     end
 
-    # Makes a new attribute in this hook class for the given annotation proxy domain attribute.
-    # The hook annotation reference attribute delegates to the proxy. This method is intended for
-    # the exclusive use of {Annotation::ProxyClass}.
-    #
-    # @param [AnnotationModule] mod the annotation module
-    # @param [Symbol] attribute the proxy => annotation reference 
-    def create_annotation_attribute(mod, attribute)
-      pxy = mod.proxy
-      pxy_attr = @ann_mod_pxy_hash[mod]
-      ann_attr_md = pxy.attribute_metadata(attribute)
-      # the type referenced by the annotation proxy
-      klass = ann_attr_md.type
-      # create annotation accessors which delegate to the proxy
-      def_delegators(pxy_attr, *ann_attr_md.accessors)
-      logger.debug { "Created #{qp}.#{attribute} which delegates to the annotation proxy #{pxy_attr}." }
-      # add the attribute
-      add_annotation_attribute(attribute, klass)
-    end
+#    # Makes a new attribute in this hook class for the given annotation proxy domain attribute.
+#    # The hook annotation reference attribute delegates to the proxy. This method is intended for
+#    # the exclusive use of {Annotation::ProxyClass}.
+#    #
+#    # @param [AnnotationModule] mod the annotation module
+#    # @param [Symbol] attribute the proxy => annotation reference 
+#    def create_annotation_attribute(mod, attribute)
+#      pxy = mod.proxy
+#      pxy_attr = @ann_mod_pxy_hash[mod]
+#      ann_attr_md = pxy.attribute_metadata(attribute)
+#      # the type referenced by the annotation proxy
+#      klass = ann_attr_md.type
+#      # create annotation accessors which delegate to the proxy
+#      def_delegators(pxy_attr, *ann_attr_md.accessors)
+#      # add the attribute
+#      add_annotation_attribute(attribute, klass)
+#      logger.debug { "Created #{qp}.#{attribute} which delegates to the annotation proxy #{pxy_attr}." }
+#    end
     
     # Loads the annotations, if necessary, and tries to get the constant again.
     #
@@ -118,20 +124,22 @@ module CaTissue
       @ann_mods ||= load_annotations
     end
     
-    # @param [Symbol] attribute the annotation attribute
-    # @return [Symbol] the annotation proxy attribute
-    # @raise [TypeError] if the given attribute is not an annotation attribute
-    def local_annotation_proxy_attribute(attribute)
-      unless annotation_attribute?(attribute) then
-        raise TypeError.new("#{qp} #{attribute} is not an annotation attribute")
-      end
-      # the annotation class
-      klass = attribute_metadata(attribute).type
-      mod = klass.domain_module
-      @ann_mod_pxy_hash[mod]
-    end    
-    
     private
+    
+    # @param [String] name the proxy record entry class name
+    def annotation_proxy_class_name=(name)
+      @de_integration_proxy_class = Annotation::DEIntegration.proxy(name)
+      if @de_integration_proxy_class then
+        # hide the internal caTissue proxy collection attribute
+        attr = detect_attribute_with_type(@de_integration_proxy_class)
+        if attr then
+          remove_attribute(attr)
+          logger.debug { "Hid the internal caTissue #{qp} annotation record-keeping attribute #{attr}." }
+        end
+      else
+        logger.debug { "Ignored the missing caTissue #{qp} proxy class name #{name}, presumably unsupported in this caTissue release." }
+      end
+    end
     
     # Loads the annotation modules in the class hierarchy.
     #
@@ -178,13 +186,16 @@ module CaTissue
       # the annotation module => proxy hash
       @ann_mod_pxy_hash = {}
       # an annotated class has a hook entity id
-      unless @ann_spec_hash.empty? then
-        @entity_id = Annotation::EntityFacade.instance.hook_entity_id(self) 
-      end
+      unless @ann_spec_hash.empty? then initialize_annotation_holder end
       # build the annotations
       @ann_spec_hash.map { |name, opts| import_annotation(name, opts) }
+    end    
+    
+    # Determines this annotated class's {#entity_id} and {#de_integration_proxy_class}.
+    def initialize_annotation_holder
+      @entity_id = Annotation::EntityFacade.instance.hook_entity_id(self)
     end
-   
+    
     # @param [Symbol] attribute the annotation accessor
     # @return [Module] the annotation module which implements the attribute
     def annotation_attribute_module(attribute)
@@ -200,18 +211,20 @@ module CaTissue
     def import_annotation(name, opts)
       logger.debug { "Importing #{qp} annotation #{name}..." }
       # make the annotation module scoped by this Annotatable class
-      class_eval("module #{name}; end")
+      class_eval("class #{name}; end")
       mod = const_get(name)
       # append the AnnotationModule methods
       AnnotationModule.extend_module(mod, self, opts)
       # make the proxy attribute
       create_proxy_attribute(mod)
-      # make the annotation dependent attributes
-      create_annotation_attributes(mod)
-      # add proxy references
-      mod.ensure_proxy_attributes_are_defined
-      mod.add_annotation_dependents
-      logger.debug { "Imported #{qp} annotation #{name}." }
+      # fill out the dependency hierarchy
+      mod.proxy.build_annotation_dependency_hierarchy
+#      # make the annotation dependent attributes
+#      create_annotation_attributes(mod)
+#      # add proxy references
+#      mod.ensure_proxy_attributes_are_defined
+#      mod.add_annotation_dependents
+#      logger.debug { "Imported #{qp} annotation #{name} attributes #{annotation_attributes.qp}." }
       mod
     end
 
@@ -234,54 +247,58 @@ module CaTissue
     def create_proxy_attribute(mod)
       # the proxy class
       pxy = mod.proxy
-      # the proxy attribute
+      # the proxy attribute symbol
       attr = mod.name.demodulize.underscore.to_sym
-      # define the proxy attribute
+      # Define the proxy attribute.
       attr_create_on_demand_accessor(attr) { |obj| obj.create_proxy(pxy) }
-      # add it as a standard (but unpersisted) attribute
-      add_attribute(attr, pxy, :unsaved)
-      # create the proxy => hook inverse
-      pxy.set_hook(self, attr)
-      logger.debug { "Added #{qp} #{mod.qp} annotation proxy attribute #{attr}." }
+      # Register the attribute.
+      add_attribute(attr, pxy)
+      # The proxy is a logical dependent.
+      add_dependent_attribute(attr, :logical)
+      logger.debug { "Added #{qp} #{mod.qp} annotation proxy attribute #{attr} of type #{pxy}." }
       # the annotation module => proxy attribute association
       @ann_mod_pxy_hash[mod] = attr
       attr
     end
 
-    # Makes a new attribute in this hook class for each of the given annotation module's
-    # proxy domain attributes. The hook annotation reference attribute delegates to the
-    # proxy.
-    #
-    # @param [AnnotationModule] mod the subject annotation module
-    # @param [Symbol] proxy_attribute the hook => proxy reference 
-    def create_annotation_attributes(mod)
-      # create annotation attributes which delegate to the proxy
-      mod.proxy.annotation_attributes.each do |attr|
-        create_annotation_attribute(mod, attr)
-      end
-    end
-
-    # Adds the given annotation attribute as a dependent collection attribute with meta-data.
-    #
-    # @param [Symbol] attribute the annotation accessor
-    # @param [Class] type the attribute domain type
-    def add_annotation_attribute(attribute, type)
-      logger.debug { "Adding #{qp} #{type.qp} annotation attribute #{attribute}..." }
-      # Mark the attribute as a collection.
-      add_attribute(attribute, type, :collection)
-      
-      # the camel-case attribute is a potential alias
-      jattr = attribute.to_s.camelize(:lower).to_sym
-      unless attribute == jattr then
-        add_attribute_aliases(jattr => attribute)
-      end
-      
-      # the annotation is a dependent
-      add_dependent_attribute(attribute, :logical)
-      # add the attribute to the local collection
-      @local_ann_attrs << attribute
-      
-      attribute
-    end
+#    # Makes a new attribute in this hook class for each of the given annotation module's
+#    # proxy domain attributes. The hook annotation reference attribute delegates to the
+#    # proxy.
+#    #
+#    # @param [AnnotationModule] mod the subject annotation module
+#    # @param [Symbol] proxy_attribute the hook => proxy reference 
+#    def create_annotation_attributes(mod)
+#      # create annotation attributes which delegate to the proxy
+#      mod.proxy.annotation_attributes.each do |attr|
+#        create_annotation_attribute(mod, attr)
+#      end
+#    end
+#    
+#    # Adds the given annotation attribute as a dependent collection attribute with meta-data.
+#    #
+#    # @param [Symbol] attribute the annotation accessor
+#    # @param [Class] type the attribute domain type
+#    def add_annotation_attribute(attribute, type)
+#      logger.debug { "Adding #{qp} #{type.qp} annotation attribute #{attribute}..." }
+#      # Mark the attribute as a collection.
+#      add_attribute(attribute, type, :collection)
+#      
+#      # The camel-case attribute is a potential alias.
+#      jattr = attribute.to_s.camelize(:lower).to_sym
+#      unless attribute == jattr then
+#        add_attribute_aliases(jattr => attribute)
+#      end
+#      
+#      # The inverse is the annotation proxy reference.
+#      attr_md = mod.proxy.attribute_metadata(attribute)
+#      inverse = attr_md.inverse
+#      set_attribute_inverse(attribute, inverse)
+#      # The annotation is a non-cascaded logical dependent.
+#      add_dependent_attribute(attribute, :logical)
+#      # Add the attribute to the local collection.
+#      @local_ann_attrs << attribute
+#      
+#      attribute
+#    end
   end
 end
