@@ -267,9 +267,9 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
   def test_save_lab_annotation_by_saving_scg
     pnt = @scg.collection_protocol_registration.participant
     date = DateTime.new(2010, 10, 10)
-    lab = CaTissue::Participant::Clinical::LabAnnotation.new
-    lab.merge_attributes(:other_lab_test_name => 'Test Lab', :test_date => date, :participant => pnt)
+    labs = CaTissue::Participant::Clinical::LabAnnotation.new
+    labs.merge_attributes(:other_lab_test_name => 'Test Lab', :test_date => date, :participant => pnt)
     verify_save(@scg)
-    assert_not_nil(lab.identifier, "#{@scg} participant #{pnt} lab not saved")
+    assert_not_nil(labs.identifier, "#{@scg} participant #{pnt} labs not saved")
   end
 end
