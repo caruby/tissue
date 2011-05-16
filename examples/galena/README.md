@@ -73,13 +73,13 @@ features of the caRuby Migration utility as follows:
 
   `crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv`
 
-* <tt>filter</tt> - a smattering of custom Ruby shim code to convert input values to caTissue values
+* <tt>filter</tt> - a smattering of custom Ruby shim code to convert input values to caTissue values and reject an incomplete migration
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml data/filter.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/filter_fields.yaml --shims lib/galena/tissue/migration/filter_shims.rb --bad bad.csv data/filter.csv`
 
 * <tt>frozen</tt> - storage locations
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml data/frozen.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml --shims lib/galena/tissue/migration/frozen_shims.rb data/frozen.csv`
 
 * <tt>annotation</tt> - Dynamic Extension annotations
 
