@@ -42,7 +42,11 @@ module Galena
         @protocols.each { |pcl| pcl.find(:create) }
         @hospital.find(:create)
         @surgeon.find(:create)
-        @box_type.find(:create)
+        unless @box.find then
+          frz = @freezer_type.find_available(@tissue_bank, :create)
+          frz << @box
+          @box.create
+        end
       end
       
       # @return [CaTissue::CollectionProtocol] the primary example protocol
@@ -108,12 +112,15 @@ module Galena
         CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe3, :specimen_type => 'Frozen Tissue')
   
         # the storage container type hierarchy
-        @freezer_type = CaTissue::StorageType.new(:name => 'GTB Freezer', :columns => 10, :rows => 1, :column_label => 'Rack')
-        rack_type = CaTissue::StorageType.new(:name => 'GTB Rack', :columns => 10, :rows => 10)
-        @box_type = CaTissue::StorageType.new(:name => 'GTB Box', :columns => 10, :rows => 10)
+        @freezer_type = CaTissue::StorageType.new(:name => 'Galena Freezer', :columns => 10, :rows => 1, :column_label => 'Rack')
+        rack_type = CaTissue::StorageType.new(:name => 'Galena Rack', :columns => 10, :rows => 10)
+        @box_type = CaTissue::StorageType.new(:name => 'Galena Box', :columns => 10, :rows => 10)
         @freezer_type << rack_type
-        rack_type << box_type
+        rack_type << @box_type
         @box_type << 'Tissue'
+        
+        # the example tissue box
+        @box = @box_type.new_container(:name => 'Galena Box 1')
       end
     end
   end
