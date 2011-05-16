@@ -22,16 +22,16 @@ class StorageTypeTest < Test::Unit::TestCase
     verify_defaults(@frz_type)
   end
 
-  def test_create_container
-    frz = @frz_type.create_container
+  def test_new_container
+    frz = @frz_type.new_container
     assert_same(CaTissue::StorageContainer, frz.class, "Created instance class incorrect")
     assert_same(@frz_type, frz.container_type, "Created container type incorrect")
   end
 
   def test_can_hold
-    assert(@frz_type.can_hold_child?(@rack_type.create_container), "Freezer can't hold a rack")
-    assert(@rack_type.can_hold_child?(@box_type.create_container), "Rack can't hold a box")
-    assert(@box_type.can_hold_child?(@array_type.create_container), "Box can't hold an array")
+    assert(@frz_type.can_hold_child?(@rack_type.new_container), "Freezer can't hold a rack")
+    assert(@rack_type.can_hold_child?(@box_type.new_container), "Rack can't hold a box")
+    assert(@box_type.can_hold_child?(@array_type.new_container), "Box can't hold an array")
     assert(@array_type.can_hold_child?(@spc), "Array can't hold the specimen")
     assert(@box_type.can_hold_child?(@spc), "Box can't hold the specimen")
   end

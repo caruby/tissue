@@ -105,7 +105,7 @@ module CaTissue
     #   {CaTissue::Container#completely_full?}.
     def find_available(site, opts=nil)
       find_containers(:site => site).detect { |ctr| not ctr.completely_full? } or
-      (create_container(:site => site).create if Options.get(:create, opts))
+      (new_container(:site => site).create if Options.get(:create, opts))
     end
 
     # Fetches containers of this ContainerType from the database.
@@ -113,7 +113,7 @@ module CaTissue
     # @param [<Symbol => Object>] params the optional search attribute => value hash
     # @return the containers of this type which satisfy the search parameters
     def find_containers(params=nil)
-      tmpl = create_container(params)
+      tmpl = new_container(params)
       logger.debug { "Finding #{name} containers..." }
       tmpl.query
     end
@@ -123,7 +123,7 @@ module CaTissue
     #
     # @param [{Symbol => Object}] vh the attribute => value hash
     # @return [Container] the new container
-    def create_container(vh=nil)
+    def new_container(vh=nil)
       vh ||= {}
       vh[:container_type] = self
       container_class.new(vh)

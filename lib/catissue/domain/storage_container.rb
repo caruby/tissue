@@ -110,7 +110,7 @@ module CaTissue
     # @return [Container] a new container with the given name and type, located in this container
     def create_subcontainer(name, type)
       logger.debug { "Creating #{qp} subcontainer of type #{type} with name #{name}..." }
-      ctr = type.create_container(:name => name, :site => site)
+      ctr = type.new_container(:name => name, :site => site)
       self << ctr
       ctr.create
       logger.debug { "Made #{self} subcontainer #{ctr}." }
@@ -233,7 +233,7 @@ module CaTissue
       type_path = type_path_to(storable) || return
       # create a container for each type leading to storable and add it to the parent container
       sc = type_path.reverse.inject(storable) do |occ, type|
-        ctr = type.create_container
+        ctr = type.new_container
         ctr.site = site
         logger.debug { "Created #{qp} #{ctr.container_type.name} subcontainer #{ctr} to hold #{occ}." }
         ctr << occ
