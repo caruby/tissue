@@ -47,4 +47,8 @@ for change details.
 
 * Add registration and PCBIN examples.
 
+=== 1.5.1 / 2011-06-15
+
+* Annotation refactoring.
+
 
