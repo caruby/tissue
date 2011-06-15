@@ -35,17 +35,16 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
 
   def test_prostate_annotation
     scg = CaTissue::SpecimenCollectionGroup.new
-    assert(CaTissue::SpecimenCollectionGroup.annotation_attribute?(:radical_prostatectomy_pathology_annotations))
-    pas = scg.radical_prostatectomy_pathology_annotations
+    assert(CaTissue::SpecimenCollectionGroup.annotation_attribute?(:pathology))
+    pas = scg.pathology.radical_prostatectomy_pathology_annotations
     assert(pas.empty?, "Prostatectomy annotations not empty at start")
     pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
     pa.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => scg)
     epx = CaTissue::SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.new
     epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pa)
-    pas = scg.radical_prostatectomy_pathology_annotations
     assert_not_nil(pas.first, "Prostatectomy annotation not added to #{scg} annotations")
     assert_same(pa, pas.first, "Prostatectomy annotation incorrect")
-    assert_same(scg, pa.owner, "Prostatectomy annotation proxy hook not set")
+    assert_same(scg, pa.hook, "Prostatectomy annotation proxy hook not set")
     assert_not_nil(pa.extraprostatic_extension, "#{pa} extraprostatic extension not set")
     assert_same(epx, pa.extraprostatic_extension, "{pa} extraprostatic extension incorrect")
   end
