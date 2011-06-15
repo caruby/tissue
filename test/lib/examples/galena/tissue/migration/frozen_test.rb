@@ -24,7 +24,7 @@ module Galena
 
       def test_save
         # rename the target box
-        box = CaTissue::StorageContainer.new(:name => 'GTB Box 7')
+        box = CaTissue::StorageContainer.new(:name => 'Galena Box 7')
         if box.find then
           box.name = box.name.uniquify
           box.save
