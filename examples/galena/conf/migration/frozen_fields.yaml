@@ -7,6 +7,6 @@ MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
 SPN: SpecimenCollectionGroup.surgical_pathology_number
 Collection Date: ReceivedEventParameters.timestamp
 Quantity: TissueSpecimen.initial_quantity
-Box: SpecimenPosition.container.name
+Box: StorageContainer.name
 X: SpecimenPosition.position_dimension_one
 Y: SpecimenPosition.position_dimension_two
