@@ -17,6 +17,6 @@ module CaTissue
     offset_attribute(:column => :position_dimension_one, :row => :position_dimension_two)
 
     # add the synthetic {#location} attribute
-    add_attribute(:location)
+    add_attribute(:location, Location)
   end
 end
