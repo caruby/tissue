@@ -1,14 +1,7 @@
 require 'caruby/resource'
-require 'caruby/domain/resource_module'
 require 'catissue/annotation/annotatable'
-require 'catissue/wustl/logger'
 
 module CaTissue
-  extend CaRuby::ResourceModule
-  
-  # Set up the caTissue client logger.
-  Wustl::Logger.configure
-
   # The module included by all CaTissue domain classes.
   #
   # A Resource class is extended to support an attribute -> value hash argument
@@ -72,26 +65,5 @@ module CaTissue
       value.nil? or value == UNSPECIFIED
     end
   end
-
-  # The include mix-in module.
-  @mixin = Resource
-
-  # The required Java package name.
-  @java_package = 'edu.wustl.catissuecore.domain'
-
-  # Extends the given domain class as an #{AnnotatableClass}.
-  #
-  # @param [Class] klass the class that was added to this domain module
-  def self.class_added(klass)
-    # Defer loading AnnotatableClass to avoid pulling in Database, which in turn
-    # attempts to import java classes before the path is established. Obscure
-    # detail, but don't know how to avoid it.
-    require 'catissue/annotation/annotatable_class'
-    klass.extend(AnnotatableClass)
-  end
-
-  # Load the domain class definitions.
-  dir = File.join(File.dirname(__FILE__), 'domain')
-  load_dir(dir)
 end
 

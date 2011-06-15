@@ -1,0 +1,25 @@
+require 'caruby/domain'
+require 'catissue/resource'
+require 'catissue/annotation/annotatable_class'
+require 'catissue/wustl/logger'
+
+module CaTissue
+  
+  private
+  
+  # The required Java package name.
+  PKG = 'edu.wustl.catissuecore.domain'
+  
+  # The domain class definitions.
+  SRC_DIR = File.join(File.dirname(__FILE__), 'domain')
+
+  # Enable the resource metadata aspect.
+  CaRuby::Domain.extend_module(self, :mixin => Resource, :metadata => AnnotatableClass, :package => PKG)
+  
+  # Set up the caTissue client logger before loading the class definitions.
+  Wustl::Logger.configure
+  
+  # Load the class definitions.
+  load_dir(SRC_DIR)
+end
+
