@@ -5,7 +5,7 @@ module CaTissue
   # import the Java class
   resource_import Java::edu.wustl.catissuecore.domain.CollectionEventParameters
 
-  class CollectionEventParameters < CaTissue::SpecimenEventParameters
+  class CollectionEventParameters
     include CollectibleEventParameters
     
     add_attribute_defaults(:collection_procedure => 'Not Specified', :container => 'Not Specified')
