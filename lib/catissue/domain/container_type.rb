@@ -104,6 +104,7 @@ module CaTissue
     # @return an available container of this ContainerType which is not
     #   {CaTissue::Container#completely_full?}.
     def find_available(site, opts=nil)
+      logger.debug { "Finding an available #{site} #{self} container..." }
       find_containers(:site => site).detect { |ctr| not ctr.completely_full? } or
       (new_container(:site => site).create if Options.get(:create, opts))
     end
