@@ -34,30 +34,32 @@ module CaTissue
     
     alias :<< :add_child_type
 
-    # @return whether this StorageType can hold a child of the given Storable storable type
+    # @return [Boolean] whether this StorageType can hold a child of the given Storable storable type
     def can_hold_child?(storable)
       child_types.include?(storable.storable_type)
     end
 
-    # Returns a StorageType array from this StorageType to a descendant StorageType which can
-    # hold the given storable, or nil if no such path exists.
+    # @return [<StorageType>, nil] the array consisting of types from this type to a descendant
+    #   type which can hold the given storable, or nil if no such path exists
     def path_to(storable)
       return [self] if can_hold_child?(storable)
       path = holds_storage_types.detect_value { |child| child.path_to(storable) }
       return path.unshift(self) if path
     end
 
-    # @return the closure of ContainerTypes held by this ContainerType, including self
+    # @return [<ContainerType>] the closure of types held by this type, including self
     def closure
       cts = [self]
       child_types.each { |ct| cts.concat(ct.closure) if StorageType === ct }
       cts
     end
 
-    # @return whether this StorageType has a non-nil name equal to the other name or is {#equal?} to this StorageType
+    # caTissue alert - Bug #70: StorageType and non-StorageType are equal.
     #
-    # This method is a work-around for caTissue Bug #70: StorageType and non-StorageType are equal.
-    def ==(other)
+    # @param other the object to compare
+    # @return [Boolean] whether this StorageType has a non-nil name equal to the other name or
+    #   is {#equal?} to this StorageType
+     def ==(other)
       equal?(other) or (StorageType === other and name and name == other.name)
     end
 
@@ -65,6 +67,9 @@ module CaTissue
 
     # Returns -1, 0, or 1 if self is contained in, contains or the same as the other
     # StorageType, resp.
+    #
+    # @param [StorageType] other the type to compare
+    # @return [Integer] the order comparison result
     def <=>(other)
       raise TypeError.new("Can't compare #{qp} to #{other}") unless StorageType === self
       return 0 if eql?(other)
