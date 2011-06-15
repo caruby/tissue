@@ -4,15 +4,13 @@ module CaTissue
   module Annotation
     # An IntegrationService fetches and saves CaTissue 1.1.x hook-annotation associations.
     class IntegrationService < CaRuby::PersistenceService
-      SERVICE_NAME = 'deintegration'
-
-      # The caTissue 
+      # Import the caTissue classes.
       java_import Java::deintegration.EntityMap
       java_import Java::deintegration.EntityMapRecord
       java_import Java::deintegration.FormContext
 
       def initialize
-        super(SERVICE_NAME, CaTissue::Database.instance.access_properties)
+        super(SVC_NAME, CaTissue::Database.instance.access_properties)
       end
 
       # Associates the given hook domain object to the annotation.
@@ -29,6 +27,8 @@ module CaTissue
       end
 
       private
+      
+      SVC_NAME = 'deintegration'
 
       #### The cruft below is adapted from caTissue 1.1.2 ClientDemo_SCG.java and cleaned up (but still obscure). ####
 
