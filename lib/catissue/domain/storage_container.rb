@@ -145,7 +145,7 @@ module CaTissue
     def add_to_existing_container(storable)
       if storage_type.nil? then raise ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
       # the subcontainers in column, row sort order
-      scs = subcontainers.sort { |sc1, sc2| sc1.position.location <=> sc2.position.location }
+      scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer from among #{scs.pp_s} to place #{storable.qp}..." } unless scs.empty?
       # the first subcontainer that can hold the storable is preferred
       sc = scs.detect do |sc|
@@ -176,7 +176,7 @@ module CaTissue
     # @return [StorageContainer, nil] self if a subcontainer was created, nil otherwise
     def add_to_new_subcontainer(storable)
       # the subcontainers in column, row sort order
-      scs = subcontainers.sort { |sc1, sc2| sc1.position.location <=> sc2.position.location }
+      scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer #{scs} to place a new #{storable.qp} container..." } unless scs.empty?
       # the first subcontainer that can hold the new subcontainer is preferred
       sc = scs.detect { |sc| sc.add_to_new_subcontainer(storable) if StorageContainer === sc }
