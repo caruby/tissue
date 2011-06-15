@@ -10,7 +10,7 @@ rescue LoadError
 end
 
 require 'caruby/util/log'
-require 'catissue/resource'
+require 'catissue/domain'
 require 'catissue/database'
 
 # CaTissue wraps the caTissue Java API.
