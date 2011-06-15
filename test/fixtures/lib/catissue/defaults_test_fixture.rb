@@ -55,8 +55,10 @@ module CaTissueTest
       domain_objects.each { |obj| obj.find(:create) unless obj.identifier or obj.class.dependent? }
     end
 
-    # Repopulates the defaults and makes a unique collection_protocol short_title, participant MRN and
-    # specimen label.
+    # Repopulates the defaults and makes the following attributes unique:
+    # * collection_protocol short title
+    # * participant MRN
+    # * specimen label
     #
     # @return this fixture
     def uniquify
