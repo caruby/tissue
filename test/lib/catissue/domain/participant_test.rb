@@ -30,17 +30,37 @@ class ParticipantTest < Test::Unit::TestCase
     expected = @pnt.social_security_number = '555-55-5555'
     assert_equal(expected, @pnt.key, 'Person key is not the SSN')
   end
+
+  def test_exposure_annotation
+    exp = CaTissue::Participant::Clinical::EnvironmentalExposuresHealthAnnotation.new
+    exp.merge_attributes(:years_agent_free => 2, :participant => @pnt)
+    exps = @pnt.clinical.environmental_exposures_health_annotations
+    assert_not_nil(exps.first, "Exposures not added to participant annotations")
+    assert_same(exp, exps.first, "Exposures incorrect")
+    assert_same(@pnt, exp.hook, "Exposure proxy hook not set")
+  end
+  
+  def test_alcohol_annotation
+    alc = CaTissue::Participant::Clinical::AlcoholHealthAnnotation.new
+    alc.merge_attributes(:drinks_per_week => 4, :years_agent_free => 2, :participant => @pnt)
+    alcs = @pnt.clinical.alcohol_health_annotations
+    assert_not_nil(alcs.first, "Alcohol health not added to participant annotations")
+    assert_same(alc, alcs.first, "Alcohol health incorrect")
+    assert_same(@pnt, alc.hook, "Alcohol health proxy hook not set")
+    exps = @pnt.clinical.environmental_exposures_health_annotations
+    assert(!exps.include?(alc), "Alcohol health redundantly added to exposure annotations")
+  end
   
   # Tests making a participant lab annotation. 
   def test_lab_annotation
-    labs = @pnt.lab_annotations
+    labs = @pnt.clinical.lab_annotations
     assert(labs.empty?, "Labs not empty at start")
     lab = CaTissue::Participant::Clinical::LabAnnotation.new
     lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => @pnt)
-    labs = @pnt.lab_annotations
+    labs = @pnt.clinical.lab_annotations
     assert_not_nil(labs.first, "Lab not added to participant labs")
     assert_same(lab, labs.first, "Lab incorrect")
-    assert_same(@pnt, lab.owner, "Lab proxy hook not set")
+    assert_same(@pnt, lab.hook, "Lab proxy hook not set")
   end
 
   # Tests creating a participant.
