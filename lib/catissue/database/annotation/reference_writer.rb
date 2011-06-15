@@ -5,7 +5,7 @@ module CaTissue
     # DYEXT tables of the introspected Java annotation class properties.
     class ReferenceWriter
       # @param [Integer] eid the referencing annotation entity id
-      # @param [CaRuby::AttributeMetadata] attr_md the annotation attribute metadata of the attribute to save
+      # @param [CaRuby::Domain::Attribute] attr_md the annotation attribute metadata of the attribute to save
       # @param [Integer, nil] assn_eid the referenced annotation entity id
       def initialize(eid, attr_md, assn_eid=nil)
         logger.debug { "Mapping annotation #{attr_md.declarer.qp}.#{attr_md} role attributes to database columns..." }
