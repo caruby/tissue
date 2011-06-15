@@ -46,7 +46,7 @@ module CaTissue
         fld = mapper.header(path)
         # the path node is either an attribute symbol or attribute metadata;
         # if metadata, then use the reader method.
-        @fld_path_hash[fld] = path.map { |attr_or_md| CaRuby::AttributeMetadata === attr_or_md ? attr_or_md.reader : attr_or_md }
+        @fld_path_hash[fld] = path.map { |attr_or_md| CaRuby::Domain::Attribute === attr_or_md ? attr_or_md.reader : attr_or_md }
       end
       logger.debug { "Extract field => path map: #{@fld_path_hash.transform { |path| path.join('.') }.pp_s}" }
     end
