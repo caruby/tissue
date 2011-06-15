@@ -248,7 +248,7 @@ module CaTissue
       # infer the specimen domain class from the specimen_class prefix and Specimen or SpecimenRequirement suffix
       cls_nm = opt.to_s.capitalize_first + 'Specimen'
       cls_nm += 'Requirement' if CaTissue::SpecimenRequirement === self
-      CaTissue.domain_type_with_name(cls_nm)
+      CaTissue.const_get(cls_nm)
     end
 
     # Creates a derived specimen.
