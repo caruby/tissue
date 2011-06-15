@@ -125,10 +125,10 @@ module CaTissue
     def verify_dependency(dependent)
       return if dependent.class.owner_attribute.nil?
       # kludge for annotation proxy nonsense (cf. Annotation#owner)
-      ownr = Annotation === dependent ? (dependent.hook or dependent.owner) : dependent.owner
+      ownr = Annotation === dependent ? (dependent.proxy or dependent.owner) : dependent.owner
       assert_not_nil(ownr, "Owner missing for dependent: #{dependent}")
       attribute = ownr.class.dependent_attribute(dependent.class)
-      assert_not_nil(attribute, "Dependent attribute missing for #{dependent} owner #{ownr}")
+      assert_not_nil(attribute, "#{ownr.class.qp} => #{dependent.class.qp} reference attribute not found")
       # a dependent collection reference must be refetched
       if ownr.class.collection_attribute?(attribute) then
         verify_saved_dependent_collection_member(dependent, ownr, attribute)
@@ -214,7 +214,7 @@ module CaTissue
       verify_dependents_match(expected, actual)
     end
     
-    # @param [AttributeMetadata] attr_md the saved attribute to check
+    # @param [Attribute] attr_md the saved attribute to check
     # @return whether the attribute is fetched, creatable and not volatile
     def verify_saved_attribute?(attr_md)
       attr_md.fetched? and attr_md.creatable? and not attr_md.volatile?
