@@ -7,8 +7,6 @@ module CaTissue
   # Location does not capture the occupant; therefore, changing a location coordinate value alone does not
   # change the storage assignment of an occupant.
   class Location
-    include Comparable
-
     attr_accessor :container, :coordinate
 
     alias_attribute(:holder, :container)
@@ -53,17 +51,6 @@ module CaTissue
     # @return [Boolean] whether other is a Location and has the same content as this Location
     def ==(other)
       super rescue false
-    end
-
-    # @param [Location] other the position to compare
-    # @return (see Coordinate#<=>)
-    # @raise [ArgumentError] if other is not an Location
-    def <=>(other)
-      raise ArgumentError.new("Can't compare #{qp} to #{other.qp}") unless @container and Location === other
-      unless container == other.container then
-        raise ArgumentError.new("Can't compare #{qp} in container #{container} to #{other.qp} in container #{other.container}")
-      end
-      @coordinate <=> other.coordinate
     end
 
     # @return [Location, nil] a new Location at the next slot in this Location's {#container},
