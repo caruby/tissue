@@ -12,7 +12,7 @@ module CaTissue
 
     # The convenience Person name aggregate is not a Java property but is added as a transient attribute
     # which is reflected in the saved Java property name subfields.
-    add_attribute(:name)
+    add_attribute(:name, CaRuby::Person::Name)
 
     # caTissue alert - clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
     if attribute_defined?(:clinical_study_registrations) then remove_attribute(:clinical_study_registrations) end
