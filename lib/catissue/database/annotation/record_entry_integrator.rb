@@ -12,6 +12,13 @@ module CaTissue
 
       # Associates the given hook domain object to the annotation.
       #
+      # caTissue alert - The static hook entity is associated with the annotation
+      # by creating a record entry hook proxy. Even though the record entry class
+      # includes Java properties for each primary annotation in the annotation
+      # Java package, the record entry instance only references a single annotation.
+      # The record entry database table +dyextn_abstract_record_entry+ has foreign
+      # key to a ABSTRACT_FORM_CONTEXT_ID  a separate record entry is created for each annotation.
+      #
       # @param [Annotatable] hook the hook entity 
       # @param [Annotation] annotation the annotation entity 
       def associate(hook, annotation)
@@ -25,10 +32,14 @@ module CaTissue
       # @return [Object] yet another association record which associates the hook to the
       #   annotation in the {REC_ENTRY_PKG}
       def create_record_entry(hook, annotation)
-        # the record entry object
-        re = @mod.record_entry_class.new
-        # the activity status must be set for the DE to show up
-        re.activity_status = 'Active'
+        # the DE integration record entry class
+        klass = hook.class.de_integration_proxy_class
+        if klass.nil? then
+          # Should not be nil by construction, but doesn't hurt to check.
+          raise AnnotationError.new("Cannot create a #{hook} annotation record entry, since #{hook.class.qp} does not have a DE Integration proxy class")
+        end
+        # the DE integration record entry object
+        re = klass.new
         # the form context
         re.form_context = form_context(hook, annotation)
         re.send(@mod.record_entry_hook_writer, hook)
@@ -49,7 +60,11 @@ module CaTissue
       # @return (see #form_context)
       def fetch_form_context(hook, annotation)
         tmpl = StudyFormContext.new
-        tmpl.container_id = annotation.class.container_id
+        ctr_id = annotation.class.container_id
+        if ctr_id.nil? then
+          raise AnnotationError.new("#{hook.class.qp} annotation #{annotation.class} doesn't have the required container id")
+        end
+        tmpl.container_id = ctr_id
         ctxts = hook.persistence_service.query(tmpl)
         case ctxts.size
           when 0 then raise AnnotationError.new("Form context not found for annotation class #{annotation.class.qp}")
