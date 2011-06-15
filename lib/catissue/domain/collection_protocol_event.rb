@@ -7,6 +7,7 @@ module CaTissue
 
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolEvent
+       
     include HashCode
     
     # caTissue alert - Bug #64: Some domain collection properties not initialized.
