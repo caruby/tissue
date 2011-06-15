@@ -24,7 +24,7 @@ module Galena
       
       def test_save
         # Clear a space for the specimen
-        box = CaTissue::StorageContainer.new(:name => 'GTB Box 1')
+        box = CaTissue::StorageContainer.new(:name => 'Galena Box 1')
         if box.find then
           box.name = box.name.uniquify
           box.save
