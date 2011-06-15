@@ -11,7 +11,7 @@ module CaTissue
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
-      find or StorageContainer.create_galena_box
+      find or create_galena_box
     end
     
     private
@@ -20,14 +20,19 @@ module CaTissue
     # {Galena::Seed::Defaults#freezer_type}.
     # 
     # @return [StorageContainer] the new box
-    def self.create_galena_box
+    def create_galena_box
       defs = Galena::Seed.defaults
-      self.storage_type = defs.box_type
-      site = defs.tissue_bank
+      # the box container type
+      self.container_type = defs.box_type
+      # the required box site
+      self.site = defs.tissue_bank
       # A freezer with a slot for the box.
       frz = defs.freezer_type.find_available(site, :create)
-      # Add this box to the first open slot in the first unfilled rack in the freezer.
+      # Add the box to the first open slot in the first unfilled rack in the freezer.
       frz << self
+      logger.debug { "Placed the tissue box #{self} in freezer #{frz}." }
+      logger.debug { "Creating the tissue box #{self}..." }
+      create
     end
   end
 end
