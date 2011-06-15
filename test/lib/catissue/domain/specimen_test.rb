@@ -144,23 +144,36 @@ class SpecimenTest < Test::Unit::TestCase
   end
 
   def test_pathology_annotation
-    pths = @spc.prostate_specimen_pathology_annotations
+    pths = @spc.pathology.prostate_specimen_pathology_annotations
     assert(pths.empty?, "Pathology annotations not empty at start")
     pth = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pth.merge_attributes(:specimen => @spc)
-    grade = histologic_grade_class.new
+    grade = CaTissue::Specimen::Pathology::SpecimenHistologicGrade.new
     grade.merge_attributes(:grade => 3, :specimen_base_solid_tissue_pathology_annotation => pth)
-    htype = histologic_type_class.new
+    htype = CaTissue::Specimen::Pathology::SpecimenHistologicType.new
     htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pth)
-    gleason = gleason_class.new
+    gleason = CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore.new
     gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pth)
     assert_not_nil(pths.first, "Pathology annotation not added to participant pths")
     assert_same(pth, pths.first, "Pathology annotation incorrect")
-    assert_same(gleason, gleason_score(pth), "Pathology annotation gleason score incorrect")
+    assert_same(gleason, pth.gleason_score, "Pathology annotation gleason score incorrect")
     assert_same(grade, pth.histologic_grades.first, "Pathology annotation histologic grades incorrect")
     assert_same(htype, pth.histologic_types.first, "Pathology annotation histologic types incorrect")
   end
-  
+
+  # Verifies that caRuby Tissue is compatible with both the caTissue 1.1 and 1.2 Specimen annotation class names. 
+  def test_rename
+    assert_same(CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation, CaTissue::Specimen::Pathology::ProstatePathologyAnnotation, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenAdditionalFinding, CaTissue::Specimen::Pathology::AdditionalFinding, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenBaseSolidTissuePathologyAnnotation, CaTissue::Specimen::Pathology::SpecimenBaseSolidTissuePathologyAnnotation, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenDetails, CaTissue::Specimen::Pathology::Details, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore, CaTissue::Specimen::Pathology::GleasonScore, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenHistologicGrade, CaTissue::Specimen::Pathology::HistologicGrade, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenHistologicType, CaTissue::Specimen::Pathology::HistologicType, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenHistologicVariantType, CaTissue::Specimen::Pathology::HistologicVariantType, "caTissue 1.2 annotation class rename unsupported")
+    assert_same(CaTissue::Specimen::Pathology::SpecimenInvasion, CaTissue::Specimen::Pathology::Invasion, "caTissue 1.2 annotation class rename unsupported")
+  end
+
   ## DATABASE TEST CASES ##
 
   def test_simple_save
@@ -295,13 +308,13 @@ class SpecimenTest < Test::Unit::TestCase
   def test_save_prostate_annotation
     pa = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pa.specimen = @spc
-    grade = histologic_grade_class.new
+    grade = CaTissue::Specimen::Pathology::SpecimenHistologicGrade.new
     grade.merge_attributes(:grading_system_name => 'Not Specified', :grade => 3, :specimen_base_solid_tissue_pathology_annotation => pa)
-    htype = histologic_type_class.new
+    htype = CaTissue::Specimen::Pathology::SpecimenHistologicType.new
     htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pa)
-    invn = invasion_class.new
+    invn = CaTissue::Specimen::Pathology::SpecimenInvasion.new
     invn.merge_attributes(:lymphatic_invasion => 'Present', :specimen_base_solid_tissue_pathology_annotation => pa)
-    gleason = gleason_class.new
+    gleason = CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore.new
     gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pa)
     verify_save(pa)
     assert_not_nil(pa.identifier, "#{@spc} annotation #{pa} not saved")
@@ -317,45 +330,5 @@ class SpecimenTest < Test::Unit::TestCase
       :ulceration => "Absent", :tumor_regression => "Present involving 75% or more of lesion", :tumor_infiltrating_lymphocytes => "Brisk")
     verify_save(ma)
     assert_not_nil(ma.identifier, "#{ma} not saved")
-  end
-  
-  private
-  
-  ## caTissue 1.1 compatibility methods ##
-  
-  def gleason_score(pth)
-    pth.respond_to?(:prostate_specimen_gleason_score) ? pth.prostate_specimen_gleason_score : pth.gleason_score
-  end
-  
-  def histologic_grade_class
-    @@grade_class ||= begin
-      CaTissue::Specimen::Pathology::SpecimenHistologicGrade
-    rescue CaRuby::JavaIncludeError
-      CaTissue::Specimen::Pathology::HistologicGrade
-    end
-  end
-  
-  def invasion_class
-    @@invasion_class ||= begin
-      CaTissue::Specimen::Pathology::SpecimenInvasion
-    rescue CaRuby::JavaIncludeError
-      CaTissue::Specimen::Pathology::Invasion
-    end
-  end
-  
-  def histologic_type_class
-    @@htype_class ||= begin
-      CaTissue::Specimen::Pathology::SpecimenHistologicType
-    rescue CaRuby::JavaIncludeError
-      CaTissue::Specimen::Pathology::HistologicType
-    end
-  end
-  
-  def gleason_class
-    @@gleason_class ||= begin
-      CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore
-    rescue CaRuby::JavaIncludeError
-      CaTissue::Specimen::Pathology::GleasonScore
-    end
   end
 end
