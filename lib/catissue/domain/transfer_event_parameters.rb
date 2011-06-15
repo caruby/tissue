@@ -31,7 +31,7 @@ module CaTissue
       location
     end
 
-    add_attribute(:from)
+    add_attribute(:from, Location)
 
     # Returns the to Location.
     def to
@@ -46,6 +46,6 @@ module CaTissue
       self.to_column = location.column
     end
 
-    add_attribute(:to)
+    add_attribute(:to, Location)
   end
 end
