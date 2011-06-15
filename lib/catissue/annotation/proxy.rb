@@ -10,6 +10,16 @@ module CaTissue
         hook.identifier if hook
       end
       
+      # @return [Annotatable] the annotated domain object  
+      def hook
+        send(self.class.owner_attribute_metadata.reader)
+      end
+      
+      # @param [Annotatable] obj the domain object to annotate  
+      def hook=(obj)
+        send(self.class.owner_attribute_metadata.writer, obj)
+      end
+      
       # The hook proxy identifier cannot be set directly. Assignment is a no-op.
       #
       # @param [Integer] value the (ignored) identifier value

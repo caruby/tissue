@@ -1,3 +1,5 @@
+require 'caruby/domain'
+
 module CaTissue
   module Annotation
     # DEIntegration encapsulates the +edu.wustl.catissuecore.domain.deintegration+ package in caTissue 1.2 and higher.
@@ -6,13 +8,17 @@ module CaTissue
       # @return [Class] yet another undocumented special-purpose association record entry class
       #   which associates the given hook proxy class symbol to an annotation
       def self.const_missing(symbol)
-        begin
-          java_import [PKG, symbol].join('.')
-        rescue Exception
-          super
-        end
+        name = [PKG, symbol].join('.')
+        logger.debug { "Importing DE integration proxy Java class #{name}..." }
+        java_import name rescue super
       end
       
+      # @param [String] name the annotated hook class name
+      # @return [Class, nil] the hook proxy class, or nil if none defined
+      def self.proxy(name)
+        const_get(name.to_sym) rescue nil
+      end
+    
       private
   
       # The auxiliary record entry class Java package name.

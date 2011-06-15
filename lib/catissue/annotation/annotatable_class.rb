@@ -1,5 +1,5 @@
-require 'forwardable'
 require 'caruby/util/inflector'
+require 'caruby/domain/metadata'
 require 'catissue/annotation/annotation_module'
 require 'catissue/annotation/de_integration'
 
@@ -11,16 +11,21 @@ module CaTissue
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
       
-    # @return [Class] the {DEIntegration} proxy class, or nil for 1.1.x caTissue
-    attr_reader :de_integration_proxy_class
+    # @return [Class] the {DEIntegration} proxy class (nil for 1.1 caTissue)
+    def de_integration_proxy_class
+      @de_integration_proxy_class or (superclass.de_integration_proxy_class if superclass < Annotatable)
+    end
     
     def self.extended(klass)
-      super
-      # the annotation name => spec hash 
+      # Enable the class meta-data.
+      klass.extend(CaRuby::Domain::Metadata)
+      # Initialize the class annotation hashes.
       klass.class_eval do
-        extend Forwardable
+        # Enable the class meta-data.
+        # the annotation name => spec hash
         @ann_spec_hash = {}
-        @local_ann_attrs = []
+        # the annotation module => proxy hash
+        @ann_mod_pxy_hash = {}
       end
     end
 
@@ -49,7 +54,7 @@ module CaTissue
       annotation_defined?(symbol)
     end
 
-    # Refines the {CaRuby::ResourceAttributes#toxic_attributes} to exclude annotation attributes.
+    # Refines the {CaRuby::Domain::Attributes#toxic_attributes} to exclude annotation attributes.
     #
     # @return [<Symbol>] the non-annotation unfetched attributes
     def toxic_attributes
@@ -94,6 +99,14 @@ module CaTissue
         const_get(symbol)
       end
     end
+
+    # Filters {CaRuby::Domain::Attributes#loadable_attributes} to exclude the {#annotation_attributes}
+    # since annotation lazy-loading is not supported.
+    #
+    # @return (see CaRuby::Domain::Attributes#loadable_attributes)
+    def loadable_attributes
+      @antbl_ld_attrs ||= super.compose { |attr_md| not attr_md.type < Annotation }
+    end
     
     def printable_attributes
       @prbl_attrs ||= super.union(annotation_attributes)
@@ -112,7 +125,7 @@ module CaTissue
     end
     
     def annotation_attributes
-      @ann_attrs ||= append_ancestor_enum(@local_ann_attrs) do |sc|
+      @ann_attrs ||= append_ancestor_enum(@ann_mod_pxy_hash.enum_values) do |sc|
         sc.annotation_attributes if sc < Annotatable
       end
     end
@@ -183,8 +196,6 @@ module CaTissue
     #
     # @return [<AnnotationModule>] the loaded annotation modules
     def load_local_annotations
-      # the annotation module => proxy hash
-      @ann_mod_pxy_hash = {}
       # an annotated class has a hook entity id
       unless @ann_spec_hash.empty? then initialize_annotation_holder end
       # build the annotations
@@ -210,22 +221,24 @@ module CaTissue
     # @raise [AnnotationError] if there is no annotation proxy class
     def import_annotation(name, opts)
       logger.debug { "Importing #{qp} annotation #{name}..." }
-      # make the annotation module scoped by this Annotatable class
+      # Make the annotation module scoped by this Annotatable class.
       class_eval("class #{name}; end")
-      mod = const_get(name)
-      # append the AnnotationModule methods
-      AnnotationModule.extend_module(mod, self, opts)
-      # make the proxy attribute
-      create_proxy_attribute(mod)
-      # fill out the dependency hierarchy
-      mod.proxy.build_annotation_dependency_hierarchy
+      klass = const_get(name)
+      # Append the AnnotationModule methods.
+      AnnotationModule.extend_module(klass, self, opts)
+      # Make the proxy attribute.
+      attr = create_proxy_attribute(klass)
+      # The proxy is a logical dependent.
+      add_dependent_attribute(attr, :logical)
+      # Fill out the dependency hierarchy.
+      klass.proxy.build_annotation_dependency_hierarchy
 #      # make the annotation dependent attributes
 #      create_annotation_attributes(mod)
 #      # add proxy references
 #      mod.ensure_proxy_attributes_are_defined
 #      mod.add_annotation_dependents
 #      logger.debug { "Imported #{qp} annotation #{name} attributes #{annotation_attributes.qp}." }
-      mod
+      klass
     end
 
     # Returns whether this class has an annotation whose proxy accessor is the
@@ -242,22 +255,20 @@ module CaTissue
     # The attribute reader creates an {Annotation::Proxy} instance of the method
     # receiver {Annotatable} instance on demand.
     # 
-    # @param [AnnotationModule] mod the subject annotation module
+    # @param [AnnotationModule] klass the subject annotation
     # @return [Symbol] the proxy attribute
-    def create_proxy_attribute(mod)
+    def create_proxy_attribute(klass)
       # the proxy class
-      pxy = mod.proxy
+      pxy = klass.proxy
       # the proxy attribute symbol
-      attr = mod.name.demodulize.underscore.to_sym
+      attr = klass.name.demodulize.underscore.to_sym
       # Define the proxy attribute.
       attr_create_on_demand_accessor(attr) { |obj| obj.create_proxy(pxy) }
       # Register the attribute.
       add_attribute(attr, pxy)
-      # The proxy is a logical dependent.
-      add_dependent_attribute(attr, :logical)
-      logger.debug { "Added #{qp} #{mod.qp} annotation proxy attribute #{attr} of type #{pxy}." }
+      logger.debug { "Added #{qp} #{klass.qp} annotation proxy attribute #{attr} of type #{pxy}." }
       # the annotation module => proxy attribute association
-      @ann_mod_pxy_hash[mod] = attr
+      @ann_mod_pxy_hash[klass] = attr
       attr
     end
 
