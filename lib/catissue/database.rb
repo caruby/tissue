@@ -17,11 +17,10 @@ module CaTissue
     # return [CaRuby::SQLExecutor] a utility SQL executor
     attr_reader :executor, :access_properties
 
-    # Creates a new Database with the {SERVICE_NAME} service and {CaTissue.access_properties}.
+    # Creates a new Database with the +catissuecore+ service and {CaTissue.access_properties}.
     def initialize
       @access_properties = CaTissue.access_properties
-      @access_properties[:database] ||= DEF_DATABASE_NAME
-      super(SERVICE_NAME, @access_properties)
+      super(SVC_NAME, @access_properties)
       @executor = CaRuby::SQLExecutor.new(@access_properties)
     end
 
@@ -37,7 +36,7 @@ module CaTissue
     # @param (see CaRuby::Database#persistence_service)
     # @return (see CaRuby::Database#persistence_service)
     def persistence_service(klass)
-      klass < Annotation ? klass.domain_module.persistence_service : super
+      klass < Annotation ? klass.annotation_module.persistence_service : super
     end
     
     # Augments {CaRuby::Database#ensure_exists} to ensure that an {Annotation::Proxy} reference identifier
@@ -54,10 +53,7 @@ module CaTissue
     private
 
     # The application service name
-    SERVICE_NAME = 'catissuecore'
-
-    # The default database name
-    DEF_DATABASE_NAME = 'catissue'
+    SVC_NAME = 'catissuecore'
     
     UPD_EID_SQL = 'update catissue_external_identifier set name = ?, value = ?, specimen_id = ? where identifier = ?'
     
@@ -138,6 +134,8 @@ module CaTissue
         save_collectible_event_parameters(obj)
       elsif CaTissue::ConsentTierResponse === obj then
         update_consent_tier_response(obj)
+      elsif Annotation === obj then
+         raise CaRuby::DatabaseError.new("Annotation update is not supported on #{obj}")
       else
         case obj
           when CaTissue::Specimen then
@@ -294,15 +292,18 @@ module CaTissue
         logger.debug { "caTissue #{ctr} update work-around completed." }
     end
 
-    # Overrides {CaRuby::Database::Writer#save_dependents} to handle the work-around described
-    # in {#save_specimen_dependents}.
+    # Overrides {CaRuby::Database::Writer#save_changed_dependents} to handle the following anomalies:
+    # * create Specimen disposal event last, as described in {#save_changed_specimen_dependents}
     #
     # @param (see CaRuby::Writer#save_dependents)
-    def save_dependents(obj)
-      Specimen === obj ? save_specimen_dependents(obj) { super } : super
+    def save_changed_dependents(obj)
+      case obj
+        when Specimen then save_changed_specimen_dependents(obj) { super }
+        else super
+      end   
     end
     
-    # Overrides {CaRuby::Database::Writer#save_dependents} on a Specimen to correct the
+    # Overrides {CaRuby::Database::Writer#save_changed_dependents} on a Specimen to correct the
     # following problem:
     #
     # caTissue alert - DisposalEventParameters must be created after all other Specimen SEPs.
@@ -321,9 +322,9 @@ module CaTissue
     # for the subtle interaction required between these two work-arounds.
     #
     # @param [CaTissue::Specimen] the specimen whose dependents are to be saved
-    # @yield [dependent] calls the base {CaRuby::Writer#save_dependents} 
+    # @yield [dependent] calls the base {CaRuby::Writer#save_changed_dependents} 
     # @yieldparam [Resource] dependent the dependent to save
-    def save_specimen_dependents(specimen)
+    def save_changed_specimen_dependents(specimen)
       dsp = specimen.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
       if dsp then
         logger.debug { "Work around caTissue #{specimen.qp} event parameters save order dependency by deferring #{dsp.qp} save..." }
@@ -350,7 +351,7 @@ module CaTissue
     # @return (see CaRuby::Database#build_save_template)
     def build_save_template(obj, builder)
       Annotation === obj ? prepare_annotation_for_save(obj) : super
-    end    
+    end
     
     # Ensures that a primary annotation hook exists.
     #
@@ -358,8 +359,10 @@ module CaTissue
     # @return [Annotation] the annotation object
     # @raise [DatabaseError] if the annotation does not reference a hook entity
     def prepare_annotation_for_save(annotation)
-      hook = annotation.owner
-      if hook.nil? then raise CaRuby::DatabaseError.new("Cannot save annotation #{annotation} since it does not reference a hook entity") end
+      hook = annotation.hook
+      if hook.nil? then
+        raise CaRuby::DatabaseError.new("Cannot save annotation #{annotation} since it does not reference a hook entity")
+      end
       if hook.identifier.nil? then
         logger.debug { "Ensuring that the annotation #{annotation.qp} hook entity #{hook.qp} exists in the database..." }
         ensure_exists(hook)
@@ -376,6 +379,8 @@ module CaTissue
     #   cannot cascade to SpecimenRequirement without raising an Exception. Work-around is to clear the template CP events.
     # * caTissue alert - Create Specimen with nil label does not auto-generate the label.
     #   Work-around is to set the label to a unique value.
+    #
+    # @raise DatabaseError if the object to save is an {Annotation::Proxy}, which is not supported
     def save_with_template(obj, template)
       # special cases to work around caTissue bugs
       if CaTissue::CollectionProtocolRegistration === obj  and template.collection_protocol then
@@ -450,10 +455,12 @@ module CaTissue
           if cep.nil? then raise CaRuby::DatabaseError.new("Default collection event parameters were not added to #{obj}.") end
           cep.copy.merge_attributes(:user => cep.user, :specimen_collection_group => template)
         end
-      elsif Annotation === obj and obj.class.secondary? then
+      elsif Annotation::Proxy === obj then
+        raise CaRuby::DatabaseError.new("Annotation proxy direct database save is not supported: #{obj}")
+      elsif Annotation === obj and obj.class.primary? then
         copy_annotation_proxy_owner_to_template(obj, template)
       end
-      
+
       # delegate to standard save
       super
     end
@@ -482,10 +489,11 @@ module CaTissue
     # * caTissue alert - Bug #161: Specimen API disposal not reflected in result activity status.
     #   DisposalEventParameters create sets the owner Specimen activity_status to +Closed+ as a side-effect.
     #   Reflect this side-effect in the submitted DisposalEventParameters owner Specimen object.
+    # * Pass through an {Annotation::Proxy} to the referenced annotations.
     #
     # @param [Resource] obj the dependent domain object to save
     def create_object(obj)
-      if collectible_event_parameters?(obj) then
+     if collectible_event_parameters?(obj) then
         save_collectible_event_parameters(obj)
       elsif CaTissue::Specimen === obj then
         obj.add_defaults
@@ -507,7 +515,30 @@ module CaTissue
       
       obj
     end
-
+    
+    # Overrides {CaRuby::Database#create_from_template} as follows:
+    # * Surrogate {Annotation::Proxy} is "created" by setting the identifier to its hook owner.
+    #   The create operation then creates referenced uncreated dependents.
+    #
+    # @param (CaRuby::Database#create_from_template)
+    def create_from_template(obj)
+      if Annotation::Proxy === obj then
+        hook = obj.hook
+        if hook.identifier.nil? then
+          raise CaRuby::DatabaseError.new("Annotation proxy #{obj.qp} hook owner #{hook.qp} does not have an identifier")
+        end
+        obj.identifier = hook.identifier
+        obj.take_snapshot
+        logger.debug { "Marked annotation proxy #{obj} as created by setting the identifier to that of the hook owner #{hook}." }
+        logger.debug { "Creating annotation proxy #{obj} dependent primary annotations..." }
+        save_changed_dependents(obj)
+        persistify(obj)
+        obj
+      else
+        super
+      end
+    end
+    
     # Creates the given specimen by working around the following bug:
     #
     # caTissue alert - Bug #160: Missing Is Available? validation.
@@ -673,9 +704,16 @@ module CaTissue
       pmi = pnt.medical_identifiers.first
       return if pmi.nil?
       logger.debug { "Using alternative Participant fetch strategy to find Participant by medical record number..." }
-      return unless exists?(pmi)
-      candidates = query(pmi.copy, :participant)
-      candidates.first if candidates.size == 1
+      # If the PMI has an identifier (unlikely) then find the PMI participant.
+      if pmi.identifier then return query(pmi.copy, :participant).first end
+      # Add the default site. If no default site, then bail.
+      if pmi.site.nil? then
+        pmi.add_defaults
+        return unless pmi.site
+      end
+      return unless exists?(pmi.site)
+      # Find the PMI based on the site and MRN.
+      return query(pmi.copy(:site, :medical_record_number), :participant).first
     end
 
     # @param [CaTissue::Specimen] spc the specimen to fetch
