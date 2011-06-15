@@ -126,15 +126,6 @@ module CaTissue
       full? and subcontainers.all? { |ctr| ctr.completely_full? }
     end
 
-    # @eturn [Integer] -1, 0, or 1 if self is contained in, contains or the same as the other
-    # Container, resp.
-    def <=>(other)
-      raise TypeError.new("Can't compare #{qp} to #{other}") unless StorageContainer === self
-      return 0 if equal?(other) or (name and name == other.name)
-      return 1 if subcontainers.detect { |child| child >= other if StorageContainer === child }
-      -1 if other > self
-    end
-
     # @return [Storable, nil] the occupant at the given zero-based row and column, or nil if none
     def [](column, row)
       return if column.nil? or row.nil?
@@ -210,15 +201,15 @@ module CaTissue
     def first_available_location
       return if full?
       # look for the first unoccupied location
-      occupied = all_occupied_positions.map { |pos| pos.location }.sort
+      occd = all_occupied_positions.map { |pos| pos.location }.sort { |l1, l2| l1.coordinate <=> l2.coordinate }
       # find a gap, if one exists, otherwise return the next location
       # after the last occupied location
-      current = Location.new(:in => self, :at => Coordinate.new(0, 0))
-      occupied.each do |loc|
-        break if current < loc
-        current.succ!
+      curr = Location.new(:in => self, :at => Coordinate.new(0, 0))
+      occd.each do |loc|
+        break if curr.coordinate < loc.coordinate
+        curr.succ!
       end
-      current
+      curr
     end
 
     # Copies this Container's ContainerType capacity, if it exists, to the Container capacity.
