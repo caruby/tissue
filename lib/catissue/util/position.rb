@@ -7,16 +7,6 @@ module CaTissue
   # and holder methods. The occupant must be a {Storable}. The holder must be
   # a {Container}.
   module Position
-    include Comparable
-
-    # @param [Position] other the position to compare
-    # @return (see Location#<=>)
-    # @raise [ArgumentError] if other is not an instance of this Position's concrete class
-    def <=>(other)
-      raise ArgumentError.new("Can't compare #{qp} to #{other.qp}") unless self.class === other
-      equal?(other) ? 0 : location <=> other.location
-    end
-
     # @return [Boolean] whether other is an instance of this position's class with the same
     #   occupant and equal location
     #
@@ -30,7 +20,7 @@ module CaTissue
       location.coordinate
     end
     
-    # @return [Location] the location of this Position.
+    # @return [Location] the location of this Position
     def location
       @location ||= Location.new
       # always ensure that the location is consistent with the Java state
