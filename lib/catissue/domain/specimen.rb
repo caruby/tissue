@@ -280,7 +280,7 @@ module CaTissue
         klass = cls_opt
       else
         class_name = params[:specimen_class] + 'Specimen'
-        klass = CaTissue.domain_type_with_name(class_name)
+        klass = CaTissue.const_get(class_name)
         raise ArgumentError.new("Specimen class #{class_name} is not recognized for parameter #{cls_opt}") if klass.nil?
       end
       
@@ -533,7 +533,11 @@ module CaTissue
       class_name = name[0, 1].upcase + name[1..-1]
       suffix = 'Specimen'
       class_name << suffix unless class_name.rindex(suffix) == class_name.length - suffix.length
-      CaTissue.domain_type_with_name(class_name) or raise ArgumentError.new("Specimen class #{class_name} is not recognized for specimen type parameter #{symbol}")
+      begin
+        CaTissue.const_get(class_name)
+      rescue NameError
+        raise ArgumentError.new("Specimen class #{class_name} is not recognized for specimen type parameter #{symbol} - #{$!}")
+      end
     end
 
     # Decrements this parent's available quantity by the given child's initial quantity, if the specimen types are the same and there
