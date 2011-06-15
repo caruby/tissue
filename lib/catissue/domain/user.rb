@@ -41,8 +41,8 @@ module CaTissue
     # UnsupportedOperationException if they are called.
     if attribute_defined?(:adminuser) then remove_attribute(:adminuser) end
 
-    # make the convenience Person name a first-class attribute
-    add_attribute(:name)
+    # make the convenience {, CaRuby::Person::Name} name a first-class attribute
+    add_attribute(:name, CaRuby::Person::Name)
 
     # caTissue alert - clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
     if attribute_defined?(:clinical_studies) then remove_attribute(:clinical_studies) end
