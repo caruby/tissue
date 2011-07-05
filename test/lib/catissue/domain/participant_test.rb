@@ -31,10 +31,27 @@ class ParticipantTest < Test::Unit::TestCase
     assert_equal(expected, @pnt.key, 'Person key is not the SSN')
   end
 
+  def test_treatment_annotation
+    trt = CaTissue::Participant::Clinical::TreatmentAnnotation.new
+    trt.merge_attributes(:agent => 'ACACIA', :participant => @pnt)
+    dur = CaTissue::Participant::Clinical::Duration.new
+    dur.merge_attributes(:start_date => DateTime.new(2010, 10, 10), :end_date => DateTime.new(2010, 12, 10), :treatment => trt)
+    cln = @pnt.clinical.first
+    assert_not_nil(cln, "Clinical annotation not added to participant")
+    trts = cln.treatment_annotations
+    assert_not_nil(trts.first, "Treatment not added to participant annotations")
+    assert_same(trt, trts.first, "Treatment incorrect")
+    assert_same(@pnt, trt.hook, "Treatment proxy hook not set")
+    assert_not_nil(trt.durations.first, "Duration not added to treatment annotation")
+    assert_same(dur, trt.durations.first, "Treatment duration incorrect")
+  end
+
   def test_exposure_annotation
     exp = CaTissue::Participant::Clinical::EnvironmentalExposuresHealthAnnotation.new
     exp.merge_attributes(:years_agent_free => 2, :participant => @pnt)
-    exps = @pnt.clinical.environmental_exposures_health_annotations
+    cln = @pnt.clinical.first
+    assert_not_nil(cln, "Clinical annotation not added to participant")
+    exps = cln.environmental_exposures_health_annotations
     assert_not_nil(exps.first, "Exposures not added to participant annotations")
     assert_same(exp, exps.first, "Exposures incorrect")
     assert_same(@pnt, exp.hook, "Exposure proxy hook not set")
@@ -43,25 +60,39 @@ class ParticipantTest < Test::Unit::TestCase
   def test_alcohol_annotation
     alc = CaTissue::Participant::Clinical::AlcoholHealthAnnotation.new
     alc.merge_attributes(:drinks_per_week => 4, :years_agent_free => 2, :participant => @pnt)
-    alcs = @pnt.clinical.alcohol_health_annotations
+    cln = @pnt.clinical.first
+    assert_not_nil(cln, "Clinical annotation not added to participant")
+    alcs = cln.alcohol_health_annotations
     assert_not_nil(alcs.first, "Alcohol health not added to participant annotations")
     assert_same(alc, alcs.first, "Alcohol health incorrect")
     assert_same(@pnt, alc.hook, "Alcohol health proxy hook not set")
-    exps = @pnt.clinical.environmental_exposures_health_annotations
-    assert(!exps.include?(alc), "Alcohol health redundantly added to exposure annotations")
   end
   
   # Tests making a participant lab annotation. 
   def test_lab_annotation
-    labs = @pnt.clinical.lab_annotations
-    assert(labs.empty?, "Labs not empty at start")
     lab = CaTissue::Participant::Clinical::LabAnnotation.new
     lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => @pnt)
-    labs = @pnt.clinical.lab_annotations
+    cln = @pnt.clinical.first
+    assert_not_nil(cln, "Clinical annotation not added to participant")
+    labs = cln.lab_annotations
     assert_not_nil(labs.first, "Lab not added to participant labs")
     assert_same(lab, labs.first, "Lab incorrect")
     assert_same(@pnt, lab.hook, "Lab proxy hook not set")
   end
+  
+  def test_radiation_annotation
+    if CaTissue::Participant::Clinical::RadiationTherapy != CaTissue::Participant::Clinical::RadRXAnnotation then
+      assert_raises(CaTissue::AnnotationError, "RadiationTherapy is not deprecated.") { CaTissue::Participant::Clinical::RadiationTherapy.new}
+    end
+  end  
+
+  def test_chemotherapy_annotation
+    if CaTissue::Participant::Clinical::Chemotherapy != CaTissue::Participant::Clinical::ChemoRXAnnotation then
+      assert_raises(CaTissue::AnnotationError, "Chemotherapy is not deprecated.") { CaTissue::Participant::Clinical::Chemotherapy.new}
+    end
+  end
+
+   ## DATABASE TEST CASES
 
   # Tests creating a participant.
   def test_save
@@ -92,6 +123,17 @@ class ParticipantTest < Test::Unit::TestCase
     assert_not_nil(lab.identifier, "Lab not saved")
   end
   
+  # Tests saving a participant treatment annotation. 
+  def test_save_treatment_annotation
+    trt = CaTissue::Participant::Clinical::TreatmentAnnotation.new
+    trt.merge_attributes(:agent => 'ACACIA', :participant => @pnt)
+    dur = CaTissue::Participant::Clinical::Duration.new
+    dur.merge_attributes(:start_date => DateTime.new(2010, 10, 10), :end_date => DateTime.new(2010, 12, 10), :treatment => trt)
+    verify_save(trt)
+    assert_not_nil(trt.identifier, "Treatment not saved")
+    assert_not_nil(dur.identifier, "Treatment duration not saved")
+  end
+  
   # Exercises creation of both a HealthExaminationAnnotation and a NewDiagnosisHealthAnnotation.
   # These annotation classes are both primary and share a comman ancestor entity used
   # as the basis for generating database identifiers.
@@ -106,23 +148,16 @@ class ParticipantTest < Test::Unit::TestCase
     verify_save(hdgn)
   end
   
-  def test_save_treatment_annotation
-    date = DateTime.new(2010, 10, 10)
-    trt = CaTissue::Participant::Clinical::TreatmentAnnotation.new
-    trt.merge_attributes(:other_agent => 'Radical Prostatectomy', :participant => @pnt)
-    dtn = CaTissue::Participant::Clinical::Duration.new
-    dtn.merge_attributes(:start_date => date, :end_date => date, :duration_in_days => 1, :treatment_annotation => trt)
-    verify_save(trt)
+  def test_save_radiation_annotation
+    rad = CaTissue::Participant::Clinical::RadRXAnnotation.new
+    rad.merge_attributes(:other_agent => 'Adjuvant Radiation Therapy', :participant => @pnt)
+    verify_save(rad)
   end
   
-  # caTissue alert - The RadiationTherapy DE class is not supported, since it is not a primary entity.
-  # RadRXAnnotation is used instead.  The purpose of the caTissue RadiationTherapy class is unknown,
-  # since it adds nothing to RadRXAnnotation. The same consideration applies to Chemotherapy.
-  # TODO - check with caTissue support and either request deprecation or add caRuby support.
-  def test_save_radiation_annotation
-    rdx = CaTissue::Participant::Clinical::RadRXAnnotation.new
-    rdx.merge_attributes(:other_agent => 'Adjuvant Radiation Therapy', :participant => @pnt)
-    verify_save(rdx)
+  def test_save_chemo_annotation
+    chm = CaTissue::Participant::Clinical::ChemoRXAnnotation.new
+    chm.merge_attributes(:other_agent => 'Adjuvant Chemotherapy', :participant => @pnt)
+    verify_save(chm)
   end
   
   def test_save_exam_annotation

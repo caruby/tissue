@@ -144,21 +144,22 @@ class SpecimenTest < Test::Unit::TestCase
   end
 
   def test_pathology_annotation
-    pths = @spc.pathology.prostate_specimen_pathology_annotations
-    assert(pths.empty?, "Pathology annotations not empty at start")
-    pth = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
-    pth.merge_attributes(:specimen => @spc)
+    pst = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
+    pst.merge_attributes(:specimen => @spc)
     grade = CaTissue::Specimen::Pathology::SpecimenHistologicGrade.new
-    grade.merge_attributes(:grade => 3, :specimen_base_solid_tissue_pathology_annotation => pth)
+    grade.merge_attributes(:grade => 3, :specimen_base_solid_tissue_pathology_annotation => pst)
     htype = CaTissue::Specimen::Pathology::SpecimenHistologicType.new
-    htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pth)
+    htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pst)
     gleason = CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore.new
-    gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pth)
-    assert_not_nil(pths.first, "Pathology annotation not added to participant pths")
-    assert_same(pth, pths.first, "Pathology annotation incorrect")
-    assert_same(gleason, pth.gleason_score, "Pathology annotation gleason score incorrect")
-    assert_same(grade, pth.histologic_grades.first, "Pathology annotation histologic grades incorrect")
-    assert_same(htype, pth.histologic_types.first, "Pathology annotation histologic types incorrect")
+    gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pst)
+    pth = @spc.pathology.first
+    assert_not_nil(pth, "Pathology annotation not added to participant")
+    psts = pth.prostate_specimen_pathology_annotations
+    assert_not_nil(psts.first, "Prostate annotation not added to participant")
+    assert_same(pst, psts.first, "Prostate annotation incorrect")
+    assert_same(gleason, pst.gleason_score, "Prostate annotation gleason score incorrect")
+    assert_same(grade, pst.histologic_grades.first, "Prostate annotation histologic grades incorrect")
+    assert_same(htype, pst.histologic_types.first, "Prostate annotation histologic types incorrect")
   end
 
   # Verifies that caRuby Tissue is compatible with both the caTissue 1.1 and 1.2 Specimen annotation class names. 
@@ -328,6 +329,8 @@ class SpecimenTest < Test::Unit::TestCase
     ma = CaTissue::Specimen::Pathology::MelanomaSpecimenPathologyAnnotation.new
     ma.merge_attributes(:specimen => @spc, :comments => "Test Comment", :depth_of_invasion => 2.0, :mitotic_index => "Less than 1 mitotic figure per mm-square",
       :ulceration => "Absent", :tumor_regression => "Present involving 75% or more of lesion", :tumor_infiltrating_lymphocytes => "Brisk")
+    inv = CaTissue::Specimen::Pathology::SpecimenInvasion.new
+    inv.merge_attributes(:venous_invasion => 'Present', :specimen_base_solid_tissue_pathology_annotation => ma)
     verify_save(ma)
     assert_not_nil(ma.identifier, "#{ma} not saved")
   end
