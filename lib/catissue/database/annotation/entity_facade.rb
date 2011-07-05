@@ -38,10 +38,10 @@ module CaTissue
         @idgen.next_identifier(table)
       end
       
-      # caTissue alert - unlike the hook entity id lookup, the annotation entity id lookup strips the leading
-      # package prefix from the annotation class name. caTissue DE API requires this undocumented inconsistency.
+      # @quirk caTissue unlike the hook entity id lookup, the annotation entity id lookup strips the leading
+      #   package prefix from the annotation class name. caTissue DE API requires this undocumented inconsistency.
       #
-      # caTissue alert - call into caTissue to get entity id doesn't work. caRuby uses direct SQL instead.
+      # @quirk caTissue call into caTissue to get entity id doesn't work. caRuby uses direct SQL instead.
       #
       # @param [Class] klass the {Annotation} primary class
       # @param [Boolean] validate flag indicating whether to raise an exception if the class is not primary
@@ -70,9 +70,9 @@ module CaTissue
         eid
       end
       
-      # caTissue alert - call into caTissue to get entity id doesn't work for non-primary object.
-      # Furthermore, the SQL used for the #{#annotation_entity_id} doesn't work for associated annotation
-      # classes. Use alternative SQL instead.
+      # @quirk caTissue call into caTissue to get entity id doesn't work for non-primary object.
+      #   Furthermore, the SQL used for the #{#annotation_entity_id} doesn't work for associated annotation
+      #   classes. Use alternative SQL instead.
       #
       # @param [Integer] eid the referencing entity id
       # @param [String] eid the association property name
@@ -89,11 +89,11 @@ module CaTissue
         ref_eid
       end
 
-      # caTissue alert - Annotation classes are incorrectly mapped to entity ids, which in turn are
-      # incorrectly mapped to a table name. A candidate work-around is to bypass the caTissue DE
-      # mechanism and hit the DE Hibernate config files directly. However, the DE Hibernate mappings
-      # are incorrect and possibly no longer used. Therefore, the table must be obtained by SQL
-      # work-arounds.
+      # @quirk caTissue Annotation classes are incorrectly mapped to entity ids, which in turn are
+      #   incorrectly mapped to a table name. A candidate work-around is to bypass the caTissue DE
+      #   mechanism and hit the DE Hibernate config files directly. However, the DE Hibernate mappings
+      #   are incorrect and possibly no longer used. Therefore, the table must be obtained by SQL
+      #   work-arounds.
       #
       # @param [Annotation] obj the annotation object
       # @return [String] the entity table name
@@ -116,17 +116,17 @@ module CaTissue
       
       # Obtains the undocumented caTisue container id for the given primary entity id.
       #
-      # caTissue alert - EntityManager.getContainerIdForEntitycontainer uses incorrect table
-      # (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=421&sid=5252d951301e598eebf3e90036da43cb).
-      # The standard DE API call submits the query:
-      #   SELECT IDENTIFIER FROM dyextn_container WHERE ENTITY_ID = ?
-      # This results in the error:
-      #   Unknown column 'ENTITY_ID' in 'where clause'
-      # The correct SQL is as follows:
-      #   SELECT IDENTIFIER FROM dyextn_container WHERE ABSTRACT_ENTITY_ID = ?
-      # The work-around is to call this SQL directly.
+      # @quirk caTissue EntityManager.getContainerIdForEntitycontainer uses incorrect table
+      #   (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=421&sid=5252d951301e598eebf3e90036da43cb).
+      #   The standard DE API call submits the query:
+      #     SELECT IDENTIFIER FROM dyextn_container WHERE ENTITY_ID = ?
+      #   This results in the error:
+      #     Unknown column 'ENTITY_ID' in 'where clause'
+      #   The correct SQL is as follows:
+      #     SELECT IDENTIFIER FROM dyextn_container WHERE ABSTRACT_ENTITY_ID = ?
+      #   The work-around is to call this SQL directly.
       #
-      # caTissue alert - in 1.2, there are deprecated primary annotations with an entity id but no container id.
+      # @quirk caTissue in 1.2, there are deprecated primary annotations with an entity id but no container id.
       # 
       # @return [Integer] eid the primary entity id
       def container_id(eid)
@@ -170,8 +170,11 @@ module CaTissue
       # @param (see #nonrecursive_annotation_entity_id)
       # @return [(String, String)] the entity group name and the entity name 
       def split_annotation_entity_class_name(klass)
+        # the Java class full name
         jname = klass.java_class.name
+        # the Java package and base class name
         pkg, base = Java.split_class_name(jname)
+        # A wustl domain class is in the core group.
         if pkg =~ CORE_PKG_REGEX then
           [CORE_GROUP, jname]
         elsif pkg.nil? or pkg['.'] then
