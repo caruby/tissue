@@ -18,8 +18,8 @@ module CaTissue
     # @param [String] name the service name
     # @return [Annotation::AnnotationService] the annotation service
     def create_annotation_service(mod, name)
-      intgr = Annotation::Integrator.new(mod)
-      Annotation::AnnotationService.new(@database, name, intgr)
+      @integrator = Annotation::Integrator.new(mod)
+      Annotation::AnnotationService.new(@database, name, @integrator)
     end
   end
 end
