@@ -22,10 +22,6 @@ module PCBIN
       verify_target(:surgery, SURGERY_OPTS)
     end
     
-    def test_surgery_target
-      verify_target(:surgery, SURGERY_OPTS)
-    end
-    
     def test_t_stage_target
       verify_target(:t_stage, T_STAGE_OPTS)
     end
@@ -35,7 +31,7 @@ module PCBIN
     end    
     
     def test_adj_radiation_target
-      verify_target(:adjuvant_radiation, ADJ_RADIATION_OPTS) 
+      verify_target(:adjuvant_radiation, ADJ_RAD_OPTS) 
     end    
     
     def test_neoadj_hormone_target
@@ -43,33 +39,58 @@ module PCBIN
     end    
     
     def test_neoadj_radiation_target
-      verify_target(:neoadjuvant_radiation, NEOADJ_RADIATION_OPTS) 
+      verify_target(:neoadjuvant_radiation, NEOADJ_RAD_OPTS) 
     end
     
     ## DATABASE TEST CASES ##
-    
+
     # Tests saving the biopsy, prostatectomy and associated annotations for a single patient.
     # Note that saving the patient first results in an extra caTissue junk anticipated SCG,
     # since the patient migration does not create an SCG and therefore cannot fill in the
     # anticipated SCG. Otherwise, the migrations can be run in any order with the same
     # result.
-    def test_save
+    #
+    # NOTE: some tests fail sporadically when run as a suite. Testing individually succeeds.
+    # Presumably a test artifact. TODO - isolate. 1.1.2 only?
+
+    def test_save_biopsy
       logger.debug { "#{qp} saving biopsy SCG..." }
       verify_save(:biopsy, BIOPSY_OPTS)
+    end
+    
+    def test_save_surgery
       logger.debug { "#{qp} saving surgery SCG..." }
-      verify_save(:surgery, SURGERY_OPTS) 
+      verify_save(:surgery, SURGERY_OPTS)
+    end
+
+    def test_save_patient
       logger.debug { "#{qp} saving patient..." }
       verify_save(:patient, PATIENT_OPTS)
+    end
+    
+    def test_save_tstage
       logger.debug { "#{qp} saving T Stage..." }
-      verify_save(:t_stage, T_STAGE_OPTS) 
+      verify_save(:t_stage, T_STAGE_OPTS)
+    end
+    
+    def test_save_adjuvant_hormone
       logger.debug { "#{qp} saving adjuvant hormone therapy..." }
-      verify_save(:adjuvant_hormone, ADJ_HORMONE_OPTS) 
+      verify_save(:adjuvant_hormone, ADJ_HORMONE_OPTS)
+    end
+    
+    def test_save_adjuvant_radiation
       logger.debug { "#{qp} saving adjuvant radiation therapy..." }
-      verify_save(:adjuvant_radiation, ADJ_RADIATION_OPTS) 
+      verify_save(:adjuvant_radiation, ADJ_RAD_OPTS)
+    end
+    
+    def test_save_neoadjuvant_hormone
       logger.debug { "#{qp} saving neoadjuvant hormone therapy..." }
-      verify_save(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS) 
+      verify_save(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS)
+    end   
+    
+    def test_save_neoadjuvant_radiation
       logger.debug { "#{qp} saving neoadjuvant radiation therapy..." }
-      verify_save(:neoadjuvant_radiation, NEOADJ_RADIATION_OPTS)
+      verify_save(:neoadjuvant_radiation, NEOADJ_RAD_OPTS)
     end
     
     private
@@ -123,10 +144,10 @@ module PCBIN
     
     ADJ_HORMONE_OPTS = therapy_options(:adjuvant, :hormone)
     
-    ADJ_RADIATION_OPTS = therapy_options(:adjuvant, :radiation)
+    ADJ_RAD_OPTS = therapy_options(:adjuvant, :radiation)
     
     NEOADJ_HORMONE_OPTS = therapy_options(:neoadjuvant, :hormone)
     
-    NEOADJ_RADIATION_OPTS = therapy_options(:neoadjuvant, :radiation)
+    NEOADJ_RAD_OPTS = therapy_options(:neoadjuvant, :radiation)
   end
 end
