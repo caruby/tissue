@@ -92,9 +92,9 @@ module CaTissue
         end
         # The next database identifier.
         annotation.identifier = EntityFacade.instance.next_identifier(annotation)
-        # Ensure that the proxy record is up-to-date.
-        annotation.ensure_proxy_reflects_hook
-        
+        # Ensure that there is a proxy hook.
+        pxy = annotation.proxy
+        if pxy then pxy.ensure_hook_exists end
         # Delegate to standard record create.
         app_service.create_object(annotation)
         logger.debug { "Created annotation object #{annotation}." }
