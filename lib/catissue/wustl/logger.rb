@@ -2,23 +2,23 @@
 module Wustl
   # Logger configures the +edu.wustl+ logger.
   module Logger
-    # caTissue alert - the caTissue logger must be initialized before caTissue objects are created.
-    # The logger at issue is the caTissue client logger, not the caTissue server logger nor
-    # the caRuby logger. The caTissue logger facade class is edu.wustl.common.util.logger.Logger.
-    # In caTissue 1.1.x, initialization is done with +configure+, in 1.2 with
-    # +LoggerConfig.configureLogger+.
+    # @quirk caTissue the caTissue logger must be initialized before caTissue objects are created.
+    #   The logger at issue is the caTissue client logger, not the caTissue server logger nor
+    #   the caRuby logger. The caTissue logger facade class is edu.wustl.common.util.logger.Logger.
+    #   In caTissue 1.1.x, initialization is done with +configure+, in 1.2 with
+    #   +LoggerConfig.configureLogger+.
     #
-    # catTissue alert - +LoggerConfig.configureLogger+ expects file +log4j.properties+ in the class
-    # path. However, in 1.2 the client property file is +client_log4j.properties+. Work-around is
-    # as follows:
-    # * copy this file into the caRuby Tissue distribution as +conf/wustl/log4.properties+
-    # * add +conf/wustl+ to the classpath.
-    # * call +LoggerConfig.configureLogger+ with the config directory as an argument
+    # @quirk catTissue +LoggerConfig.configureLogger+ expects file +log4j.properties+ in the class
+    #   path. However, in 1.2 the client property file is +client_log4j.properties+. Work-around is
+    #   as follows:
+    #   * copy this file into the caRuby Tissue distribution as +conf/wustl/log4.properties+
+    #   * add +conf/wustl+ to the classpath.
+    #   * call +LoggerConfig.configureLogger+ with the config directory as an argument
     #
-    # caTissue alert - The caTissue client log location is unfortunately hard-coded in a caTissue client
-    # configuration file, does not create the parent directory on demand, and issues an obscure error
-    # message if the directory does not exist in release 1.1.x. The work-around is to ensure that the
-    # working directory contains a log subdirectory.
+    # @quirk caTissue The caTissue client log location is unfortunately hard-coded in a caTissue client
+    #   configuration file, does not create the parent directory on demand, and issues an obscure error
+    #   message if the directory does not exist in release 1.1.x. The work-around is to ensure that the
+    #   working directory contains a log subdirectory.
     def self.configure
       # Set the configured flag. Configure only once.
       if @configured then return else @configured = true end
@@ -40,8 +40,9 @@ module Wustl
 
     # Makes a +./log+ subdirectory to avoid a caTissue log initializer error. This method should be called
     # before configuring the logger.
+    #
+    # @quirk caTissue avoid caTissue error by creating log subdirectory.
     def self.ensure_log_directory_exists
-      # caTissue alert - avoid caTissue error by creating log subdirectory
       if File.directory?('log') then
         unless File.writable?('log') then
           raise StandardError.new("caTissue log subdirectory #{File.expand_path('log')} is not writable")

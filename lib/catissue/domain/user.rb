@@ -10,9 +10,9 @@ module CaTissue
   class User
     include Person
 
-    # caTissue alert - work-around for caTissue Bug #66 - Client missing CSException class et al.
-    # caTissue User class initializes roleId to "", which triggers a client exception on subsequent
-    # getRoleId call. Use a private variable instead and bypass getRoleId.
+    # @quirk caTissue work-around for caTissue Bug #66 - Client missing CSException class et al.
+    #   caTissue User class initializes roleId to "", which triggers a client exception on subsequent
+    #   getRoleId call. Use a private variable instead and bypass getRoleId.
     def role_id
       # TODO - uncomment following and get rid of @role_id i.v. when bug is fixed.
       #value = send(old_method)
@@ -24,8 +24,8 @@ module CaTissue
     # Sets the role id to the given value, which can be either a String or an Integer.
     # An empty or zero value is converted to nil.
     #
-    # caTissue alert - caTissue API roleId is a String although the intended value domain is the
-    # integer csm_role.identifier.
+    # @quirk caTissue caTissue API roleId is a String although the intended value domain is the
+    #   integer csm_role.identifier.
     def role_id=(value)
       # value as an integer (nil is zero)
       value_i = value.to_i
@@ -37,14 +37,14 @@ module CaTissue
       setRoleId(value_s)
     end
 
-    # caTissue alert - caTissue 1.2 User has an adminuser Java property, but caTissue throws an
-    # UnsupportedOperationException if they are called.
+    # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
+    #   UnsupportedOperationException if they are called.
     if attribute_defined?(:adminuser) then remove_attribute(:adminuser) end
 
     # make the convenience {, CaRuby::Person::Name} name a first-class attribute
     add_attribute(:name, CaRuby::Person::Name)
 
-    # caTissue alert - clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
+    # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
     if attribute_defined?(:clinical_studies) then remove_attribute(:clinical_studies) end
 
     # clarify that collection_protocols is a coordinator -> protocol association.
@@ -63,16 +63,16 @@ module CaTissue
     # * initial password is 'changeMe1'
     add_attribute_defaults(:activity_status => 'Active', :page_of => 'pageOfUserAdmin', :role_id => 7, :new_password => 'changeMe1')
 
-    # caTissue alert - obscure GUI artifact User page_of attribute pollutes the data layer as a
-    # required attribute. Work-around is to simulate the GUI with a default value.
+    # @quirk caTissue obscure GUI artifact User page_of attribute pollutes the data layer as a
+    #   required attribute. Work-around is to simulate the GUI with a default value.
     add_mandatory_attributes(:activity_status, :address, :cancer_research_group, :department,
       :email_address, :first_name, :institution, :last_name, :page_of, :role_id)
 
-    # caTissue alert - User address can be created but not updated in 1.2.
+    # @quirk caTissue User address can be created but not updated in 1.2.
     #
-    # caTissue alert - User address is not fetched on create in 1.2.
+    # @quirk caTissue User address is not fetched on create in 1.2.
     #
-    # caRuby alert - adding the :saved_fetch qualifier results in JRuby load_error. TODO - fix this.
+    # @quirk caRuby adding the :saved_fetch qualifier results in JRuby load_error. TODO - fix this.
     add_dependent_attribute(:address)
 
     # Password cannot be saved in 1.2.

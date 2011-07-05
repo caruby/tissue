@@ -18,9 +18,9 @@ module CaTissue
 
     # Returns a TransferEventParameters which serves as a proxy for saving this SpecimenPosition.
     #
-    # caTissue alert - caTissue does not allow saving a SpecimenPosition directly in the database.
-    # Creating a TransferEventParameters sets the SpecimenPosition as a side-effect. Therefore,
-    # SpecimenPosition save is accomplished by creating a proxy TransferEventParameters instead.
+    # @quirk caTissue caTissue does not allow saving a SpecimenPosition directly in the database.
+    #   Creating a TransferEventParameters sets the SpecimenPosition as a side-effect. Therefore,
+    #   SpecimenPosition save is accomplished by creating a proxy TransferEventParameters instead.
     def saver_proxy
       xfr = CaTissue::TransferEventParameters.new(:specimen => specimen, :to => location)
       if snapshot and changed? then

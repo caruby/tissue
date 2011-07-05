@@ -5,7 +5,7 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.SpecimenArray
 
   class SpecimenArray
-    # caTissue alert - the superclass Container occupied_positions does not apply to SpecimenArray.
+    # @quirk caTissue the superclass Container occupied_positions does not apply to SpecimenArray.
     remove_attribute(:occupied_positions)
  
     # Initializes this instance's child storage types from the given type.
@@ -29,14 +29,14 @@ module CaTissue
     # Raises NotImplementedError since caTissue SpecimenArray is broken in important ways
     # described below.
     #
-    # caTissue alert - SpecimenArray is a subclass of Container but is a mismatch for Container
-    # in two critical ways:
-    # * SpecimenArray does not hold subcontainers in Container occupied_positions
-    # * the Specimen position cannot be a SpecimenArrayContent
-    # * SpecimenArrayContent is not an AbstractPosition, although it should be
+    # @quirk caTissue SpecimenArray is a subclass of Container but is a mismatch for Container
+    #   in two critical ways:
+    #   * SpecimenArray does not hold subcontainers in Container occupied_positions
+    #   * the Specimen position cannot be a SpecimenArrayContent
+    #   * SpecimenArrayContent is not an AbstractPosition, although it should be
     #
-    # Thus, SpecimenArray extends Container although it shouldn't and SpecimenArrayContent
-    # doesn't extend AbstractPosition although it should.
+    #    Thus, SpecimenArray extends Container although it shouldn't and SpecimenArrayContent
+    #   doesn't extend AbstractPosition although it should.
     def add(storable, coordinate=nil, attribute=nil)
       raise NotImplementedError.new("Adding specimens to a SpecimenArray is not yet supported")
     end

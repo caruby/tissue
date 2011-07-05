@@ -33,14 +33,14 @@ module CaTissue
     # Returns the required attributes which are nil for this domain object.
     # Overrides the CaRuby::Resource method to handle the following bug:
     #
-    # caTissue alert - Bug #67:  AbstractSpecimen.setActivityStatus
-    # is a no-op. The Specimen activityStatus property is incorrectly pulled
-    # up to AbstractSpecimen. AbstractSpecimen.activityStatus is marked as
-    # mandatory, since it is required for Specimen. However, it is not
-    # mandatory, and in fact can't be set, for SpecimenRequirement.
-    # Work-around is to add special code to exclude activityStatus from
-    # the caRuby SpecimenRequirement missing mandatory attributes validation
-    # check.
+    # @quirk caTissue Bug #67:  AbstractSpecimen.setActivityStatus
+    #   is a no-op. The Specimen activityStatus property is incorrectly pulled
+    #   up to AbstractSpecimen. AbstractSpecimen.activityStatus is marked as
+    #   mandatory, since it is required for Specimen. However, it is not
+    #   mandatory, and in fact can't be set, for SpecimenRequirement.
+    #   Work-around is to add special code to exclude activityStatus from
+    #   the caRuby SpecimenRequirement missing mandatory attributes validation
+    #   check.
     def missing_mandatory_attributes
       invalid = super
       # Special case: AbstractSpecimen.setActivityStatus is a no-op.

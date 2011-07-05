@@ -54,7 +54,7 @@ module CaTissue
       cts
     end
 
-    # caTissue alert - Bug #70: StorageType and non-StorageType are equal.
+    # @quirk caTissue Bug #70: StorageType and non-StorageType are equal.
     #
     # @param other the object to compare
     # @return [Boolean] whether this StorageType has a non-nil name equal to the other name or

@@ -11,7 +11,7 @@ module CaTissue
   class StorageContainer < CaTissue::Container
     include StorageTypeHolder
     
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
     # Initialize specimen_positions if necessary. 
     #
     # @return [Java::JavaUtil::Set] the positions
@@ -21,9 +21,9 @@ module CaTissue
  
     # Copies the given container type child types to this container instance child types.
     #
-    # caTissue alert - caTissue API does not initialize the container child types to
-    # the container type child types. This method copies the container type child types
-    # to this container instance before it is created.
+    # @quirk caTissue caTissue API does not initialize the container child types to
+    #   the container type child types. This method copies the container type child types
+    #   to this container instance before it is created.
     #
     # @param [<StorageType>] type the storage type to set
     def storage_type=(type)
@@ -49,7 +49,7 @@ module CaTissue
 
     def initialize
       super
-      # JRuby alert - specimen_positions is not recognized unless primed with respond_to? call
+      # @quirk JRuby specimen_positions is not recognized unless primed with respond_to? call
       respond_to?(:specimen_positions)
       # work around caTissue Bug #64
       self.specimen_positions ||= Java::JavaUtil::LinkedHashSet.new
@@ -172,7 +172,7 @@ module CaTissue
 
     # Creates a subcontainer which holds the given storable. Creates nested subcontainers as necessary.
     #
-    # @param @storable (see #add)
+    #   @param @storable (see #add)
     # @return [StorageContainer, nil] self if a subcontainer was created, nil otherwise
     def add_to_new_subcontainer(storable)
       # the subcontainers in column, row sort order
@@ -209,9 +209,9 @@ module CaTissue
     # * the default site is the parent container site, if any
     # * the default capacity is copied from the storage type
     #
-    # caTissue alert - caTissue 1.1.2 container create inferred the default container capacity from the
-    # storage type. caTissue 1.2 container create does not make a default capacity. Work-around is to
-    # emulate 1.1.2 behavior by making the default capacity.
+    # @quirk caTissue caTissue 1.1.2 container create inferred the default container capacity from the
+    #   storage type. caTissue 1.2 container create does not make a default capacity. Work-around is to
+    #   emulate 1.1.2 behavior by making the default capacity.
     def add_defaults_local
       super
       # Although this default is set by the caTissue app, it is good practice to do so here

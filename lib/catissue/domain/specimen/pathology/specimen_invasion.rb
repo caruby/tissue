@@ -1,8 +1,8 @@
 module CaTissue
   class Specimen
     class Pathology
-      # caTissue alert - The 1.1 class Invasion is renamed to SpecimenInvasion in 1.2.
-      # Alias the Ruby class constant for forward and backaward compatibility.
+      # @quirk caTissue The 1.1 class Invasion is renamed to SpecimenInvasion in 1.2.
+      #   Alias the Ruby class constant for forward and backaward compatibility.
       begin
         resource_import Java::pathology_specimen.SpecimenInvasion
         const_set(:Invasion, SpecimenInvasion)

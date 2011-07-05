@@ -6,9 +6,9 @@ module CaTissue
 
   # The SpecimenRequirement domain class.
   class SpecimenRequirement < CaTissue::AbstractSpecimen
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize specimens if necessary. 
-     #
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #   Initialize specimens if necessary. 
+    #
     # @return [Java::JavaUtil::Set] the specimens
    def specimens
       getSpecimenCollection or (self.specimens = Java::JavaUtil::LinkedHashSet.new)
@@ -100,11 +100,11 @@ module CaTissue
 
     protected
 
-    # Returns the required attributes which are nil for this domain object.
-    # Overrides the CaRuby::Resource method to handle caTissue Bug #67 - SpecimenRequirement activityStatus cannot be set.
+    # @quirk caTissue Overrides the CaRuby::Resource method to handle caTissue Bug #67 - SpecimenRequirement activityStatus cannot be set.
+    #
+    # @return [<Symbol>] the required attributes which are nil for this domain object
     def missing_mandatory_attributes
       invalid = super
-      # caTissue alert - Special case: work around caTissue Bug #67
       if invalid.include?(:activity_status) then
         invalid.delete(:activity_status)
       end
@@ -122,10 +122,10 @@ module CaTissue
     # Augments {CaRuby::Resource#validate} to verify that this SpecimenRequirement does not have multiple non-aliquot
     # derivatives, which is disallowed by caTissue.
     #
-    # caTissue alert - multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
-    # in obscure downstream errors (cf. Bug #151).
+    # @quirk caTissue multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
+    #   in obscure downstream errors (cf. Bug #151).
     #
-    # Raises ValidationError if this SpecimenRequirement has multiple non-aliquot derivatives.
+    # @raise [ValidationError] if this SpecimenRequirement has multiple non-aliquot derivatives
     def validate_local
       super
       if multiple_derivatives? then raise ValidationError.new("Multiple derivatives not supported by caTissue") end

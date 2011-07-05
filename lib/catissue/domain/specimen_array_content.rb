@@ -4,10 +4,10 @@ module CaTissue
   # import the Java class
   resource_import Java::edu.wustl.catissuecore.domain.SpecimenArrayContent
 
-  # caTissue alert - #{CaTissue::SpecimenArrayContent} should be derived from
-  # {CaTissue::AbstractPosition} but isn't (cf. {CaTissue::ContainerType}).
-  # Partially rectify this by including the {Position} mix-in in common with
-  # {CaTissue::AbstractPosition}.
+  # @quirk caTissue #{CaTissue::SpecimenArrayContent} should be derived from
+  #   {CaTissue::AbstractPosition} but isn't (cf. {CaTissue::ContainerType}).
+  #   Partially rectify this by including the {Position} mix-in in common with
+  #   {CaTissue::AbstractPosition}.
   class SpecimenArrayContent
     include Position
 
