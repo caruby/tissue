@@ -89,9 +89,10 @@ module CaTissue
         hash = klass.nondomain_attributes.to_compact_hash do |attr|
           nondomain_attribute_column(klass, attr, eid)
         end
-        # the owner attribute column
-        ownr_attr = klass.owner_attribute
-        if ownr_attr then hash[ownr_attr] = owner_attribute_column(klass, ownr_attr, eid) end
+        # the owner attribute columns
+        klass.owner_attributes.each do |oattr|
+          hash[oattr] = owner_attribute_column(klass, oattr, eid)
+        end
         hash
       end
       
@@ -109,10 +110,23 @@ module CaTissue
         col
       end
       
+      # @quirk caTissue The caTissue 1.1.2 DYNEXT_ROLE table omits the target name for seven annotations,
+      #   e.g. SCG RadicalProstatectomyMargin. Work-around is to try the query with a null role name.
+      #
+      # @param [AnnotationClass] klass the annotation class
+      # @param [Symbol] attribute the owner attribute
+      # @param [Integer] eid the annotation entity id
+      # @return [String] the owner reference SQL column name
       def owner_attribute_column(klass, attribute, eid)
         logger.debug { "Finding #{klass.qp} #{attribute} column in the context of entity id #{eid}..." }
-        result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid) }
+        # The referenced class name (confusingly called a source role in the caTissue schema).
+        tgt_nm = klass.attribute_metadata(attribute).type.name.demodulize
+        result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm) }
         col = result[0] if result
+        if col.nil? then
+          result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(ALT_1_1_OWNER_COLUMN_SQL, eid) }
+          col = result[0] if result
+        end
         if col.nil? then raise AnnotationError.new("Column not found for #{klass.qp} owner attribute #{attribute}") end
         col
       end
@@ -141,9 +155,22 @@ EOS
       # The target entity id is obtained by calling {EntityFacade#associated_entity_id}.
       OWNER_COLUMN_SQL = <<EOS
         select cst.TARGET_ENTITY_KEY
-        from DYEXTN_CONSTRAINT_PROPERTIES cst, DYEXTN_ASSOCIATION assn
+        from DYEXTN_CONSTRAINT_PROPERTIES cst, DYEXTN_ASSOCIATION assn, dyextn_role role
         where cst.ASSOCIATION_ID = assn.IDENTIFIER
+        and assn.SOURCE_ROLE_ID = role.IDENTIFIER
         and assn.TARGET_ENTITY_ID = ?
+        and role.name = ?
+EOS
+      
+      # SQL to get the annotation reference column name for a given annotation target entity id.
+      # The target entity id is obtained by calling {EntityFacade#associated_entity_id}.
+      ALT_1_1_OWNER_COLUMN_SQL = <<EOS
+        select cst.TARGET_ENTITY_KEY
+        from DYEXTN_CONSTRAINT_PROPERTIES cst, DYEXTN_ASSOCIATION assn, dyextn_role role
+        where cst.ASSOCIATION_ID = assn.IDENTIFIER
+        and assn.SOURCE_ROLE_ID = role.IDENTIFIER
+        and assn.TARGET_ENTITY_ID = ?
+        and role.name IS NULL
 EOS
     end
   end
