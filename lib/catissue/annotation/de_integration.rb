@@ -10,7 +10,11 @@ module CaTissue
       def self.const_missing(symbol)
         name = [PKG, symbol].join('.')
         logger.debug { "Importing DE integration proxy Java class #{name}..." }
-        java_import name rescue super
+        begin
+          java_import name
+        rescue NameError
+          super
+        end
       end
       
       # @param [String] name the annotated hook class name
