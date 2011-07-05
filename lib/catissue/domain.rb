@@ -14,7 +14,8 @@ module CaTissue
   SRC_DIR = File.join(File.dirname(__FILE__), 'domain')
 
   # Enable the resource metadata aspect.
-  CaRuby::Domain.extend_module(self, :mixin => Resource, :metadata => AnnotatableClass, :package => PKG)
+  md_proc = Proc.new { |klass| AnnotatableClass.extend_class(klass) }
+  CaRuby::Domain.extend_module(self, :mixin => Resource, :metadata => md_proc, :package => PKG)
   
   # Set up the caTissue client logger before loading the class definitions.
   Wustl::Logger.configure
