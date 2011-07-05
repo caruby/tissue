@@ -7,8 +7,8 @@ module CaTissue
 
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolRegistration
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize consent_tier_responses if necessary. 
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #   Initialize consent_tier_responses if necessary. 
     #
     # @return [Java::JavaUtil::Set] the responses
     def consent_tier_responses
@@ -67,8 +67,8 @@ module CaTissue
     # must exist. This is checked in the special purpose {#validate_local} method.
     qualify_attribute(:protocol_participant_identifier, :optional)
 
-    # caTissue alert -  Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    # Create CollectionProtocol in API ignores startDate.
+    # @quirk caTissue  Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:registration_date, :update_only)
 
     def initialize

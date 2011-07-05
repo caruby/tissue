@@ -1,8 +1,8 @@
 module CaTissue
   class Specimen
     class Pathology
-      # caTissue alert - The 1.1 class GleasonScore is renamed to ProstateSpecimenGleasonScore in 1.2.
-      # Alias the Ruby class constant for forward and backaward compatibility.
+      # @quirk caTissue The 1.1 class GleasonScore is renamed to ProstateSpecimenGleasonScore in 1.2.
+      #   Alias the Ruby class constant for forward and backaward compatibility.
       begin
         resource_import Java::pathology_specimen.ProstateSpecimenGleasonScore
         const_set(:GleasonScore, ProstateSpecimenGleasonScore)

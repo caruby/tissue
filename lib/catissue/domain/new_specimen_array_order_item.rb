@@ -6,16 +6,16 @@ module CaTissue
 
   # The NewSpecimenArrayOrderItem domain class.
   class NewSpecimenArrayOrderItem
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize order_items if necessary. 
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #   Initialize order_items if necessary. 
     #
     # @return [Java::JavaUtil::Set] the items
     def order_items
       getOrderItemCollection or (self.order_items = Java::JavaUtil::LinkedHashSet.new)
     end
     
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize distributions if necessary. 
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #   Initialize distributions if necessary. 
     def distributions
       getDistributionCollection or (self.distributions = Java::JavaUtil::LinkedHashSet.new)
     end

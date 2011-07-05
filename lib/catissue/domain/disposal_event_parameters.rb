@@ -5,7 +5,7 @@ module CaTissue
   class DisposalEventParameters < CaTissue::SpecimenEventParameters
     add_attribute_defaults(:activity_status => 'Closed')
 
-    # caTissue alert - DisposalEventParameters activity status is transient.
+    # @quirk caTissue DisposalEventParameters activity status is transient.
     qualify_attribute(:activity_status, :unfetched)
   end
 end

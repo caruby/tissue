@@ -7,11 +7,10 @@ module CaTissue
 
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolEvent
-       
     include HashCode
     
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize specimen_collection_groups if necessary.
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #    Initialize specimen_collection_groups if necessary.
     #
     # @return [Java::JavaUtil::Set] the SCGs
     def specimen_collection_groups
@@ -34,8 +33,8 @@ module CaTissue
 
     add_mandatory_attributes(:collection_protocol, :clinical_diagnosis, :specimen_requirements)
 
-    # caTissue alert - specimen_requirements is a cascaded dependent, but it is not fetched.
-    # CollectionProtocol create cascades through each dependent CPE to each SpecimenRequirement.
+    # @quirk caTissue specimen_requirements is a cascaded dependent, but it is not fetched.
+    #   CollectionProtocol create cascades through each dependent CPE to each SpecimenRequirement.
     add_dependent_attribute(:specimen_requirements, :unfetched)
 
     # The event point used for saving this CollectionProtocolEvent if none other is set.

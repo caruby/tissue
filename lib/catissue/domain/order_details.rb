@@ -5,8 +5,8 @@ module CaTissue
 
   # The OrderDetails domain class.
   class OrderDetails
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize order_items if necessary. 
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #   Initialize order_items if necessary. 
     #
     # @return [Java::JavaUtil::Set] the items
     def order_items
@@ -16,7 +16,7 @@ module CaTissue
     def initialize
       super
       respond_to?(:order_items)
-      # caTissue alert - work around caTissue Bug #64
+      # @quirk caTissue work around caTissue Bug #64
       self.order_items ||= Java::JavaUtil::LinkedHashSet.new
     end
   end
