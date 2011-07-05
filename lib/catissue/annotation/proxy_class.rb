@@ -1,7 +1,9 @@
 require 'set'
 require 'caruby/util/collection'
+require 'caruby/util/partial_order'
 require 'catissue/annotation/annotation'
-require 'catissue/annotation/proxy'
+require 'catissue/annotation/proxy_1_1'
+require 'catissue/annotation/record_entry_proxy'
 
 module CaTissue
   module Annotation
@@ -10,11 +12,9 @@ module CaTissue
       # @param [Class] klass the proxy class
       def self.extended(klass)
         super
-        klass.class_eval { include Proxy }
-      end
-      
-      def annotation_attributes
-        @ann_attrs ||= infer_annotation_attributes
+        # distinguish the 1.1 from the 1.2 proxy class
+        mixin = klass.name =~ /RecordEntry$/ ? RecordEntryProxy : Proxy_1_1
+        klass.class_eval { include mixin }
       end
       
       # @return [AnnotatableClass] the hook class for this proxy
@@ -39,44 +39,17 @@ module CaTissue
       # Recursively adds dependents of all referenced annotations.
       def build_annotation_dependency_hierarchy
         logger.debug { "Building annotation dependency hierarchy..." }
+        non_proxy_annotation_classes.each do |klass|
+          klass.annotation_hierarchy.each do |anc|
+            if anc.primary? and anc.proxy_attribute.nil? then
+              anc.define_proxy_attribute(self)
+            end
+          end
+          logger.info(klass.pp_s)
+        end
         set_inverses
         add_dependent_attributes
         add_dependent_attribute_closure
-      end
-      
-      # @param [Class] klass the target annotation attribute type
-      def obtain_annotation_attribute(klass)
-        detect_annotation_attribute(klass) or create_annotation_attribute(klass)
-      end
-
-      private
-    
-      # Sets each annotation reference attribute inverse to the direct, unwrapped proxy
-      # reference named by the annotation module. E.g. the caTissue +Participant+
-      # +clinical+ proxy +ParticipantRecordEntry+ -> +NewDiagnosisAnnotation+ attribute
-      # inverse is set to the +NewDiagnosisAnnotation+ -> +ParticipantRecordEntry+
-      # +clinical+ reference attribute.
-      def set_inverses
-        # The inverse is the direct, unwrapped proxy reference named by the annotation module.
-        inv = annotation_module.name.demodulize.underscore.to_sym
-        annotation_attributes.each_metadata do |attr_md|
-          attr_md.type.define_proxy_attribute(self)
-          set_attribute_inverse(attr_md.to_sym, inv)
-        end
-      end
-    
-      # @param [Class] klass the target annotation attribute type
-      # @return [Symbol, nil] the proxy => primary annotation dependent attribute, if any
-      def detect_annotation_attribute(klass)
-        attr = dependent_attribute(klass)
-        return attr if attr
-        # Not dependent; if it is a non-dependent, then make it dependent.
-        attr = detect_attribute_with_type(klass)
-        if attr then
-          logger.debug { "Adding annotation reference #{attr} to #{klass.qp} as a dependent..." }
-          add_dependent_attribute(attr, :logical)
-        end
-        attr
       end
       
       # Creates a reference attribute from this proxy to the given primary {Annotation} class. 
@@ -92,16 +65,32 @@ module CaTissue
         add_attribute(attr, klass, :collection)
         # The annotation is dependent.
         add_dependent_attribute(attr, :logical)
-#        # make the hook attribute which delegates to this proxy
-#        @hook.create_annotation_attribute(domain_module, attr)
         attr
       end
       
-      def infer_annotation_attributes
-#        # Infer the domain attributes first. Do so with a copy of the attribute metadata objects
-#        # since the domain type inference can result in adding a new annotation attribute.
-#        attribute_metadata_hash.values.each { |attr_md| attr_md.domain? }
-        domain_attributes.compose { |attr_md| attr_md.type < Annotation }
+      private
+    
+      # Sets each annotation reference attribute inverse to the direct, unwrapped proxy
+      # reference named by the annotation module. E.g. the caTissue +Participant+
+      # +clinical+ proxy +ParticipantRecordEntry+ -> +NewDiagnosisAnnotation+ attribute
+      # inverse is set to the +NewDiagnosisAnnotation+ -> +ParticipantRecordEntry+
+      # +clinical+ reference attribute.
+      def set_inverses
+        # The inverse is the direct, unwrapped proxy reference named by the annotation module.
+        inv = annotation_module.name.demodulize.underscore.to_sym
+        # The attributes in class hierarchy general-to-specific order
+        attr_mds = annotation_attributes.enum_metadata.partial_sort_by { |attr_md| attr_md.type }.reverse
+        logger.debug { "Setting #{self} inverses for annotation attributes #{attr_mds.to_series}." }
+        attr_mds.each do |attr_md|
+          attr_md.type.define_proxy_attribute(self)
+          set_attribute_inverse(attr_md.to_sym, inv)
+        end
+      end
+      
+      # @return <AnnotationClass> the non-proxy annotation classes
+      def non_proxy_annotation_classes
+        consts = annotation_module.constants.map { |s| annotation_module.const_get(s) }
+        consts.select { |c| Class === c and c < Annotation and not c < Proxy }
       end
     end
   end
