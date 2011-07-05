@@ -12,12 +12,12 @@ module CaTissue
 
       # Associates the given hook domain object to the annotation.
       #
-      # caTissue alert - The static hook entity is associated with the annotation
-      # by creating a record entry hook proxy. Even though the record entry class
-      # includes Java properties for each primary annotation in the annotation
-      # Java package, the record entry instance only references a single annotation.
-      # The record entry database table +dyextn_abstract_record_entry+ has foreign
-      # key to a ABSTRACT_FORM_CONTEXT_ID  a separate record entry is created for each annotation.
+      # @quirk caTissue The static hook entity is associated with the annotation
+      #   by creating a record entry hook proxy. Even though the record entry class
+      #   includes Java properties for each primary annotation in the annotation
+      #   Java package, the record entry instance only references a single annotation.
+      #   The record entry database table +dyextn_abstract_record_entry+ has foreign
+      #   key to a ABSTRACT_FORM_CONTEXT_ID  a separate record entry is created for each annotation.
       #
       # @param [Annotatable] hook the hook entity 
       # @param [Annotation] annotation the annotation entity 
@@ -42,6 +42,7 @@ module CaTissue
         re = klass.new
         # the form context
         re.form_context = form_context(hook, annotation)
+        # set the hook
         re.send(@mod.record_entry_hook_writer, hook)
         # dispatch to the application service
         toxic = hook.persistence_service.create(re)
@@ -66,11 +67,13 @@ module CaTissue
         end
         tmpl.container_id = ctr_id
         ctxts = hook.persistence_service.query(tmpl)
-        case ctxts.size
+        ctxt = case ctxts.size
           when 0 then raise AnnotationError.new("Form context not found for annotation class #{annotation.class.qp}")
           when 1 then ctxts.first
           else raise AnnotationError.new("Multiple form contexts found for annotation class #{annotation.class.qp}")
         end
+        logger.debug { "#{annotation.qp} form context is #{ctxt}." }
+        ctxt
       end
     end
   end

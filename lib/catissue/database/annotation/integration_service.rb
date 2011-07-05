@@ -73,10 +73,10 @@ module CaTissue
         ctxt
       end
       
-      # caTissue alert - the entity map is associated with a domain class in the hook class hierarchy.
-      # The generic approach to determining the entity map for a given hook object and annotation object
-      # is to iterate over the hook class hierarchy until a matching ENTITY_MAP record is found for the
-      # hook class ancestor and the annotation container id.
+      # @quirk caTissue the entity map is associated with a domain class in the hook class hierarchy.
+      #   The generic approach to determining the entity map for a given hook object and annotation object
+      #   is to iterate over the hook class hierarchy until a matching ENTITY_MAP record is found for the
+      #   hook class ancestor and the annotation container id.
       #
       # @param (see #associate) 
       # @return [EntityMap] the entity map
