@@ -1,8 +1,8 @@
 require 'buildr-gemjar'
 
-# The caTissue workspace.
-$:.unshift  '../caruby/lib'
-$:.unshift  '../catissue/lib'
+# The caRuby paths relative to the embed directory.
+$:.unshift File.join('..', '..', 'caruby', 'lib')
+$:.unshift File.join('..', 'lib')
 
 require 'caruby/version'
 require 'catissue/version'
@@ -13,10 +13,10 @@ JRUBY_JAR = 'org.jruby:jruby-complete:jar:1.6.0.RC2'
 COMMMON_JAR = File.join('lib', 'commonpackage.jar')
 
 # The caRuby Core gem.
-CARUBY_GEM = File.join('..', 'caruby', "caruby-core-#{CaRuby::VERSION}.gem")
+CARUBY_GEM = File.join('..', '..', 'caruby', "caruby-core-#{CaRuby::VERSION}.gem")
 
 # The caRuby Tissue gem.
-CATISSUE_GEM = File.join('..', 'catissue', "caruby-tissue-#{CaTissue::VERSION}.gem")
+CATISSUE_GEM = "caruby-tissue-#{CaTissue::VERSION}.gem"
 
 # The maven repositories.
 repositories.remote << 'http://repo1.maven.org/maven2'
@@ -44,8 +44,10 @@ define 'caruby-tissue-embed', :layout => lo do
   package(:jar, :file => bridge_jar).include _('classes/*'), _('ruby/*')
   
   # Make the gem jar file.
-  package(:gemjar, :file => gem_jar).with_gem('caruby-tissue', CaTissue::VERSION)
-  
+  package(:gemjar, :file => gem_jar).
+    with_gem(:file => _(:target, "gem_home/cache/caruby-core-#{CaRuby::VERSION}.gem")).
+    with_gem(:file => _(:target, "gem_home/cache/caruby-tissue-#{CaTissue::VERSION}.gem"))
+
   # Bundle up the jar files and README.
   package(:zip).include gem_jar, bridge_jar, _('doc/dist/*')
 end
