@@ -9,8 +9,8 @@ module CaTissue
   class CollectionProtocol
     include HashCode
     
-    # caTissue alert - Bug #64: Some domain collection properties not initialized.
-    # Initialize consent_tiers if necessary. 
+    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
+    #   Initialize consent_tiers if necessary. 
     #
     # @return [Java::JavaUtil::Set] the tiers
     def consent_tiers
@@ -29,16 +29,16 @@ module CaTissue
 
     add_dependent_attribute(:consent_tiers)
 
-    # caTissue alert - Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    # Create CollectionProtocol in API ignores startDate.
+    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:start_date, :update_only)
 
-    # caTissue alert - Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    # Create CollectionProtocol in API ignores startDate.
+    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    #   Create CollectionProtocol in API ignores startDate.
     set_attribute_type(:coordinators, CaTissue::User)
 
-    # caTissue alert - Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    # Create CollectionProtocol in API ignores startDate.
+    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:coordinators, :fetched)
 
     def initialize
