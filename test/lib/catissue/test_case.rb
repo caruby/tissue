@@ -11,7 +11,7 @@ end
 LOG_FILE = 'test/results/log/catissue.log' unless defined?(LOG_FILE)
 require 'caruby/util/log' and
   CaRuby::Log.instance.open(LOG_FILE, :shift_age => 10, :shift_size => 1048576, :debug => true)
-
+  
 # Add the caruby-tissue source
 $:.unshift '../catissue/lib'
 
@@ -140,8 +140,8 @@ module CaTissue
     # Verifies that the given dependent has an identifier and that the given owner dependent attribute value
     # contains the dependent.
     #
-    # JRuby alert - Set include? incorrectly returns false in the OHSU PSR samples_test test_save_grade
-    # call to this method. Work around by using Set detect rather than include?.
+    # @quirk JRuby Set include? incorrectly returns false in the OHSU PSR samples_test test_save_grade
+    #   call to this method. Work around by using Set detect rather than include?.
     def verify_saved_dependent_collection_member(dependent, owner, attribute)
       deps = owner.send(attribute)
       assert(deps.detect { |dep| dep == dependent }, "Owner #{owner.qp} #{attribute} value #{deps.pp_s} does not contain #{dependent}")
@@ -181,12 +181,12 @@ module CaTissue
     # Verifies that the given expected domain object has the same content as actual,
     # and that the dependents match.
     #
-    # caTissue alert - caTissue mutilates an unspecified specimen type available quantity, e.g.
-    # changing a Specimen with specimen type 'Not Specified' from available quantity 1, initial
-    # quantity 1 to available quantity 0, initial quantity 3 results in available quantity 2
-    # in database. The update is necessary when creating the Specimen with available quantity 0,
-    # initial quantity 3 to work around a different caTissue bug. Thus, the bug work-around
-    # is broken by a different caTissue bug.
+    # @quirk caTissue caTissue mutilates an unspecified specimen type available quantity, e.g.
+    #   changing a Specimen with specimen type 'Not Specified' from available quantity 1, initial
+    #   quantity 1 to available quantity 0, initial quantity 3 results in available quantity 2
+    #   in database. The update is necessary when creating the Specimen with available quantity 0,
+    #   initial quantity 3 to work around a different caTissue bug. Thus, the bug work-around
+    #   is broken by a different caTissue bug.
     #
     # @param [Resource] expected the saved value
     # @param [Resource] actual the fetched value
