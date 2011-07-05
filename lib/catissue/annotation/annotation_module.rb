@@ -55,18 +55,6 @@ module CaTissue
       @proxy.hook
     end
     
-#    # Ensures that each primary annotation in this module has a proxy reference attribute.
-#    # The primary annotation creates a proxy attribute if necessary.
-#    def ensure_proxy_attributes_are_defined
-#      logger.debug { "Ensuring that #{qp} primary annotations reference the proxy #{@proxy.qp}..." }
-#      @rsc_classes.each { |klass| klass.ensure_primary_has_proxy(@proxy) }
-#    end
-#    
-#    # Builds an annotation dependency hierarchy starting at the proxy.
-#    def add_annotation_dependents
-#      @proxy.add_annotation_dependents
-#    end
-    
     # @return [CaRuby::PersistenceService] this module's application service
     def persistence_service
       @ann_svc ||= Database.instance.annotator.create_annotation_service(self, @svc_nm)
