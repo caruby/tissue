@@ -50,7 +50,6 @@ class CollectionProtocolTest < Test::Unit::TestCase
     assert(@pcl.specimens(pnt).include?(spc2), 'Specimen not found')
   end
 
-  # Verify the events.
   def test_events
     event = @pcl.events.first
     assert_not_nil(event, "Protocol test default has no events")
