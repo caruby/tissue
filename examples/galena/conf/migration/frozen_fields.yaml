@@ -2,7 +2,7 @@
 # This example extends the simple migration with storage fields
 # and the frozen defaults.
 
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name
 SPN: SpecimenCollectionGroup.surgical_pathology_number
 Collection Date: ReceivedEventParameters.timestamp

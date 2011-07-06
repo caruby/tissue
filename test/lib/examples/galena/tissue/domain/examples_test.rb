@@ -10,7 +10,7 @@ class ExamplesTest < Test::Unit::TestCase
   def setup
     super
     @pcl = defaults.protocol
-    @pcl.title = @pcl.short_title = 'Galena CP'.uniquify
+    @pcl.title = @pcl.title = 'Galena CP'.uniquify
     @pnt = CaTissue::Participant.new(:name => 'Test Participant'.uniquify)
     @pnt.add_mrn(defaults.hospital, Uniquifier.qualifier)
     tissue = CaTissue::Specimen.create_specimen(:class => :tissue, :type => 'Frozen Tissue', :quantity => 1.0)

@@ -65,7 +65,7 @@ module CaTissueTest
       populate
       # make the CP and MRN unique; these values will ripple through the SCG, CPR, et al.
       # to make them unique as well
-      @protocol.short_title = @protocol.short_title.uniquify
+      @protocol.title = @protocol.title.uniquify
       @registration.participant.medical_identifiers.each { |mid| mid.medical_record_number = Uniquifier.qualifier }
       # unset the SCG name and specimen label so the default is set to a new unique value
       @specimen_collection_group.name = @specimen.label = nil
@@ -154,7 +154,7 @@ module CaTissueTest
 
       # the test collection protocol
       @protocol = CaTissue::CollectionProtocol.new(
-        :short_title => 'Test CP',
+        :title => 'Test CP',
         :principal_investigator => pi
       )
 

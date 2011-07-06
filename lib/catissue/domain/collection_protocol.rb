@@ -19,11 +19,9 @@ module CaTissue
 
     add_attribute_aliases(:events => :collection_protocol_events, :registrations => :collection_protocol_registrations)
 
-    set_secondary_key_attributes(:short_title)
-
     add_attribute_defaults(:consents_waived => false, :aliquot_in_same_container => false)
 
-    add_mandatory_attributes(:aliquot_in_same_container, :collection_protocol_events, :consents_waived, :enrollment, :start_date, :title)
+    add_mandatory_attributes(:aliquot_in_same_container, :collection_protocol_events, :consents_waived, :enrollment)
 
     add_dependent_attribute(:collection_protocol_events)
 
@@ -149,8 +147,6 @@ module CaTissue
     #   is the coordinator site.
     def add_defaults_local
       super
-      self.title ||= short_title
-      self.short_title ||= title
       self.start_date ||= Java::JavaUtil::Date.new
       if sites.empty? then add_default_site end
       if coordinators.empty? and sites.size == 1 then

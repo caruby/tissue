@@ -16,7 +16,7 @@ module CaTissue
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
-      self.short_title ||= migration_default_short_title(migrated)
+      self.title ||= migration_default_title(migrated)
       self.principal_investigator ||= Galena::Seed.defaults.protocol.principal_investigator
       sites << Galena::Seed.defaults.tissue_bank if sites.empty?
       coordinators << Galena::Seed.defaults.tissue_bank.coordinator if coordinators.empty?
@@ -27,10 +27,10 @@ module CaTissue
     # @param (see #migrate)
     # @return [String, nil] the short title of the {Galena::Seed::Defaults} protocol which
     #   matches this protocol's event, or nil if no match 
-    def migration_default_short_title(migrated)
+    def migration_default_title(migrated)
       cpe = migrated.detect { |obj| CaTissue::CollectionProtocolEvent === obj } || return
       pcl = Galena::Seed.defaults.protocols.detect { |p| p.events.first.label == cpe.label } || return
-      pcl.short_title
+      pcl.title
     end
   end
   

@@ -11,7 +11,7 @@
 # * the pre-defined Rubyized underscore form of the Java property, e.g. last_name
 
 # The collection protocol title for the specimen
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 
 # The input MRN field is used for the PMI MRN, CPR PPI and Participant last name.
 # Since the migration source is for a single collection site, the MRN is unique within the protocol.

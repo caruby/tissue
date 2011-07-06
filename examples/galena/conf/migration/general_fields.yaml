@@ -1,7 +1,7 @@
 # This is the Galena general example migration field mapping file in the format:
 #   input field: caTissue property
 
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 
 Collection Site: Site.name
 

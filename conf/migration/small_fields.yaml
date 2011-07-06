@@ -3,7 +3,7 @@
 # The example does not use a shim.
 
 # The collection protocol title for the specimen
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 
 # The input MRN field is used for the PMI MRN, CPR PPI and Participant last name
 MRN: ParticipantMedicalIdentifier.medical_record_number, Participant.last_name

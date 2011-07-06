@@ -1,4 +1,4 @@
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 Patient: CollectionProtocolRegistration.protocol_participant_identifier
 Race: Race.name
 Ethnicity: Participant.ethnicity

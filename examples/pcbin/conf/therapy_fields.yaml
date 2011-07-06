@@ -1,4 +1,4 @@
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 Patient: CollectionProtocolRegistration.protocol_participant_identifier
 Agent: Participant::Clinical::TreatmentAnnotation.agent
 Dose: Participant::Clinical::TreatmentAnnotation.dose

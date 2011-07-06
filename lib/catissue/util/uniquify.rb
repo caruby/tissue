@@ -7,7 +7,7 @@ module CaTissue
     # Makes this CP's short and long title unique.
     def uniquify
       super
-      self.title = short_title
+      self.short_title = title
     end
   end
 

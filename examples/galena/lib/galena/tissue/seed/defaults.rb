@@ -21,7 +21,7 @@ module Galena
     #
     # In a real-world use case, the administrative objects are typically built in the UI before-hand.
     # In that case, it is only necessary to define the object secondary key rather than content, e.g.:
-    #   pcl = CaTissue::CollectionProtocol.new(:short_title => 'Galena CP')
+    #   pcl = CaTissue::CollectionProtocol.new(:title => 'Galena CP')
     # The complete definitions are included in this method for convenience in order to seed the
     # example in a test database. A real-world migration might find it useful to create a similar
     # defaults file in order to rapidly seed an empty test or staging database.
@@ -91,7 +91,7 @@ module Galena
           :first_name => 'Serge', :last_name => 'On', :address => addr.copy,
           :institution => galena, :department => dept, :cancer_research_group => crg)
   
-        @protocols << pcl = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration', 
+        @protocols << pcl = CaTissue::CollectionProtocol.new(:title => 'Galena Migration', 
           :principal_investigator => pi, :sites => [@tissue_bank])
   
         # CPE has default 1.0 event point and label
@@ -101,12 +101,12 @@ module Galena
         # sets the CPE requirement inverse attribute in caRuby.
         CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe, :specimen_type => 'Fixed Tissue')
   
-        @protocols << pcl2 = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration 2', 
+        @protocols << pcl2 = CaTissue::CollectionProtocol.new(:title => 'Galena Migration 2', 
           :principal_investigator => pi, :sites => [@tissue_bank])
         cpe2 = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl2, :event_point => 2.0, :label => 'Galena Migration_2')
         CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe2, :specimen_type => 'Frozen Tissue')
   
-        @protocols << pcl3 = CaTissue::CollectionProtocol.new(:short_title => 'Galena Migration 3', 
+        @protocols << pcl3 = CaTissue::CollectionProtocol.new(:title => 'Galena Migration 3', 
           :principal_investigator => pi, :sites => [@tissue_bank])
         cpe3 = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl3, :event_point => 3.0, :label => 'Galena Migration_3')
         CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe3, :specimen_type => 'Frozen Tissue')

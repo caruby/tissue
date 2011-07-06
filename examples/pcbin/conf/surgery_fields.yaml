@@ -1,4 +1,4 @@
-Protocol: CollectionProtocol.short_title
+Protocol: CollectionProtocol.title
 Patient: CollectionProtocolRegistration.protocol_participant_identifier
 Specimen Type: TissueSpecimen.specimen_type
 Year of Surgery: Participant::Clinical::Duration.start_date
