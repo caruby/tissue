@@ -25,13 +25,8 @@ module CaTissue
       end
       # load the caRuby annotations if necessary
       hook.class.ensure_annotations_loaded
-      # the annotation => hook attribute
-      attr = annotation.class.proxy_attribute
-      if attr.nil? then
-        raise AnnotationError.new("The annotation class #{annotation.class} does not have an attribute that references a #{hook.class.qp}")
-      end
       # set the annotation hook reference
-      annotation.set_attribute(attr, hook)
+      annotation.hook = hook
       # create the annotation in the database
       annotation.create
     end
