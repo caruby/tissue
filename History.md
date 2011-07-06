@@ -1,7 +1,11 @@
 This history lists major release themes. See the GitHub Commits (https://github.com/caruby/tissue)
 for change details.
 
-1.5.1 / 2011-06-15
+1.5.2 / 2011-07-06
+------------------
+* Update embed to use the annotation hook attribute.
+
+1.5.1 / 2011-07-05
 ------------------
 * Annotation refactoring.
 
