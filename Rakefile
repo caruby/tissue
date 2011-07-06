@@ -20,7 +20,7 @@ SUDO = WINDOWS ? '' : 'sudo'
 
 # the archive include files
 TAR_FILES = Dir.glob("{bin,examples,lib,sql,*.gemspec,doc/website,test/{bin,fixtures,lib}}") +
-  ['.gitignore', 'History.txt', 'LEGAL', 'LICENSE', 'Rakefile', 'README.md']
+  ['.gitignore', 'History.md', 'LEGAL', 'LICENSE', 'Rakefile', 'README.md']
 
 desc "Makes the example documentation"
 task :doc do
