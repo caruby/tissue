@@ -13,7 +13,6 @@ include FileUtils
 # the gem name
 GEM = 'caruby-tissue'
 GEM_VERSION = CaTissue::VERSION
-GEM_VERSION.replace(ENV['CARUBY_TISSUE_VERSION']) if ENV['CARUBY_TISSUE_VERSION']
 
 WINDOWS = (Config::CONFIG['host_os'] =~ /mingw|win32|cygwin/ ? true : false) rescue false
 SUDO = WINDOWS ? '' : 'sudo'
