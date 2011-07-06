@@ -27,7 +27,10 @@ Build embed as follows:
 
 Usage
 -----
-See the `doc/dist/README.md` file.
+* Add the embed distribution `lib` jar files to your classpath.
+
+* Add a `.catissue` file to your home directory as described in
+  http://caruby.tenderapp.com/kb/tissue/how-do-i-configure-caruby-to-work-with-catissue
 
 Bugs
 ----
