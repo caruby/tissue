@@ -1,6 +1,10 @@
 This history lists major release themes. See the GitHub Commits (https://github.com/caruby/tissue)
 for change details.
 
+1.5.3 / 2011-07-08
+------------------
+* Clean up documentation.
+
 1.5.2 / 2011-07-06
 ------------------
 * Update embed to use the annotation hook attribute.
@@ -11,7 +15,7 @@ for change details.
 
 1.4.2 / 2011-05-04
 ------------------
-* Add registration and PCBIN examples.
+* Add registration and PSBIN examples.
 
 1.4.1 / 2011-05-03
 ------------------
@@ -39,7 +43,7 @@ for change details.
 
 1.3.1 / 2011-02-18
 ------------------
-* Prostate Spore PCBIN DE support.
+* Prostate Spore PSBIN DE support.
 
 1.2.3 / 2011-02-18
 ------------------
