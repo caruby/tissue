@@ -1,8 +1,8 @@
 # Borrow the Galena test apparatus.
 require 'test/lib/examples/galena/tissue/migration/test_case'
 
-# Tests the PCBIN example migration.
-module PCBIN
+# Tests the PSBIN example migration.
+module PSBIN
   class MigrationTest < Test::Unit::TestCase
     include Galena::Tissue::MigrationTestCase
     
@@ -28,15 +28,15 @@ module PCBIN
     
     def test_adj_hormone_target
       verify_target(:adjuvant_hormone, ADJ_HORMONE_OPTS) 
-    end    
+    end
     
     def test_adj_radiation_target
       verify_target(:adjuvant_radiation, ADJ_RAD_OPTS) 
-    end    
+    end
     
     def test_neoadj_hormone_target
       verify_target(:neoadjuvant_hormone, NEOADJ_HORMONE_OPTS) 
-    end    
+    end
     
     def test_neoadj_radiation_target
       verify_target(:neoadjuvant_radiation, NEOADJ_RAD_OPTS) 
@@ -50,7 +50,7 @@ module PCBIN
     # anticipated SCG. Otherwise, the migrations can be run in any order with the same
     # result.
     #
-    # NOTE: some tests fail sporadically when run as a suite. Testing individually succeeds.
+    # NOTE: Occasionally a test case fails sporadically when run as a suite. Testing individually succeeds.
     # Presumably a test artifact. TODO - isolate. 1.1.2 only?
 
     def test_save_biopsy
@@ -96,13 +96,13 @@ module PCBIN
     private
   
     # The default migration input data directory.
-    FIXTURES = 'examples/pcbin/data'
+    FIXTURES = 'examples/psbin/data'
   
     # The default migration shims directory.
-    SHIMS = 'examples/pcbin/lib/pcbin'
+    SHIMS = 'examples/psbin/lib/psbin'
     
     # The dfault migration configuration directory.
-    CONFIGS = 'examples/pcbin/conf'
+    CONFIGS = 'examples/psbin/conf'
     
     PATIENT_OPTS = {
       :target => CaTissue::Participant,
