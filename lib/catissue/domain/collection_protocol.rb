@@ -1,11 +1,19 @@
 require 'date'
 require 'catissue/domain/hash_code'
+require 'catissue/util/collectible'
 
 module CaTissue
   # import the Java class
   resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocol
 
   # The CollectionProtocol domain class.
+  #
+  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+  #   Create CollectionProtocol in API ignores startDate.
+  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+  #   Create CollectionProtocol in API ignores startDate.
+  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+  #   Create CollectionProtocol in API ignores startDate.
   class CollectionProtocol
     include HashCode
     
@@ -27,16 +35,10 @@ module CaTissue
 
     add_dependent_attribute(:consent_tiers)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:start_date, :update_only)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
     set_attribute_type(:coordinators, CaTissue::User)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:coordinators, :fetched)
 
     def initialize
@@ -78,7 +80,7 @@ module CaTissue
     # Adds specimens to this protocol. The following parameter options are supported:
     # * :participant - the Participant from whom the specimen is collected
     # * :biospecimens - the collected top-level underived specimens
-    # * additional SCG parameters as described in {SpecimenCollectionGroup#merge}.
+    # * additional SCG parameters as described in {Collectible#merge_attributes}.
     #
     # If the options does not include a +:collection_protocol_event+, then the SCG is assigned
     # to the first collection event in this protocol.
@@ -87,8 +89,8 @@ module CaTissue
     # if that can be uniquely determined.
     #
     # This add_specimens method adds the following parameter options before calling the
-    # {CaTissue::SpecimenCollectionGroup} constructor:
-    # * :registration => a new {CaTissue::CollectionProtocolRegistration} for this protocol
+    # {SpecimenCollectionGroup} constructor:
+    # * :registration => a new {CollectionProtocolRegistration} for this protocol
     #   and the specified participant
     #
     # @param [(<Specimen>, {Symbol => Object})] specimens_and_params the specimens to add followed

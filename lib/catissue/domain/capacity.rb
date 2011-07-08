@@ -24,7 +24,7 @@ module CaTissue
 
     add_mandatory_attributes(:one_dimension_capacity, :two_dimension_capacity)
 
-    # Returns the read-only Coordinate with this Capacity's #rows and {#columns}.
+    # @return [CaRuby::Coordinate] the read-only coordinate with this capacity's rows and columns
     def bounds
       @bounds ||= Coordinate.new(columns, rows)
     end

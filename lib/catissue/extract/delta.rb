@@ -10,9 +10,12 @@ module CaTissue
   class Delta
     include Enumerable
 
-    # Creates a new Delta for objects of the given target type which changed
-    # at or after the since Date and earlier but not at the before Date.
-    # The default before Date is now.
+    # Initializes this delta for objects of the given target type which changed
+    # at or after the since date and earlier than the before date.
+    #
+    # @param [Class] target the type for which the delta is determined
+    # @param [Date] since the delta start time
+    # @param [Date, nil] since the delta end time (default now)
     def initialize(target, since, before=nil)
       # convert the required target to a CaTissue class if necessary
       @matcher = create_table_regex(target)
@@ -22,17 +25,21 @@ module CaTissue
 
     # Calls the given block on each caTissue identifier satisfying the delta condition.
     # This method submits the delta SQL and filters the result on the target class.
-    # This method always submits the query; the caller is responsible for preserving
-    # the result if necessary using {#to_a}.
+    # This method always submits the query; the caller is responsible for capturing
+    # the result if necessary for a subsequent iteration.
+    #
+    # @yield [identifier] filters the Resources changed in the delta window
+    # @yieldparam [Integer] identifier the Resource database id
     def each(&block)
       execute_query(&block)
     end
 
     private
 
+    # The parameterized SQL for determining
     SQL_FILE = File.join(File.dirname(__FILE__), '..', '..', '..', 'sql', 'delta.sql')
 
-    # Returns the result of running the delta SQL on the target CaTissue domain class.
+    # @return [<Resource>] the result of running the delta SQL on the target CaTissue domain class
     def execute_query
       sql = File.open(SQL_FILE) { |file| file.read }
       logger.debug { "Executing identifier change set selection range #{@since} - #{@before}, SQL:\n#{sql}" }
@@ -44,7 +51,8 @@ module CaTissue
       end
     end
 
-    # Returns the table match REs for the given target class.
+    # @param [Class] the target domain class
+    # @return [RegularExpression, nil] the table match RE for the given target class, if any
     def create_table_regex(target)
       # The class => table RE hash. Make this hash rather than defining a constant in order to enable
       # logging before touching a domain class.

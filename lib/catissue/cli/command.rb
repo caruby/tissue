@@ -6,7 +6,7 @@ begin
 rescue Exception => e
   logger.error("caTissue client load was unsuccessful - #{e}:\n#{e.backtrace.qp}")
   puts "caTissue client load was unsuccessful - #{e}."
-  puts "See the log at #{CaRuby::Log.instance.file} for more information."
+  puts "See the log at #+CaRuby::Log.instance.file+ for more information."
   exit 1
 end
 
@@ -15,9 +15,9 @@ require 'catissue/version'
 
 module CaTissue
   module CLI
-    # Augments {CaRuby::CLI::Command} with caTissue-specific command line option handlers.
+    # Augments +CaRuby::CLI::Command+ with caTissue-specific command line option handlers.
     class Command < CaRuby::CLI::Command
-      # @see {CaRuby::CLI::Command#initialize}
+      # @see +CaRuby::CLI::Command.initialize+
       def initialize(specs=[])
         specs << VERSION_OPT
         super

@@ -5,7 +5,7 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.ContainerType
 
   # The caTissue ContainerType domain class wrapper.
-  # Each {ContainerType} subclass is required to implement the container_class method.
+  # Each subclass is required to implement the +container_class+ method.
   #
   # @quirk caTissue the ContainerType and Container class hierarchy is a confusing
   #   olio of entangled relationships. The canonical use case is as follows:
@@ -61,7 +61,10 @@ module CaTissue
   #   needs to make to add a specimen box to a freezer is:
   #     freezer << box
   #   which places the box in the first available rack slot in the freezer, or:
-  #     box >> freezer 
+  #     box >> freezer
+  #
+  # @quirk caTissue although capacity is not marked cascaded in Hibernate, it is created when the
+  #   ContainerType is created.
   class ContainerType
     add_attribute_aliases(:column_label => :oneDimensionLabel, :row_label => :twoDimensionLabel)
 
@@ -71,11 +74,9 @@ module CaTissue
 
     add_mandatory_attributes(:activity_status, :capacity, :one_dimension_label, :two_dimension_label)
 
-    # @quirk caTissue although capacity is not marked cascaded in Hibernate, it is created when the
-    #   ContainerType is created.
     add_dependent_attribute(:capacity)
     
-    # Override default {CaRuby::Resource#merge_attributes} to support the Capacity :rows and :columns
+    # Override default +CaRuby::Resource.merge_attributes+ to support the Capacity :rows and :columns
     # pseudo-attributes.
     #
     # @quirk JRuby Subclasses do not pick up this class's Resource method overrides.
@@ -83,7 +84,7 @@ module CaTissue
     #   not pick up ContainerType Resource overrides. Work-around is that each ContainerType
     #   subclass must alias +merge_attributes+ to this method.
     #
-    # @param (see #merge_attributes)
+    # @param (see CaRuby::Resource#merge_attributes)
     def merge_attributes(other, attributes=nil)
       if Hash === other then
         # partition the other hash into the Capacity attributes and ContainerType attributes

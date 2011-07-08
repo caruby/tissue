@@ -2,15 +2,18 @@
 require File.join(File.dirname(__FILE__), '..', 'seed', 'defaults')
 
 module CaTissue
-  # Declares the classes modified for migration.
+  # Declare the classes modified for migration.
   shims TissueSpecimen, CollectionProtocolRegistration, StorageContainer 
   
   class StorageContainer
     # Creates the migrated box in the database, if necessary.
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param [{Symbol => Object}] row the input row field => value hash
+    # @param [<Resource>] migrated the migrated instances
     def migrate(row, migrated)
       super
+      # Fetch the box from the database, if it exists.
+      # Otherwise, create the box.
       find or create_galena_box
     end
     
@@ -31,7 +34,7 @@ module CaTissue
       # Add the box to the first open slot in the first unfilled rack in the freezer.
       frz << self
       logger.debug { "Placed the tissue box #{self} in freezer #{frz}." }
-      logger.debug { "Creating the tissue box #{self}..." }
+      logger.debug { "Creating the tissue box #{self} in the database..." }
       create
     end
   end

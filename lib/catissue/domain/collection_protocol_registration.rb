@@ -6,6 +6,9 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocolRegistration
 
   # The CollectionProtocolRegistration domain class.
+  #
+  # @quirk caTissue Augment the standard CPR storable reference attributes to work around caTissue Bug #150:
+  #   Create CollectionProtocol in API ignores startDate.
   class CollectionProtocolRegistration
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
     #   Initialize consent_tier_responses if necessary. 
@@ -67,8 +70,6 @@ module CaTissue
     # must exist. This is checked in the special purpose {#validate_local} method.
     qualify_attribute(:protocol_participant_identifier, :optional)
 
-    # @quirk caTissue  Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:registration_date, :update_only)
 
     def initialize

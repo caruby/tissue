@@ -25,7 +25,7 @@ module CaTissue
       @@diagnosis_cv_finder.nil? ? value : @@diagnosis_cv_finder.controlled_value(value)
     end
 
-    # @return [String] the {#diagnosis_controlled_value}
+    # @return [String] the {diagnosis_controlled_value}
     def migrate_clinical_diagnosis(value, row)
       SpecimenCollectionGroup.diagnosis_controlled_value(value)
     end
@@ -46,12 +46,12 @@ module CaTissue
     # * Otherwise, if the value is a valid CV, then this method returns value.
     # * Otherwise, this method returns nil.
     #
-    # @return the caTissue tissue site permissible value
+    # @return [String] the caTissue tissue site permissible value
     def self.tissue_site_controlled_value(value)
       @@tissue_site_cv_finder.nil? ? value : @@tissue_site_cv_finder.controlled_value(value)
     end
 
-    # Returns the {#tissue_site_controlled_value}.
+    # @return [String] the {tissue_site_controlled_value}
     def migrate_tissue_site(value, row)
       standard_cv_tissue_site(value) or variant_cv_tissue_site(value)
     end

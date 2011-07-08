@@ -25,7 +25,7 @@ module CaTissue
     # database or the migration must build a Participant and a CollectionProtocol.
     # 
     # @option (see CaRuby::Migrator#initialize)
-    # @option opts [String] :database target application {CaRuby::Database}
+    # @option opts [String] :database target application database
     # @option opts [String] :target required target domain class
     # @option opts [String] :input required source file to migrate
     # @option opts [String] :shims optional array of shim files to load
@@ -84,7 +84,7 @@ module CaTissue
         
     # The context module is determined as follows:
     # * for an {Annotation} target class, the context module is the annotated class's {ResourceClass#domain_module}
-    # * otherwise, delegate to {CaRuby::Migrator}.
+    # * otherwise, delegate to +CaRuby::Migrator+.
     #
     # @return (see CaRuby::Migrator#context_module)
     def context_module

@@ -4,9 +4,6 @@ require File.join(File.dirname(__FILE__), 'specimen_histologic_type')
 module CaTissue
   class Specimen
     class Pathology
-      # @quirk caTissue The 1.1 specimen pathology annotation class BaseSolidTissuePathologyAnnotation
-      #   is renamed to SpecimenBaseSolidTissuePathologyAnnotation in 1.2.
-      #   Alias the Ruby class constant for forward and backaward compatibility.
       begin
         resource_import Java::pathology_specimen.SpecimenBaseSolidTissuePathologyAnnotation
         const_set(:BaseSolidTissuePathologyAnnotation, SpecimenBaseSolidTissuePathologyAnnotation)
@@ -18,18 +15,21 @@ module CaTissue
         logger.debug { "Aliased the caTissue 1.1 Specimen pathology annotation class BaseSolidTissuePathologyAnnotation class to the renamed 1.2 SpecimenBaseSolidTissuePathologyAnnotation." }
       end
       
+      # @quirk caTissue The 1.1 specimen pathology annotation class BaseSolidTissuePathologyAnnotation
+      #   is renamed to SpecimenBaseSolidTissuePathologyAnnotation in 1.2.
+      #   Alias the Ruby class constant for forward and backaward compatibility.
+      # @quirk caTissue The SpecimenBaseSolidTissuePathologyAnnotation => SpecimenHistologicGrade collection
+      #   property is misnamed as histologicGrade rather than histologicGradeCollection. This misnaming
+      #   prevents caRuby from inferring the attribute domain type and inverse. Work-around is to set
+      #   these attribute features manually.
+      # @quirk caTissue The SpecimenBaseSolidTissuePathologyAnnotation => SpecimenHistologicType collection
+      #   property is misnamed as histologicType rather than histologicTypeCollection. This misnaming
+      #   prevents caRuby from inferring the attribute domain type and inverse. Work-around is to set
+      #   these attribute features manually.
       class SpecimenBaseSolidTissuePathologyAnnotation
-        # @quirk caTissue The SpecimenBaseSolidTissuePathologyAnnotation => SpecimenHistologicGrade collection
-        #   property is misnamed as histologicGrade rather than histologicGradeCollection. This misnaming
-        #   prevents caRuby from inferring the attribute domain type and inverse. Work-around is to set
-        #   these attribute features manually.
         set_attribute_type(:histologic_grade, CaTissue::Specimen::Pathology::SpecimenHistologicGrade)
         set_attribute_inverse(:histologic_grade, :specimen_base_solid_tissue_pathology_annotation)
         
-        # @quirk caTissue The SpecimenBaseSolidTissuePathologyAnnotation => SpecimenHistologicType collection
-        #   property is misnamed as histologicType rather than histologicTypeCollection. This misnaming
-        #   prevents caRuby from inferring the attribute domain type and inverse. Work-around is to set
-        #   these attribute features manually.
         set_attribute_type(:histologic_type, CaTissue::Specimen::Pathology::SpecimenHistologicType)
         set_attribute_inverse(:histologic_type, :specimen_base_solid_tissue_pathology_annotation)
       end

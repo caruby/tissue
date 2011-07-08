@@ -1,7 +1,7 @@
 require 'caruby/util/validation'
 
 module CaTissue
-  # A Collectible mix-in instance can hold a #{ReceivedEventParameters} and a #{CollectedEventParameters}.
+  # A Collectible mix-in instance can hold a #{ReceivedEventParameters} and a #{CollectionEventParameters}.
   module Collectible
     # Builds this collectible domain object's SpecimenEventParameters from atomic parameters.
     #
@@ -71,7 +71,7 @@ module CaTissue
     
     private
    
-    #  Overrides {CaRuby::Resource#each_defaults_dependent} to visit the {CaTissue::ReceivedEventParameters}.
+    #  Overrides +CaRuby::Resource.each_defaults_dependent+ to visit the {ReceivedEventParameters}.
     #
     # @yield (see CaRuby::Resource#each_defaults_dependent)
     def each_defaults_dependent

@@ -11,7 +11,7 @@ require 'caruby/domain/properties'
 
 module CaTissue
   # This ControlledValues class loads caTissue permissible values from the database.
-  # Use of this class requires the +dbi+ gem. See {CaRuby::SQLExecutor#initialize}
+  # Use of this class requires the +dbi+ gem. See +CaRuby::SQLExecutor.initialize+
   # for a description of the database access properties.
   class ControlledValues
     include Singleton
@@ -31,7 +31,7 @@ module CaTissue
     # * :tissue_site
     # * :clinical_diagnosis
     #
-    #@param [String,Symbol] public_id_or_alias the caTissue public id or an alias defined above
+    # @param [String,Symbol] public_id_or_alias the caTissue public id or an alias defined above
     # @return [<ControlledValue>] instances for the given public_id_or_alias
     def for_public_id(public_id_or_alias)
       pid = ControlledValue.standard_public_id(public_id_or_alias)

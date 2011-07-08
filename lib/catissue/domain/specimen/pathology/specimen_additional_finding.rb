@@ -1,10 +1,5 @@
 module CaTissue
   class Specimen
-    # @quirk caTissue The 1.1 class AdditionalFinding is renamed to SpecimenAdditionalFinding in 1.2.
-    # Alias the Ruby class constant for forward and backaward compatibility.
-    #
-    # @quirk caTissue the Specimen additional finding annotation 1.1 method 'details' is renamed to
-    #   'specimenDetails' in 1.2.
     class Pathology
       begin
         resource_import Java::pathology_specimen.SpecimenAdditionalFinding
@@ -16,6 +11,13 @@ module CaTissue
         const_set(:SpecimenAdditionalFinding, AdditionalFinding)
         logger.debug { "Aliased the caTissue 1.1 Specimen pathology annotation class AdditionalFinding class to the renamed 1.2 SpecimenAdditionalFinding." }
       end
+      
+      # @quirk caTissue The 1.1 class AdditionalFinding is renamed to SpecimenAdditionalFinding in 1.2.
+      # Alias the Ruby class constant for forward and backaward compatibility.
+      #
+      # @quirk caTissue the Specimen additional finding annotation 1.1 method 'details' is renamed to
+      #   'specimenDetails' in 1.2.
+      class SpecimenAdditionalFinding; end
     end
   end
 end

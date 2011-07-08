@@ -1,8 +1,6 @@
 module CaTissue
   class Specimen
     class Pathology
-      # @quirk caTissue The 1.1 class HistologicVariantType is renamed to SpecimenHistologicVariantType in 1.2.
-      #   Alias the Ruby class constant for forward and backaward compatibility.
       begin
         resource_import Java::pathology_specimen.SpecimenHistologicVariantType
         const_set(:HistologicVariantType, SpecimenHistologicVariantType)
@@ -13,6 +11,10 @@ module CaTissue
         const_set(:SpecimenHistologicVariantType, HistologicVariantType)
         logger.debug { "Aliased the caTissue 1.1 Specimen pathology annotation class HistologicVariantType class to the renamed 1.2 SpecimenHistologicVariantType." }
       end
+      
+      # @quirk caTissue The 1.1 class HistologicVariantType is renamed to SpecimenHistologicVariantType in 1.2.
+      #   Alias the Ruby class constant for forward and backaward compatibility.
+      class SpecimenHistologicVariantType; end
     end
   end
 end

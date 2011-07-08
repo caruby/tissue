@@ -15,7 +15,7 @@ module CaTissue
     # @return [Class] the hook-annotation association class, or nil for 1.1.x caTissue
     attr_reader :record_entry_class
       
-    # @return [Symbol] the {#de_integration_proxy_class} hook writer method, or nil for 1.1.x caTissue
+    # @return [Symbol] the {Annotation::ProxyClass} hook writer method, or nil for 1.1.x caTissue
     attr_reader :record_entry_hook_writer
 
     # @param [AnnotationModule] mod the annotation module to build

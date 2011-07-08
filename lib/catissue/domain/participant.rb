@@ -7,6 +7,18 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.Participant
 
   # The Participant domain class.
+  #
+  # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
+  # @quirk caTissue Bug #154: Participant gender is specified by caTissue as optional, but if it is not set then
+  #   it appears as Female in the GUI even though it is null in the database.
+  # @quirk caTissue Participant CPR cascade is simulated in the bizlogic.
+  #   See the PMI comment below.
+  # @quirk caTissue Participant PMI is fetched but not cascaded. However, the Participant bizlogic
+  #   simulates PMI cascade. The bizlogic doesn't document why this is done, but it appears that the
+  #   reason is to inject an empty PMI if necessary in order to work around a caTissue query bug
+  #   (see merge_attribute comment). At any rate, mark PMI as cascaded in the caRuby metadata
+  #   to reflect the bizlogic simulation. However, this designation should be revisited with each
+  #   release, since if the bizlogic hack is removed then caRuby Participant PMI save will break.
   class Participant
     include Person
 
@@ -14,8 +26,7 @@ module CaTissue
     # which is reflected in the saved Java property name subfields.
     add_attribute(:name, CaRuby::Person::Name)
 
-    # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
-    if attribute_defined?(:clinical_study_registrations) then remove_attribute(:clinical_study_registrations) end
+    remove_attribute(:clinical_study_registrations) if attribute_defined?(:clinical_study_registrations)
 
     add_attribute_aliases(:collection_registrations => :collection_protocol_registrations,
     :registrations => :collection_protocol_registrations,
@@ -30,22 +41,12 @@ module CaTissue
     add_attribute_defaults(:activity_status => 'Active', :ethnicity => 'Unknown', :gender => 'Unspecified',
       :sex_genotype => 'Unknown', :vital_status => 'Unknown')
 
-    # @quirk caTissue Bug #154: Participant gender is specified by caTissue as optional, but if it is not set then
-    #   it appears as Female in the GUI even though it is null in the database.
     add_mandatory_attributes(:activity_status, :gender)
 
-    # @quirk caTissue Participant CPR cascade is simulated in the bizlogic.
-    #   See the PMI comment below.
     add_dependent_attribute(:collection_protocol_registrations)
 
     add_dependent_attribute(:races)
 
-    # @quirk caTissue Participant PMI is fetched but not cascaded. However, the Participant bizlogic
-    #   simulates PMI cascade. The bizlogic doesn't document why this is done, but it appears that the
-    #   reason is to inject an empty PMI if necessary in order to work around a caTissue query bug
-    #   (see merge_attribute comment). At any rate, mark PMI as cascaded in the caRuby metadata
-    #   to reflect the bizlogic simulation. However, this designation should be revisited with each
-    #   release, since if the bizlogic hack is removed then caRuby Participant PMI save will break.
     add_dependent_attribute(:participant_medical_identifiers)
 
     # SSN is a key, if present, but is not required.

@@ -5,7 +5,7 @@ module CaTissue
     
     private
     
-    # Overrides {CaRuby::Migratable#migratable__target_value} to confer precedence to
+    # Overrides +CaRuby::Migratable.migratable__target_value+ to confer precedence to
     # a SCG over a Specimen when setting this event parameters' owner. If the migrated
     # collection includes both a Specimen and a SCG, then this event parameters
     # +specimen+ reference is ambiguous, but the +specimen_collection_group+ reference

@@ -1,8 +1,6 @@
 module CaTissue
   class Specimen
     class Pathology
-      # @quirk caTissue The 1.1 class Invasion is renamed to SpecimenInvasion in 1.2.
-      #   Alias the Ruby class constant for forward and backaward compatibility.
       begin
         resource_import Java::pathology_specimen.SpecimenInvasion
         const_set(:Invasion, SpecimenInvasion)
@@ -13,6 +11,10 @@ module CaTissue
         const_set(:SpecimenInvasion, Invasion)
         logger.debug { "Aliased the caTissue 1.1 Specimen pathology annotation class Invasion class to the renamed 1.2 SpecimenInvasion." }
       end
+      
+      # @quirk caTissue The 1.1 class Invasion is renamed to SpecimenInvasion in 1.2.
+      #   Alias the Ruby class constant for forward and backaward compatibility.
+      class SpecimenInvasion; end
     end
   end
 end

@@ -121,8 +121,7 @@ module CaTissue
     # {StorageTypeHolder#child_types} override allowed by caTissue.
     #
     # @param [Storable] (see #add)
-    # @return [Boolean] whether this container is not full and can hold the given item's
-    #   {CaTissue::StorableType}
+    # @return [Boolean] whether this container is not full and can hold the given item's storable type
     def can_hold_child?(storable)
       st = storable.storable_type
       not full? and child_types.any? { |ct| CaRuby::Resource.value_equal?(ct, st) }

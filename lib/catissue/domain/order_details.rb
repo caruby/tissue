@@ -16,7 +16,6 @@ module CaTissue
     def initialize
       super
       respond_to?(:order_items)
-      # @quirk caTissue work around caTissue Bug #64
       self.order_items ||= Java::JavaUtil::LinkedHashSet.new
     end
   end
