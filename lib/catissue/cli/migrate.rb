@@ -15,9 +15,10 @@ module CaTissue
       SPECS = [
         [:input, "input", "Source file to migrate"],
         [:target, "-t", "--target CLASS", "Migration target class"],
-        [:mapping, "-m", "--mapping FILE", "The input field => caTissue attribute mapping file"],
-        [:defaults, "-d", "--defaults FILE", "The caTissue attribute => default value mapping file"],
-        [:shims, "-s", "--shims FILE[,FILE...]", Array, "Migration customization shim files to load"],
+        [:mapping, "-m", "--mapping FILE[,FILE...]", Array, "The input field => caTissue attribute mapping file(s)"],
+        [:filters, "--filters FILE[,FILE...]", Array, "The input value => caTissue value mapping file(s)"],
+        [:defaults, "-d", "--defaults FILE[,FILE...]", Array, "The caTissue attribute default value file(s)"],
+        [:shims, "-s", "--shims FILE[,FILE...]", Array, "Migration customization shim file(s) to load"],
         [:bad, "-b", "--bad FILE", "Write each invalid record to the given file and continue migration"],
         [:unique, "-u", "--unique", "Make the migrated objects unique for testing"],
         [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"]
