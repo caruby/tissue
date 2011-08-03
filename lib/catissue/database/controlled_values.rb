@@ -6,7 +6,6 @@ require 'caruby/util/visitor'
 require 'catissue/resource'
 require 'catissue/database'
 require 'catissue/util/controlled_value'
-require 'caruby/util/transitive_closure'
 require 'caruby/domain/properties'
 
 module CaTissue
