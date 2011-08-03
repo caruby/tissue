@@ -47,9 +47,11 @@ module CaTissue
 
     set_attribute_type(:holds_storage_types, CaTissue::StorageType)
 
+    # @quirk caTissue Bug #64 - specimen positions is not initialized to an empty set
+    #    in the Java constructor. Initialize it to a +LinkedHashSet+ in caRuby.
     def initialize
       super
-      # @quirk JRuby specimen_positions is not recognized unless primed with respond_to? call
+      # @quirk JRuby specimen_positions is not recognized until respond_to? is called
       respond_to?(:specimen_positions)
       # work around caTissue Bug #64
       self.specimen_positions ||= Java::JavaUtil::LinkedHashSet.new
