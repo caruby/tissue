@@ -1,4 +1,5 @@
 require 'singleton'
+require 'caruby/util/inflector'
 require 'caruby/import/java'
 require 'caruby/database/sql_executor'
 require 'catissue/database/annotation/id_generator'
@@ -217,22 +218,42 @@ module CaTissue
       def nonrecursive_associated_entity_id(eid, role)
         logger.debug { "Finding entity id #{eid} #{role} associated entity id..." }
         result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, role) }
-        # The role role can be a mutation of the property name with spaces inserted in the
-        # camel-case components, e.g. 'Additional Finding' instead of 'AdditionalFinding'.
-        # TODO - fix this kludge by finding out how the role relates to the property in the
-        # database.
-        if result.nil? and role =~ /.+[A-Z]/ then
+        result ||= nonrecursive_alternate_associated_entity_id(eid, role)
+        if result.nil? then logger.debug { "Entity id #{eid} is not directly associated with #{role}." } end
+        result[0].to_i if result
+      end
+      
+      # @quirk caTissue The role can be a mutation of the property name as follows:
+      #   * decapitalization, e.g. +invasion+ for the capitalized property +Invasion+
+      #   * spaces inserted in the camel-case components, e.g. +Additional Finding+
+      #     instead of +AdditionalFinding+
+      #   * +Pathologic+ is changed to +Pathological+
+      #
+      #   To compound matters, the role names changed from 1.1.2 to 1.2, e.g.
+      #   +Additional Finding+ changed to 'additionalFinding'.
+      #
+      # TODO - fix this kludge by finding out how the role relates to the property in the
+      # database.
+      #
+      # @param (see #nonrecursive_associated_entity_id)
+      # @return [Array, nil] the query result
+      def nonrecursive_alternate_associated_entity_id(eid, role)
+        if role =~ /.+[A-Z]/ then
           alt = role.gsub(/(.)([A-Z])/, '\1 \2')
-          logger.debug { "Attempting to find  entity id #{eid} #{role} associated entity id using variant #{alt}..." }
+          logger.debug { "Attempting to find entity id #{eid} #{role} associated entity id using variant #{alt}..." }
           result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, alt) }
         end
         if result.nil? and role =~ /[pP]athologic[^a]/ then
           alt = role.sub(/([pP])athologic/, '\1athological')
-          logger.debug { "Attempting to find  entity id #{eid} #{role} associated entity id using variant #{alt}..." }
+          logger.debug { "Attempting to find entity id #{eid} #{role} associated entity id using variant #{alt}..." }
           result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, alt) }
         end
-        if result.nil? then logger.debug { "Entity id #{eid} is not directly associated with #{role}." } end
-        result[0].to_i if result
+        if result.nil? and role =~ /^[A-Z]/ then
+          alt = role.decapitalize
+          logger.debug { "Attempting to find entity id #{eid} #{role} associated entity id using variant #{alt}..." }
+          result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, alt) }
+        end
+        result
       end
       
       # The SQL to find an entity id for a primary entity.
