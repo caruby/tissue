@@ -14,6 +14,10 @@ module CaTissue
     
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
     #    Initialize specimen_collection_groups if necessary.
+    # @quirk caTissue The +specimen_collection_groups+ is unnecessary and expensive to maintain inverse integrity.
+    #    The SCG event attribute is required, but adding the SCG to the event SCG inverse attribute value requires
+    #    loading all of the SCGs. +specimen_collection_groups+ is not used in practice. The event SCGs can be
+    #    easily obtained by a query.
     #
     # @return [Java::JavaUtil::Set] the SCGs
     def specimen_collection_groups
@@ -38,15 +42,10 @@ module CaTissue
 
     add_dependent_attribute(:specimen_requirements, :unfetched)
 
+    remove_attribute(:specimen_collection_groups)
+
     # The event point used for saving this CollectionProtocolEvent if none other is set.
     DEFAULT_EVENT_POINT = 1.0
-
-    def initialize
-      super
-      respond_to?(:specimen_collection_groups)
-      # work around caTissue Bug #64
-      self.specimen_collection_groups ||= Java::JavaUtil::LinkedHashSet.new
-    end
 
     # Removes associations to this registration
     def delete
