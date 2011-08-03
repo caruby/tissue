@@ -72,10 +72,11 @@ module CaTissue
 
     qualify_attribute(:registration_date, :update_only)
 
+    # @quirk caTissue Bug #64 - consent tier responses is is not initialized to an empty set
+    #    in the Java constructor. Initialize it to a +LinkedHashSet+ in caRuby.
     def initialize
       super
-      # following line works around an obscure problem whereby CPR init could not call consent_tier_responses below;
-      # TODO - verify that it is still necessary
+      # @quirk JRuby consent_tier_responses property method is not accessible until respond_to? is called.
       respond_to?(:consent_tier_responses)
       # work around caTissue Bug #64
       self.consent_tier_responses ||= Java::JavaUtil::LinkedHashSet.new
