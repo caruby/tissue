@@ -7,10 +7,9 @@ require 'catissue/database/annotation/annotator'
 require 'catissue/util/collectible_event_parameters'
 
 module CaTissue
-  # A CaTissue: Database mediates access to the caTissue database.
-  # The superclass +CaRuby::Database+ functionality is preserved and not expanded, but this CaTissue
-  # Database implementation overrides several base class private methods to enable alternate
-  # caTissue-specific search strategies and work-arounds.
+  # Database mediates access to the caTissue application server.
+  # Superclass +CaRuby::Database+ functionality base class methods are overridden as necessary
+  # to enable caTissue-specific work-arounds and alternate search strategies.
   class Database < CaRuby::Database
     include Singleton
     
@@ -55,7 +54,7 @@ module CaTissue
     
     private
 
-    # The application service name
+    # The application service name.
     SVC_NAME = 'catissuecore'
     
     UPD_EID_SQL = 'update catissue_external_identifier set name = ?, value = ?, specimen_id = ? where identifier = ?'
@@ -552,7 +551,7 @@ module CaTissue
     # to a non-zero value, create the Specimen and then update the created Specimen with
     # the original values.
     #
-    # If spc has a disposal event, then this work-around interacts with the {#save_dependents}
+    # If spc has a disposal event, then this work-around interacts with the {#save_changed_dependents}
     # work-around as follows:
     # * delete that event from the Specimen.
     # * Create the Specimen as described above.
@@ -611,6 +610,16 @@ module CaTissue
         when CaTissue::Participant then fetch_participant_alternative(obj)
       end
     end
+    
+    # Augments the +CaRuby::Writer+ exclusion filter to exclude annotations from the create template.
+    # Annotations are created following the owner create.
+    #
+    # @param obj (see #create_object)
+    # @param [Attribute] attr_md the candidate attribute metadata
+    # @return [Boolean] whether the attribute should not be included in the create template
+    def exclude_pending_create_attribute?(obj, attr_md)
+      attr_md.type < Annotation or super
+    end
       
     # Override +CaRuby::Database.query_safe+ to work around the following +caTissue+ bugs:
     # * @quirk caTissue Specimen auto-generates blank ExternalIdentifier.
@@ -662,7 +671,7 @@ module CaTissue
       attr_md.declarer < Annotatable and attr_md.type < Annotation::Proxy
     end
     
-    # Queries on the given object attribute using the {Annotation::IntegationService}.
+    # Queries on the given object attribute using the {Annotation::IntegrationService}.
     #
     # @param [Annotatable] hook the annotated domain object
     # @param [Symbol] attribute the proxy attribute
@@ -679,7 +688,7 @@ module CaTissue
       proxies
     end    
     
-    # Queries on the given proxy using the {Annotation::IntegationService}.
+    # Queries on the given proxy using the {Annotation::IntegrationService}.
     #
     # @param [Annotation::Proxy] proxy the proxy object
     # @param hook (see #query_hook_proxies)
