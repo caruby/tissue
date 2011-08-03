@@ -164,7 +164,6 @@ class SpecimenTest < Test::Unit::TestCase
 
   # Verifies that caRuby Tissue is compatible with both the caTissue 1.1 and 1.2 Specimen annotation class names. 
   def test_rename
-    assert_same(CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation, CaTissue::Specimen::Pathology::ProstatePathologyAnnotation, "caTissue 1.2 annotation class rename unsupported")
     assert_same(CaTissue::Specimen::Pathology::SpecimenAdditionalFinding, CaTissue::Specimen::Pathology::AdditionalFinding, "caTissue 1.2 annotation class rename unsupported")
     assert_same(CaTissue::Specimen::Pathology::SpecimenBaseSolidTissuePathologyAnnotation, CaTissue::Specimen::Pathology::SpecimenBaseSolidTissuePathologyAnnotation, "caTissue 1.2 annotation class rename unsupported")
     assert_same(CaTissue::Specimen::Pathology::SpecimenDetails, CaTissue::Specimen::Pathology::Details, "caTissue 1.2 annotation class rename unsupported")
