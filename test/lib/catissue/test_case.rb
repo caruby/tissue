@@ -192,8 +192,8 @@ module CaTissue
     # @param [Resource] actual the fetched value
     def verify_that_saved_matches_fetched(expected, actual)
       expected.class.saved_nondomain_attributes.each do |attr|
-        # TODO - available_quantity broken for spc type Not Specified
-        # compare attributes that are fetched and set on create
+        # available_quantity broken for spc type Not Specified; see quirk above.
+        # TODO - Compare attributes that are fetched and set on create.
         attr_md = expected.class.attribute_metadata(attr)
         if verify_saved_attribute?(attr_md) then
           eval = expected.database.lazy_loader.suspend { expected.send(attr) }
