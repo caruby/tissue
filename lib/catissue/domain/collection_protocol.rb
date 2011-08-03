@@ -10,10 +10,6 @@ module CaTissue
   #
   # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
   #   Create CollectionProtocol in API ignores startDate.
-  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-  #   Create CollectionProtocol in API ignores startDate.
-  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-  #   Create CollectionProtocol in API ignores startDate.
   class CollectionProtocol
     include HashCode
     
@@ -41,10 +37,12 @@ module CaTissue
 
     qualify_attribute(:coordinators, :fetched)
 
+    # @quirk caTissue Bug #64 - consent tiers collection property is not initialized to an empty set in the Java constructor.
+    #   Initialize it to a +LinkedHashSet+ in caRuby.
     def initialize
       super
+      # @quirk JRuby consent_tiers property method is not accessible until respond_to? is called.
       respond_to?(:consent_tiers)
-      # work around caTissue Bug #64 - consent tiers is nil rather than an empty set
       self.consent_tiers ||= Java::JavaUtil::LinkedHashSet.new
     end
 
