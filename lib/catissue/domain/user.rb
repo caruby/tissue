@@ -9,7 +9,7 @@ module CaTissue
   # The User domain class.
   #
   # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
-  #   UnsupportedOperationException if they are called.
+  #   +UnsupportedOperationException+ if they are called.
   # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
   # @quirk caTissue obscure GUI artifact User page_of attribute pollutes the data layer as a
   #   required attribute. Work-around is to simulate the GUI with a default value.
