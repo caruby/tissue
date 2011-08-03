@@ -88,9 +88,9 @@ module CaTissue
     def merge_attributes(other, attributes=nil)
       if Hash === other then
         # partition the other hash into the Capacity attributes and ContainerType attributes
-        cp_hash, ct_hash = other.partition { |key, value| key == :rows or key == :columns }
-        self.capacity ||= CaTissue::Capacity.new(cp_hash).add_defaults unless cp_hash.empty?
-        super(ct_hash, attributes)
+        cph, cth = other.split { |key, value| key == :rows or key == :columns }
+        self.capacity ||= CaTissue::Capacity.new(cph).add_defaults unless cph.empty?
+        super(cth, attributes)
       else
         super(other, attributes)
       end
@@ -134,8 +134,8 @@ module CaTissue
     private
     
     # Adds an empty capacity and default dimension labels, if necessary.
-    # The default {#one_dimension_label} is 'Column' if there is a non-zero dimension capacity, 'Unused' otherwise.
-    # The default {#two_dimension_label} is 'Row' if there is a non-zero dimension capacity, 'Unused' otherwise.
+    # The default +one_dimension_label+ is 'Column' if there is a non-zero dimension capacity, 'Unused' otherwise.
+    # The default +two_dimension_label+ is 'Row' if there is a non-zero dimension capacity, 'Unused' otherwise.
     #
     # @quirk JRuby See {#merge_container_type_attributes}. Work-around is that each ContainerType
     #   subclass must alias +add_defaults_local+ to this method.
