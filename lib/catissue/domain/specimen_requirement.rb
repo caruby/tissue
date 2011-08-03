@@ -72,10 +72,12 @@ module CaTissue
 
     public
 
+    # @quirk caTissue Bug #64 - consent tier responses is not initialized to an empty set
+    #    in the Java constructor. Initialize it to a +LinkedHashSet+ in caRuby.
     def initialize
       super
+      # @quirk JRuby specimens property method is not accessible until respond_to? is called.
       respond_to?(:specimens)
-      # work around caTissue Bug #64
       self.specimens ||= Java::JavaUtil::LinkedHashSet.new
     end
 
