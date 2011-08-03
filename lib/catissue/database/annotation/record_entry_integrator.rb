@@ -16,8 +16,9 @@ module CaTissue
       #   by creating a record entry hook proxy. Even though the record entry class
       #   includes Java properties for each primary annotation in the annotation
       #   Java package, the record entry instance only references a single annotation.
-      #   The record entry database table +dyextn_abstract_record_entry+ has foreign
-      #   key to a ABSTRACT_FORM_CONTEXT_ID  a separate record entry is created for each annotation.
+      #   The record entry database table +dyextn_abstract_record_entry+ has a foreign
+      #   key reference to the +ABSTRACT_FORM_CONTEXT_ID+. A separate record entry is
+      #   created for each annotation.
       #
       # @param [Annotatable] hook the hook entity 
       # @param [Annotation] annotation the annotation entity 
@@ -30,7 +31,7 @@ module CaTissue
       
       # @param (see #associate)
       # @return [Object] yet another association record which associates the hook to the
-      #   annotation in the {REC_ENTRY_PKG}
+      #   annotation
       def create_record_entry(hook, annotation)
         # the DE integration record entry class
         klass = hook.class.de_integration_proxy_class
