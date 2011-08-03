@@ -7,6 +7,7 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.User
 
   # The User domain class.
+<<<<<<< HEAD
   #
   # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
   #   +UnsupportedOperationException+ if they are called.
@@ -15,6 +16,8 @@ module CaTissue
   #   required attribute. Work-around is to simulate the GUI with a default value.
   # @quirk caTissue User address can be created but not updated in 1.2.
   # @quirk caTissue User address is not fetched on create in 1.2.
+=======
+>>>>>>> parent of 745f9e3... Clean up documentation.
   class User
     include Person
 
@@ -45,15 +48,18 @@ module CaTissue
       setRoleId(value_s)
     end
 
-    remove_attribute(:adminuser) if attribute_defined?(:adminuser)
+    # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
+    #   UnsupportedOperationException if they are called.
+    if attribute_defined?(:adminuser) then remove_attribute(:adminuser) end
 
-    # Makes the convenience +CaRuby::Person::Name+ name a first-class attribute.
+    # make the convenience {, CaRuby::Person::Name} name a first-class attribute
     add_attribute(:name, CaRuby::Person::Name)
 
-    remove_attribute(:clinical_studies) if attribute_defined?(:clinical_studies)
+    # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
+    if attribute_defined?(:clinical_studies) then remove_attribute(:clinical_studies) end
 
-    # Clarify that collection_protocols is a coordinator -> protocol association.
-    # Make assigned protocol and site attribute names consistent.
+    # clarify that collection_protocols is a coordinator -> protocol association.
+    # make assigned protocol and site attribute names consistent.
     add_attribute_aliases(:coordinated_protocols => :collection_protocols, :protocols => :assigned_protocols, :assigned_sites => :sites)
 
     # login_name is a database unique key.
@@ -68,10 +74,16 @@ module CaTissue
     # * initial password is 'changeMe1'
     add_attribute_defaults(:activity_status => 'Active', :page_of => 'pageOfUserAdmin', :role_id => 7, :new_password => 'changeMe1')
 
+    # @quirk caTissue obscure GUI artifact User page_of attribute pollutes the data layer as a
+    #   required attribute. Work-around is to simulate the GUI with a default value.
     add_mandatory_attributes(:activity_status, :address, :cancer_research_group, :department,
       :email_address, :first_name, :institution, :last_name, :page_of, :role_id)
 
-    # Adding the :saved_fetch qualifier results in JRuby load_error. TODO - fix this.
+    # @quirk caTissue User address can be created but not updated in 1.2.
+    #
+    # @quirk caTissue User address is not fetched on create in 1.2.
+    #
+    # @quirk caRuby adding the :saved_fetch qualifier results in JRuby load_error. TODO - fix this.
     add_dependent_attribute(:address)
 
     # Password cannot be saved in 1.2.

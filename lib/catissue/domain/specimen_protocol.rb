@@ -5,19 +5,17 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.SpecimenProtocol
   
   # The SpecimenProtocol domain class.
-  #
-  # @quirk caTissue Bug #155: enrollment is incorrectly defined in SpecimenProtocol rather
-  #   than CollectionProtocol. It is defaulted here until this defect is fixed.
-  #
-  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
-  #   Create CollectionProtocol in API ignores startDate.
   class SpecimenProtocol
     set_secondary_key_attributes(:title)
 
+    # @quirk caTissue Bug #155: enrollment is incorrectly defined in SpecimenProtocol rather
+    #   than CollectionProtocol. It is defaulted here until this defect is fixed.
     add_attribute_defaults(:activity_status => 'Active', :enrollment => 0)
 
     add_mandatory_attributes(:principal_investigator, :activity_status, :start_date, :short_title)
 
+    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:start_date, :update_only)
 
     private

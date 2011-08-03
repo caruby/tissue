@@ -8,7 +8,7 @@ module CaTissue
   shims CollectionProtocol, CollectionProtocolEvent, Site, StorageContainer, User
   
   class CollectionProtocol
-    # Augments +CaRuby::Migratable.migrate+ for the Galena example by adding the following defaults:
+    # Augments {CaRuby::Migratable#migrate} for the Galena example by adding the following defaults:
     # * the CP principal_investigator defaults to the {Galena::Seed::Defaults#protocol} PI
     # * if the sites is empty, then the {Galena::Seed::Defaults#tissue_bank} is added
     #   to the CP sites
@@ -35,7 +35,7 @@ module CaTissue
   end
   
   class CollectionProtocolEvent
-    # Augments +CaRuby::Migratable.migrate+ for the example by adding the following defaults:
+    # Augments {CaRuby::Migratable#migrate} for the example by adding the following defaults:
     # * create a {CaTissue::TissueSpecimenRequirement}
     # * copy the event point from the matching {Galena::Seed::Defaults} CPE, if any
     #
@@ -57,7 +57,7 @@ module CaTissue
   end
 
   class Site
-    # Augments +CaRuby::Migratable.migrate+ for the example by merging the content of the
+    # Augments {CaRuby::Migratable#migrate} for the example by merging the content of the
     # {Galena::Seed::Defaults} site which matches on this Site's name, if any.
     #
     # @param (see CaRuby::Migratable#migrate)
@@ -76,7 +76,7 @@ module CaTissue
   end
 
   class StorageContainer
-    # Augments +CaRuby::Migratable.migrate+ for the example by setting the
+    # Augments {CaRuby::Migratable#migrate} for the example by setting the
     # the container site and type to the {Galena::Seed::Defaults}
     # box site and type, resp.
     #
@@ -89,7 +89,7 @@ module CaTissue
   end
   
   class User
-    # Augments +CaRuby::Migratable.migrate+ for the example as follows:
+    # Augments {CaRuby::Migratable#migrate} for the example as follows:
     # * infer the first and last name from the email address
     # * copy the address and organizations from the tissue bank coordinator 
     #

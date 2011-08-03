@@ -9,7 +9,7 @@ module CaTissue
     # Creates a new ExtractCommand.
     # The delta range is given by the required :since option and optional :before option.
     # The default before value is the current DateTime. These are used to build a Delta
-    # which is passed to +CaRuby::Command.initialize+ as the :ids option.
+    # which is passed to {CaRuby::Command#initialize} as the :ids option.
     # The :log option specifies a log file.
     # Other supported options are described in {Extractor#initialize}.
     def initialize

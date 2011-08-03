@@ -4,8 +4,8 @@ module CaTissue
   # import the Java class
   resource_import Java::edu.wustl.catissuecore.domain.SpecimenArray
 
-  # @quirk caTissue the superclass Container occupied_positions does not apply to SpecimenArray.
   class SpecimenArray
+    # @quirk caTissue the superclass Container occupied_positions does not apply to SpecimenArray.
     remove_attribute(:occupied_positions)
  
     # Initializes this instance's child storage types from the given type.

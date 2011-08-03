@@ -4,7 +4,7 @@ module CaTissue
   # or receival at the tissue bank.
   module CollectibleEventParameters
     # Returns the SpecimenEventParameters in others which matches this CollectibleEventParameters in the scope of an owner Specimen or SCG.
-    # This method relaxes +CaRuby::Resource.match_in_owner_scope+ for a CollectibleEventParameters that matches any SpecimenEventParameters
+    # This method relaxes {CaRuby::Resource#match_in_owner_scope} for a CollectibleEventParameters that matches any SpecimenEventParameters
     # in others of the same class, since there can be at most one CollectibleEventParameters of a given class for a given SCG.
     def match_in_owner_scope(others)
       others.detect { |other| minimal_match?(other) }
@@ -44,7 +44,7 @@ module CaTissue
       end
     end
     
-    # Overrides +CaRuby::Migratable.migratable__migrate_owner+ to give owner preference to a migrated SCG
+    # Overrides {CaRuby::Migratable#migratable__migrate_owner} to give owner preference to a migrated SCG
     # over a migrated Specimen.
     #
     # @param (see CaRuby::Migratable#migratable__migrate_owner)

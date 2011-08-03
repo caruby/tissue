@@ -39,14 +39,6 @@ Each example has a field mapping configuration in the `conf/migration` directory
 For example, the `simple.csv` input file is migrated into caTissue using the
 `simple_migration.yaml` configuration file.
 
-You can browse the source repository [example files](https://github.com/caruby/tissue/tree/master/examples/galena), where:
-
-* `conf/migration` has the mapping configuration files
-
-* `data` has the sample data
-
-* `lib/galena/tissue/migration` has the shim code
-
 Migrate the Galena `simple` example as follows:
 
 1. Open a console in the copied Galena example location.
@@ -119,4 +111,3 @@ The following input fields are included in the examples:
 * <tt>Gleason</tt>: Specimen primary gleason score
 * <tt>Grade</tt>: Specimen histologic WHO grade
 
-The fields listed are those used in the examples. caTissue supports any caTissue domain object.

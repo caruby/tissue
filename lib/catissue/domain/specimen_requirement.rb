@@ -36,17 +36,14 @@ module CaTissue
     # parent CPE is created.
     qualify_attribute(:child_specimens, :logical)
     
-    # @return [SpecimenRequirement, CollectionProtocolEvent] the parent requirement,
-    #   if it is set, otherwise the collection protocol event
+    # Overrides {Resource#owner} to return the parent_specimen, if it exists, or the collection_protocol_event otherwise.
     def owner
       parent_specimen or collection_protocol_event
     end
     
-    # This method relaxes +CaRuby::Resource.match_in_owner_scope+ for a requirement that matches another requirement
-    # with the same class, specimen type, pathological_status and characteristics.
-    #
-    # @return [SpecimenRequirement] the requirement in others which matches this requirement in the scope of an
-    # owner {CollectionProtocolEvent}
+    # Returns the SpecimenRequirement in others which matches this SpecimenRequirement in the scope of an owner CollectionProtocolEvent.
+    # This method relaxes {CaRuby::Resource#match_in_owner_scope} for a SpecimenRequirement that matches any SpecimenRequirement
+    # in others with the same class, specimen type, pathological_status and characteristics.
     def match_in_owner_scope(others)
       others.detect do |other|
         self.class == other.class and specimen_type == other.specimen_type and pathological_status == other.pathological_status and
@@ -56,8 +53,7 @@ module CaTissue
 
     private
     
-    # @param [SpecimenRequirement] the requirement to match against
-    # @return [Boolean] whether this requirement's characteristics matches the other requirement's characteristics
+    # Returns whether this SpecimenRequirement characteristics matches the other SpecimenRequirement characteristics
     # on the tissue site and tissue side.
     def match_characteristics(other)
       chr = characteristics
@@ -65,7 +61,7 @@ module CaTissue
       chr and ochr and chr.tissue_side == ochr.tissue_side and chr.tissue_site == ochr.tissue_site
     end
 
-    # @raise [NotImplementedError] always, since SpecimenRequirement is abstract
+    # Raises NotImplementedError, since SpecimenRequirement is abstract.
     def self.allocate
       raise NotImplementedError.new("SpecimenRequirement is abstract; use the create method to make a new instance")
     end
@@ -99,15 +95,14 @@ module CaTissue
       klass.new(params.merge(:collection_protocol_event => event))
     end
 
-    # @return [CollectionProtocol, nil] the collection event protocol, if any
+    # Returns the {#collection_event} protocol, if any.
     def collection_protocol
       collection_event.protocol if collection_event
     end
 
     protected
 
-    # @quirk caTissue Overrides the CaRuby::Resource method to handle caTissue Bug #67 -
-    #   SpecimenRequirement activityStatus cannot be set.
+    # @quirk caTissue Overrides the CaRuby::Resource method to handle caTissue Bug #67 - SpecimenRequirement activityStatus cannot be set.
     #
     # @return [<Symbol>] the required attributes which are nil for this domain object
     def missing_mandatory_attributes
@@ -121,12 +116,12 @@ module CaTissue
 
     private
 
-    # @return [Boolean] whether this SpecimenRequirement has multiple non-aliquot derivatives
+    # Returns whether this SpecimenRequirement has multiple non-aliquot derivatives.
     def multiple_derivatives?
       children.size > 1 and children.any? { |drv| not drv.aliquot? }
     end
 
-    # Augments +CaRuby::Resource.validate+ to verify that this SpecimenRequirement does not have multiple non-aliquot
+    # Augments {CaRuby::Resource#validate} to verify that this SpecimenRequirement does not have multiple non-aliquot
     # derivatives, which is disallowed by caTissue.
     #
     # @quirk caTissue multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results

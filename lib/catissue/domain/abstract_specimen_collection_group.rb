@@ -8,7 +8,7 @@ module CaTissue
 
     add_mandatory_attributes(:activity_status)
 
-    # Overrides +CaRuby::Resource.each_dependent+ to exclude Specimens or SpecimenRequirements with a parent,
+    # Overrides {CaRuby::Resource#each_dependent} to exclude Specimens or SpecimenRequirements with a parent,
     # since parent is the immediate Specimen or SpecimenRequirement owner.
     #
     # @yield (see CaRuby::Resource#each_dependent)

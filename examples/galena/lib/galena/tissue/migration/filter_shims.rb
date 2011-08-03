@@ -1,32 +1,32 @@
 require 'uom'
 
 module CaTissue
-  # Declare the classes modified for migration.
+  # Declares the classes modified for migration.
   shims Participant, TissueSpecimen, SpecimenCollectionGroup
 
   class Participant
     # Extracts the Participant first name from the +Initials+ input field.
     def migrate_first_name(value, row)
-      # The first initial is the first "name".
       value[0, 1]
     end
 
     # Extracts the Participant last name from the +Initials+ input field.
-    #
-    # @param [String] value the input initials field
-    # @param @param [{Symbol => Object}] row the input row field => value hash
     def migrate_last_name(value, row)
-      # The last initial is the last "name".
       value[-1, 1]
     end
   end
 
   class TissueSpecimen
+<<<<<<< HEAD
+=======
+    # Transforms the +Frozen?+ flag input field to the caTissue specimen type +Frozen Tissue+ value.
+    def migrate_specimen_type(value, row)
+      value =~ /TRUE/i ? 'Frozen Tissue' : 'Fixed Tissue'
+    end
+
+>>>>>>> parent of 745f9e3... Clean up documentation.
     # Parses the source field as a UOM::Measurement if it is a string.
     # Otherwises, returns the source value.
-    #
-    # @param [String, Numeric] value the input quantity field
-    # @param @param [{Symbol => Object}] row the input row field => value hash
     def migrate_initial_quantity(value, row)
       # if value is not a string, then use it as is
       return value unless value.is_a?(String)
@@ -37,9 +37,9 @@ module CaTissue
   end
 
   class SpecimenCollectionGroup
-    # @return [Boolean] whether this SCG has a SPN
+    # Returns whether this SCG has a SPN.
     def migration_valid?
-      not surgical_pathology_number.nil?
+      surgical_pathology_number
     end
   end
 end

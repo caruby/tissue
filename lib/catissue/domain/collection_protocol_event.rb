@@ -6,9 +6,6 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocolEvent
 
   # The CollectionProtocolRegistration domain class.
-  #
-  # @quirk caTissue specimen_requirements is a cascaded dependent, but it is not fetched.
-  #   CollectionProtocol create cascades through each dependent CPE to each SpecimenRequirement.
   class CollectionProtocolEvent
     include HashCode
     
@@ -40,6 +37,8 @@ module CaTissue
 
     add_mandatory_attributes(:collection_protocol, :clinical_diagnosis, :specimen_requirements)
 
+    # @quirk caTissue specimen_requirements is a cascaded dependent, but it is not fetched.
+    #   CollectionProtocol create cascades through each dependent CPE to each SpecimenRequirement.
     add_dependent_attribute(:specimen_requirements, :unfetched)
 
     remove_attribute(:specimen_collection_groups)
@@ -52,7 +51,7 @@ module CaTissue
       protocol.events.delete(self) if protocol
     end
 
-    # Overrides +CaRuby::Resource.references+ in the case of the _specimen_requirements_ attribute to select
+    # Overrides {CaRuby::Resource#references} in the case of the _specimen_requirements_ attribute to select
     # only top-level SpecimenRequirements not derived from another SpecimenRequirement.
     def direct_dependents(attribute)
       if attribute == :specimen_requirements then

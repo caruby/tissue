@@ -11,12 +11,12 @@ module CaTissue
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
       
-    # @return [Class] the {Annotation::DEIntegration} proxy class (nil for 1.1 caTissue)
+    # @return [Class] the {DEIntegration} proxy class (nil for 1.1 caTissue)
     def de_integration_proxy_class
       @de_integration_proxy_class or (superclass.de_integration_proxy_class if superclass < Annotatable)
     end
     
-    # Adds +CaRuby::Domain::Metadata+ and {AnnotatableClass} functionality to the given class.
+    # Adds {CaRuby::Domain::Metadata} and {AnnotatableClass} functionality to the given class.
     #
     # @param [Class] the domain class to extend
     def self.extend_class(klass)
@@ -61,7 +61,7 @@ module CaTissue
       annotation_defined?(symbol)
     end
 
-    # Refines the +CaRuby::Domain::Attributes.toxic_attributes+ to exclude annotation attributes.
+    # Refines the {CaRuby::Domain::Attributes#toxic_attributes} to exclude annotation attributes.
     #
     # @return [<Symbol>] the non-annotation unfetched attributes
     def toxic_attributes
@@ -90,7 +90,7 @@ module CaTissue
       end
     end
 
-    # Filters +CaRuby::Domain::Attributes.loadable_attributes+ to exclude the {#annotation_attributes}
+    # Filters {CaRuby::Domain::Attributes#loadable_attributes} to exclude the {#annotation_attributes}
     # since annotation lazy-loading is not supported.
     #
     # @return (see CaRuby::Domain::Attributes#loadable_attributes)

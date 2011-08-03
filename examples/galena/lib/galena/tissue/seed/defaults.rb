@@ -16,8 +16,8 @@ module Galena
   
     # Pre-defined Galena example administrative objects. If the Galena example is already set up
     # in the caTissue database, then the default object secondary key attributes can be used as a
-    # +CaRuby::Persistable.find+ template to retrieve the existing objects. Otherwise, the Defaults
-    # attributes can be created by calling +CaRuby::Persistable.create+.
+    # {CaRuby::Persistable#find} template to retrieve the existing objects. Otherwise, the Defaults
+    # attributes can be created by calling {CaRuby::Persistable#create}.
     #
     # In a real-world use case, the administrative objects are typically built in the UI before-hand.
     # In that case, it is only necessary to define the object secondary key rather than content, e.g.:
