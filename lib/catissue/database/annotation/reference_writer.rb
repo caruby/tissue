@@ -113,6 +113,9 @@ module CaTissue
       # @quirk caTissue The caTissue 1.1.2 DYNEXT_ROLE table omits the target name for seven annotations,
       #   e.g. SCG RadicalProstatectomyMargin. Work-around is to try the query with a null role name.
       #
+      # @quirk caTissue The role can be a mutation of the demodulized class name as follows:
+      #   * decapitalization, e.g. role +specimenCollectionGroup+ for class +SpecimenCollectionGroup+
+      #
       # @param [AnnotationClass] klass the annotation class
       # @param [Symbol] attribute the owner attribute
       # @param [Integer] eid the annotation entity id
@@ -123,6 +126,10 @@ module CaTissue
         tgt_nm = klass.attribute_metadata(attribute).type.name.demodulize
         result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm) }
         col = result[0] if result
+        if col.nil? then
+          result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize) }
+          col = result[0] if result
+        end
         if col.nil? then
           result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(ALT_1_1_OWNER_COLUMN_SQL, eid) }
           col = result[0] if result
@@ -162,8 +169,10 @@ EOS
         and role.name = ?
 EOS
       
-      # SQL to get the annotation reference column name for a given annotation target entity id.
-      # The target entity id is obtained by calling {EntityFacade#associated_entity_id}.
+      # Alternative caTissue 1.1.x SQL to get the annotation reference column name for a given
+      # annotation target entity id. The role can be null for some entities in 1.1, as described
+      # in {#owner_attribute_column}. The target entity id is obtained by calling
+      # {EntityFacade#associated_entity_id}.
       ALT_1_1_OWNER_COLUMN_SQL = <<EOS
         select cst.TARGET_ENTITY_KEY
         from DYEXTN_CONSTRAINT_PROPERTIES cst, DYEXTN_ASSOCIATION assn, dyextn_role role
