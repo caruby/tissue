@@ -75,7 +75,7 @@ module CaTissue
     # a record entry class.
     #
     # @param [String] the record entry class name specified in the
-    #   {CaTissue::AnntatableClass#add_annotation_attribute} +:record_entry+ option
+    #   {CaTissue::AnnotatableClass#add_annotation} +:record_entry+ option
     def import_record_entry_class(klass, hook)
       @record_entry_class = const_get(klass.name.demodulize.to_sym)
       @record_entry_hook_writer = "#{hook.name.demodulize.underscore}=".to_sym
