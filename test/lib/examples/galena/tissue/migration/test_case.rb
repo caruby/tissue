@@ -44,13 +44,17 @@ module Galena
         opts[:target] ||= CaTissue::TissueSpecimen
         opts[:mapping] ||= File.join(CONFIGS, "#{fixture}_fields.yaml")
         unless opts.has_key?(:defaults) then
-          def_file = File.join(CONFIGS, "#{fixture}_defaults.yaml")
-          if File.exists?(def_file) then opts[:defaults] = def_file end
+          f = File.join(CONFIGS, "#{fixture}_defaults.yaml")
+          if File.exists?(f) then opts[:defaults] = f end
+        end
+        unless opts.has_key?(:filters) then
+          f = File.join(CONFIGS, "#{fixture}_values.yaml")
+          if File.exists?(f) then opts[:filters] = f end
         end
         unless opts.has_key?(:shims) then
-          shims = File.join(SHIMS, "#{fixture}_shims.rb")
-          if File.exists?(shims) then
-            opts[:shims] = [shims]
+          f = File.join(SHIMS, "#{fixture}_shims.rb")
+          if File.exists?(f) then
+            opts[:shims] = [f]
           end    
         end
         mgtr = super
