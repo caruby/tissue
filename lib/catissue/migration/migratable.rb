@@ -59,14 +59,14 @@ module CaTissue
 
     private
 
-    # Returns the {#tissue_site_controlled_value}.
+    # Returns the {tissue_site_controlled_value}.
     #
     # @return the caTissue tissue site permissible value
     def standard_cv_tissue_site(value)
       SpecimenCharacteristics.tissue_site_controlled_value(value)
     end
 
-    # Returns the {#tissue_site_controlled_value} which adds the 'NOS' suffix to a value
+    # Returns the {tissue_site_controlled_value} which adds the 'NOS' suffix to a value
     # without one or removes 'NOS' from a value with the suffix.
     #
     # @return the caTissue tissue site permissible value

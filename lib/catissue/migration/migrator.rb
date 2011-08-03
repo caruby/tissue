@@ -1,6 +1,5 @@
 require 'caruby/util/properties'
 require 'caruby/migration/migrator'
-require 'catissue/migration/migratable'
 require 'catissue/resource'
 require 'catissue/database/controlled_values'
 require 'catissue/database/controlled_value_finder'
@@ -11,12 +10,6 @@ module CaTissue
   # See the Galena Cancer Center Tissue Bank Migration Example for further information
   # about how the options tailor migration, esp. the use of the field mappings and shims.
   class Migrator < CaRuby::Migrator
-    # The default name of this migrator.
-    NAME = 'caTissue Migrator'
-
-    # The built-in caTissue migration shims.
-    SHIM_FILE = File.join(File.dirname(__FILE__), 'shims.rb')
-
     # Creates a new Migrator with the given options.
     #
     # This migrator must include sufficient information to build a well-formed migration target object.
@@ -25,15 +18,9 @@ module CaTissue
     # database or the migration must build a Participant and a CollectionProtocol.
     # 
     # @option (see CaRuby::Migrator#initialize)
-    # @option opts [String] :database target application database
-    # @option opts [String] :target required target domain class
-    # @option opts [String] :input required source file to migrate
-    # @option opts [String] :shims optional array of shim files to load
-    # @option opts [String] :unique makes migrated objects unique object for testing
-    #   mix-in do not conflict with existing or future objects
-    # @option opts [String] :bad write each invalid record to the given file and continue migration
-    # @option opts [String] :offset zero-based starting source record number to process (default 0)
-    def initialize(opts={})
+    # @option opts [String] :tissue_sites the tissue site mapping file
+    # @option opts [String] :diagnoses the diagnosis mapping file
+     def initialize(opts={})
       # if there is a configuration file, then add config options into the parameter options
       conf_file = opts.delete(:file)
       if conf_file then
@@ -48,9 +35,15 @@ module CaTissue
       # tailor the options
       opts[:name] ||= NAME
       opts[:database] ||= CaTissue::Database.instance
-      # prepend this migrator's shims
+      
+      # the shims file(s)
+      opts[:shims] ||= []
       shims = opts[:shims] ||= []
-      shims.unshift(SHIM_FILE)
+      # make a single shims file into an array
+      shims = opts[:shims] = [shims] unless shims.collection?
+      # prepend this migrator's shims
+      shims.unshift(MIGRATABLE_SHIM)
+
       # If the unique option is set, then append the CaTissue-specific uniquifier shim.
       if opts[:unique] then
         # add the uniquify shim
@@ -79,11 +72,16 @@ module CaTissue
     end
 
     private
+    # The default name of this migrator.
+    NAME = 'caTissue Migrator'
+
+    # The built-in caTissue migration shims.
+    MIGRATABLE_SHIM = File.join(File.dirname(__FILE__), 'migratable.rb')
     
     UNIQUIFY_SHIM = File.join(File.dirname(__FILE__), 'uniquify')
         
     # The context module is determined as follows:
-    # * for an {Annotation} target class, the context module is the annotated class's {ResourceClass#domain_module}
+    # * for an {Annotation} target class, the context module is the annotated class's domain_module
     # * otherwise, delegate to +CaRuby::Migrator+.
     #
     # @return (see CaRuby::Migrator#context_module)
