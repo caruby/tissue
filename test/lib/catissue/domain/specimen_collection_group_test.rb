@@ -33,26 +33,44 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_equal(collection_event, @scg.collection_event, 'Collection event not set to default')
   end
 
-  def test_prostate_annotation
-    scg = CaTissue::SpecimenCollectionGroup.new
+  def test_prostatectomy_annotation
     assert(CaTissue::SpecimenCollectionGroup.annotation_attribute?(:pathology))
-    pths = scg.pathology
+    pths = @scg.pathology
     assert(pths.empty?, "Pathology annotations not empty at start")
     pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
-    pa.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => scg)
+    pa.merge_attributes(:specimen_collection_group => @scg)
     assert_equal(1, pths.size, "SCG pathology proxy not created")
     pth = pths.first
     pas = pth.radical_prostatectomy_pathology_annotations
     epx = CaTissue::SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.new
     epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pa)
-    assert_not_nil(pas.first, "Prostatectomy annotation not added to #{scg} annotations")
-    assert_same(pa, pas.first, "Prostatectomy annotation incorrect")
-    assert_same(pth, pa.pathology, "Prostatectomy annotation proxy not set")
-    assert_same(pth, pa.proxy, "Prostatectomy annotation proxy alias not set")
-    assert_same(scg, pth.hook, "Annotation proxy hook not set")
-    assert_same(scg, pa.hook, "Prostatectomy annotation hook not set")
-    assert_not_nil(pa.extraprostatic_extension, "#{pa} extraprostatic extension not set")
+    assert_not_nil(pas.first, "#{@scg} prostatectomy annotation not added")
+    assert_same(pa, pas.first, "#{@scg} prostatectomy annotation incorrect")
+    assert_same(pth, pa.pathology, "#{@scg} prostatectomy annotation #{pa} proxy incorrect")
+    assert_same(pth, pa.proxy, "#{@scg} prostatectomy annotation proxy #{pa} alias incorrect")
+    assert_same(@scg, pth.hook, "#{@scg} prostatectomy annotation proxy hook incorrect")
+    assert_same(@scg, pa.hook, "#{@scg} prostatectomy annotation hook incorrect")
+    assert_not_nil(pa.extraprostatic_extension, "#{pa} extraprostatic extension incorrect")
     assert_same(epx, pa.extraprostatic_extension, "{pa} extraprostatic extension incorrect")
+  end
+  
+  def test_prostate_biopsy_annotation
+    pths = @scg.pathology
+    assert(pths.empty?, "Pathology annotations not empty at start")
+    pa = CaTissue::SpecimenCollectionGroup::Pathology::NeedleBiopsyProstatePathologyAnnotation.new
+    pa.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => @scg)
+    invn =  CaTissue::SpecimenCollectionGroup::Pathology::Invasion.new
+    invn.merge_attributes(:lymphatic_invasion => 'Present', :base_solid_tissue_pathology_annotation => pa)
+    assert_equal(1, pths.size, "SCG pathology proxy not created")
+    pth = pths.first
+    pas = pth.needle_biopsy_prostate_pathology_annotations
+    assert_not_nil(pas.first, "#{@scg} prostate biopsy annotation not added")
+    assert_same(pa, pas.first, "#{@scg} prostate biopsy annotation incorrect")
+    assert_same(pth, pa.pathology, "#{@scg} prostate biopsy annotation #{pa} proxy incorrect")
+    assert_same(pth, pa.proxy, "#{@scg} prostate biopsy annotation proxy #{pa} alias incorrect")
+    assert_same(@scg, pth.hook, "#{@scg} prostate biopsy annotation proxy #{pth} hook incorrect")
+    assert_same(@scg, pa.hook, "#{@scg} prostate biopsy annotation hook incorrect")
+    assert_same(invn, pa.invasion, "#{@scg} prostate biopsy annotation #{pa} invasion incorrect")
   end
   
   def test_collect
@@ -245,7 +263,7 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     verify_save(scg)
   end
   
-  def test_save_prostate_annotation
+  def test_save_prostatectomy_annotation
     pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
     pa.specimen_collection_group = @scg
     htype = CaTissue::SpecimenCollectionGroup::Pathology::HistologicType.new
@@ -265,6 +283,16 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_not_nil(invn.identifier, "#{@scg} annotation #{invn} not saved")
     assert_not_nil(gleason.identifier, "#{@scg} annotation #{gleason} not saved")
     assert_not_nil(margin.identifier, "#{@scg} annotation #{margin} not saved")
+  end
+  
+  def test_save_prostate_biopsy_annotation
+    pa = CaTissue::SpecimenCollectionGroup::Pathology::NeedleBiopsyProstatePathologyAnnotation.new
+    pa.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => @scg)
+    invn =  CaTissue::SpecimenCollectionGroup::Pathology::Invasion.new
+    invn.merge_attributes(:lymphatic_invasion => 'Present', :base_solid_tissue_pathology_annotation => pa)
+    verify_save(pa)
+    assert_not_nil(pa.identifier, "#{@scg} annotation #{pa} not saved")
+    assert_not_nil(invn.identifier, "#{@scg} annotation #{invn} not saved")
   end
   
   # Tests saving a participant lab annotation indirectly by saving a SCG. 
