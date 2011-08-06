@@ -6,12 +6,9 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocol
 
   # The CollectionProtocol domain class.
-<<<<<<< HEAD
   #
   # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
   #   Create CollectionProtocol in API ignores startDate.
-=======
->>>>>>> parent of 745f9e3... Clean up documentation.
   class CollectionProtocol
     include HashCode
     

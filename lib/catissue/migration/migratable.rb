@@ -99,17 +99,15 @@ module CaTissue
       scg
     end
     
-<<<<<<< HEAD
     # Returns the given Specimen spc unless this CollectibleEventParameters already has a SCG owner.
     # A CollectibleEventParameters is preferentially set to a migrated SCG rather than a migrated
     # Specimen.
-=======
+    #
     # Overrides {CaRuby::Migratable#migratable__target_value} to confer precedence to
     # a SCG over a Specimen when setting this event parameters' owner. If the migrated
     # collection includes both a Specimen and a SCG, then this event parameters
     # +specimen+ reference is ambiguous, but the +specimen_collection_group+ reference
     # is not.
->>>>>>> parent of 745f9e3... Clean up documentation.
     #
     #@param [Specimen] spc the migrated owner specimen
     # @return [Specimen, nil] spc unless there is already a SCG owner

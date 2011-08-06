@@ -7,16 +7,13 @@ require 'catissue/database/annotation/annotator'
 require 'catissue/util/collectible_event_parameters'
 
 module CaTissue
-<<<<<<< HEAD
   # Database mediates access to the caTissue application server.
   # Superclass +CaRuby::Database+ functionality base class methods are overridden as necessary
   # to enable caTissue-specific work-arounds and alternate search strategies.
-=======
   # A CaTissue::Database mediates access to the caTissue database.
   # The CaRuby::Database functionality is preserved and not expanded, but this CaTissue::Database overrides
   # several base class private methods to enable alternate CaTissue-specific search strategies and work
   # around caTissue and caCORE bugs.
->>>>>>> parent of 745f9e3... Clean up documentation.
   class Database < CaRuby::Database
     include Singleton
     

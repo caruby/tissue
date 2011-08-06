@@ -7,7 +7,6 @@ module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.User
 
   # The User domain class.
-<<<<<<< HEAD
   #
   # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
   #   +UnsupportedOperationException+ if they are called.
@@ -16,8 +15,6 @@ module CaTissue
   #   required attribute. Work-around is to simulate the GUI with a default value.
   # @quirk caTissue User address can be created but not updated in 1.2.
   # @quirk caTissue User address is not fetched on create in 1.2.
-=======
->>>>>>> parent of 745f9e3... Clean up documentation.
   class User
     include Person
 

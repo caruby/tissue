@@ -18,11 +18,8 @@ module CaTissue
     # database or the migration must build a Participant and a CollectionProtocol.
     # 
     # @option (see CaRuby::Migrator#initialize)
-<<<<<<< HEAD
     # @option opts [String] :tissue_sites the tissue site mapping file
     # @option opts [String] :diagnoses the diagnosis mapping file
-     def initialize(opts={})
-=======
     # @option opts [String] :database target application {CaRuby::Database}
     # @option opts [String] :target required target domain class
     # @option opts [String] :input required source file to migrate
@@ -32,7 +29,6 @@ module CaTissue
     # @option opts [String] :bad write each invalid record to the given file and continue migration
     # @option opts [String] :offset zero-based starting source record number to process (default 0)
     def initialize(opts={})
->>>>>>> parent of 745f9e3... Clean up documentation.
       # if there is a configuration file, then add config options into the parameter options
       conf_file = opts.delete(:file)
       if conf_file then
@@ -93,13 +89,10 @@ module CaTissue
     UNIQUIFY_SHIM = File.join(File.dirname(__FILE__), 'uniquify')
         
     # The context module is determined as follows:
-<<<<<<< HEAD
-    # * for an {Annotation} target class, the context module is the annotated class's domain_module
-    # * otherwise, delegate to +CaRuby::Migrator+.
-=======
-    # * for an {Annotation} target class, the context module is the annotated class's {ResourceClass#domain_module}
-    # * otherwise, delegate to {CaRuby::Migrator}.
->>>>>>> parent of 745f9e3... Clean up documentation.
+    # * For an {Annotation} target class, the context module is the annotated class's domain_module.
+    # * Otherwise, delegate to +CaRuby::Migrator+.
+    # * For an {Annotation} target class, the context module is the annotated class's {ResourceClass#domain_module}.
+    # * Otherwise, delegate to {CaRuby::Migrator}.
     #
     # @return (see CaRuby::Migrator#context_module)
     def context_module
