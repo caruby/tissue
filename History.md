@@ -1,6 +1,10 @@
 This history lists major release themes. See the GitHub Commits (https://github.com/caruby/tissue)
 for change details.
 
+1.5.4 / 2011-08-16
+------------------
+* Fixed case sensitive DB bug. Bug # 7.
+
 1.5.3 / 2011-07-08
 ------------------
 * Clean up documentation.
