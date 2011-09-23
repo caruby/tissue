@@ -1,6 +1,8 @@
 require File.join(File.dirname(__FILE__), '..', 'test_case')
 require 'caruby/util/uniquifier'
 
+require 'json'
+
 class ParticipantTest < Test::Unit::TestCase
   include CaTissue::TestCase
 
@@ -90,6 +92,15 @@ class ParticipantTest < Test::Unit::TestCase
     if CaTissue::Participant::Clinical::Chemotherapy != CaTissue::Participant::Clinical::ChemoRXAnnotation then
       assert_raises(CaTissue::AnnotationError, "Chemotherapy is not deprecated.") { CaTissue::Participant::Clinical::Chemotherapy.new}
     end
+  end
+  
+  def test_json
+    CaTissue::Race.new(:participant => @pnt, :race_name => 'White')
+    dup = JSON[@pnt.to_json]
+    race = dup.races.first
+    assert_not_nil(race, "Race not serialized")
+    assert_equal('White', race.race_name, "Race name not serialized correctly")
+    assert_same(dup, race.participant, "Race participant not serialized correctly")
   end
 
    ## DATABASE TEST CASES
