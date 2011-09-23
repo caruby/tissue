@@ -164,17 +164,19 @@ module CaTissue
     #
     # @param [String] name the name of the annotation module
     # @param [{Symbol => Object}] opts the annotation options
-    # @option opts [String] :package the package name (default the decapitalized camelized name)
-    # @option opts [String] :service the service name (default the decapitalized underscore name)
+    # @option opts [String] :package the package name (default is the lower-case underscore name)
+    # @option opts [String] :service the service name (default is the lower-case underscore name)
+    # @option opts [String] :group the DE group short name (default is the package)
     def add_annotation(name, opts={})
       # the module symbol
       mod_sym = name.camelize.to_sym
       # the module spec defaults
-      pkg = opts[:package] ||= name.camelize(:lower)
+      pkg = opts[:package] ||= name.underscore
       svc = opts[:service] ||= name.underscore
+      grp = opts[:group] ||= pkg
       # add the annotation entry
       @ann_spec_hash[mod_sym] = opts
-      logger.info("Added #{qp} annotation #{name} with module #{mod_sym}, package #{pkg} and service #{svc}.")
+      logger.info("Added #{qp} annotation #{name} with module #{mod_sym}, package #{pkg}, service #{svc} and group #{grp}.")
     end
     
     # @return [Boolean] whether this annotatable class's annotations are loaded
