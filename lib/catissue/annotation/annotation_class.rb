@@ -13,6 +13,8 @@ module CaTissue
     # @return [Intger, nil] the container id, or nil if this is not a primary annotation
     attr_reader :container_id
     
+    # @param [Class] klass the {Annotation} class to enable
+    # @param [Module] mod the {AnnotationModule} which scopes the class
     def self.extend_class(klass, mod)
       # Enable the class meta-data.
       klass.extend(CaRuby::Domain::Metadata)
@@ -32,8 +34,9 @@ module CaTissue
     
     # Adds metadata to this annotation class.
     #
-    # @param [Module] mod the annotation module
+    # @param (see AnnotationClass.extend_class)
     def add_annotation_metadata(mod)
+      @domain_module = mod
       alias_attribute(:annotation_module, :domain_module)
       efcd = Annotation::EntityFacade.instance
       @entity_id = efcd.annotation_entity_id(self, false)
