@@ -18,15 +18,16 @@ module CaTissue
     if attribute_defined?(:clinical_study_registrations) then remove_attribute(:clinical_study_registrations) end
 
     add_attribute_aliases(:collection_registrations => :collection_protocol_registrations,
-    :registrations => :collection_protocol_registrations,
-    :medical_identifiers => :participant_medical_identifiers)
+      :registrations => :collection_protocol_registrations,
+      :medical_identifiers => :participant_medical_identifiers)
 
     set_secondary_key_attributes(:social_security_number)
 
     # Clarification on defaults:
     # * 'Unknown': value is unknown by anybody
     # * 'Unspecified': value is known by somebody, but the data was not communicated to the bank
-    # cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=16&t=672&p=2343&e=2343
+    #
+    # Cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=16&t=672&p=2343&e=2343
     add_attribute_defaults(:activity_status => 'Active', :ethnicity => 'Unknown', :gender => 'Unspecified',
       :sex_genotype => 'Unknown', :vital_status => 'Unknown')
 
