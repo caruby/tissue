@@ -111,7 +111,7 @@ module CaTissue
     
     # The SCG proxy class.
     self.annotation_proxy_class_name = 'SCGRecordEntry'
-    
+
     # The SCG pathology annotation.
     add_annotation('Pathology', :package => 'pathology_scg', :service => 'pathologySCG')
 
