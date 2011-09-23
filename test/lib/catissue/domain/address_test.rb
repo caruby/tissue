@@ -21,11 +21,12 @@ class AddressTest < Test::Unit::TestCase
   end
 
   def test_save
-    assert_raises(CaRuby::DatabaseError, "Address save without owner incorrectly saved") { @addr.save }
-    @addr.user = @user
+    # Create the address.
     verify_save(@addr)
+    # Modify the address.
     expected = @addr.street = "#{Uniquifier.qualifier} Elm"
     verify_save(@addr)
+    # Find the address.
     fetched = @addr.copy(:identifier).find
     assert_equal(expected, fetched.street, "Address street not saved")
   end
