@@ -30,8 +30,7 @@ module CaTissue
       private
       
       # @param (see #associate)
-      # @return [Object] yet another association record which associates the hook to the
-      #   annotation
+      # @return [Object] yet another association record which associates the hook to the annotation
       def create_record_entry(hook, annotation)
         # the DE integration record entry class
         klass = hook.class.de_integration_proxy_class
