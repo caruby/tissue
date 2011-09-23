@@ -1,7 +1,7 @@
 require 'date'
 require 'catissue/version'
 
-SPEC = Gem::Specification.new do |s|
+Gem::Specification.new do |s|
   s.name          = "caruby-tissue"
   s.summary       = "Ruby facade for caTissue." 
   s.description   = <<-eof
