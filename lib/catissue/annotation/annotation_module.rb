@@ -11,6 +11,9 @@ module CaTissue
 
     # @return [ProxyClass] the annotation proxy class 
     attr_reader :proxy
+    
+    # @return [String] the group short name
+    attr_reader :group
       
     # @return [Class] the hook-annotation association class, or nil for 1.1.x caTissue
     attr_reader :record_entry_class
@@ -23,6 +26,7 @@ module CaTissue
     # @param [{Symbol => Object}] the options
     # @option opts [String] :package the DE package name
     # @option opts [String] :service the DE service name
+    # @option opts [String] :group the DE group short name
     # @option opts [String] :record_entry the record entry name class for post-1.1.x caTissue
     def self.extend_module(mod, hook, opts)
       mod.extend(self)
@@ -37,6 +41,7 @@ module CaTissue
       logger.debug { "Building #{hook.qp} annotation #{qp}..." }
       pkg = opts[:package]
       @svc_nm = opts[:service]
+      @group = opts[:group]
       # Enable the resource metadata aspect.
       md_proc = Proc.new { |klass| AnnotationClass.extend_class(klass, self) }
       CaRuby::Domain::Importer.extend_module(self, :mixin => Annotation, :metadata => md_proc, :package => pkg)
