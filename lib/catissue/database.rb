@@ -612,6 +612,25 @@ module CaTissue
       end
     end
     
+    # @quirk JRuby fetching a CPR CP swizzles the CPR participant. This only occurs when the CP exists in
+    #   the database. The work-around is to reset the swizzled participant. However, merely capturing the
+    #   participant before the CP find is sufficient to prevent this bug. JRuby does not corrupt the CPR
+    #   participant if it is referenced by a local variable. The CPR is too complicated to reformulate as
+    #   this bug as an isolated non-caTissue test case.
+    def finder_parameter(obj, attribute)
+      if CaTissue::CollectionProtocolRegistration === obj and attribute == :collection_protocol then
+        # Simply assigning the pnt variable prevents the bug from occurring.
+        pnt = obj.participant
+      end
+      value = super
+      if value and pnt and pnt != obj.participant then
+        swzld = obj.participant
+        obj.participant = pnt
+        logger.debug { "Worked around #{obj} corruption by restoring the swizzled participant from #{swzld} to the original #{pnt}." }
+      end
+      value
+    end
+    
     # Augments the +CaRuby::Writer+ exclusion filter to exclude annotations from the create template.
     # Annotations are created following the owner create.
     #
