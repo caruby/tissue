@@ -285,6 +285,28 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_not_nil(margin.identifier, "#{@scg} annotation #{margin} not saved")
   end
   
+  # Verifies that SCG create also creates the registered participant clinical annotation. This test
+  # exercises the {CaTissue::Database#finder_parameter} work-around.
+  def test_save_participant_annotation
+    reg = @scg.registration
+    pcl = reg.protocol
+    # unset the registration protocol until the protocol is created
+    reg.protocol = nil
+    # create the protocol
+    pcl.create
+    # reset the registration protocol to the now-existing CP
+    reg.protocol = pcl
+    # the SCG -> CPR -> participant
+    pnt = reg.participant
+    # make a participant annotation
+    lab = CaTissue::Participant::Clinical::LabAnnotation.new
+    lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => pnt)
+    # save the SCG
+    verify_save(@scg)
+    # the SCG -> CPR -> participant annotation should be saved as well
+    assert_not_nil(lab.identifier, "#{@scg} participant #{pnt} annotation #{lab} not saved")
+  end
+  
   def test_save_prostate_biopsy_annotation
     pa = CaTissue::SpecimenCollectionGroup::Pathology::NeedleBiopsyProstatePathologyAnnotation.new
     pa.merge_attributes(:specimen_procedure => 'Biopsy', :specimen_collection_group => @scg)
