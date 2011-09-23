@@ -75,7 +75,7 @@ module CaTissue
       #   classes. Use alternative SQL instead.
       #
       # @param [Integer] eid the referencing entity id
-      # @param [String] eid the association property name
+      # @param [String] name the association property name
       # @return [Integer] the referenced {Annotation} class entity id
       def associated_entity_id(eid, name)
         # The caTissue role is capitalized.
@@ -145,7 +145,7 @@ module CaTissue
       
       private
       
-      CORE_PKG_REGEX = /^edu.wustl.catissuecore.domain/
+      CORE_PKG = 'edu.wustl.catissuecore.domain'
       
       CORE_GROUP = 'caTissueCore'
       
@@ -160,7 +160,7 @@ module CaTissue
       # @param (see #recursive_annotation_entity_id)
       # @return (see #recursive_annotation_entity_id)
       def nonrecursive_annotation_entity_id(klass)
-        # The entity group and entity name.
+        # The entity group and name.
         grp, name = split_annotation_entity_class_name(klass)
         # Dive into some obscure SQL.
         result = @executor.execute { |dbh| dbh.select_one(ANN_ENTITY_ID_SQL, grp, name) }
@@ -175,13 +175,8 @@ module CaTissue
         # the Java package and base class name
         pkg, base = Java.split_class_name(jname)
         # A wustl domain class is in the core group.
-        if pkg =~ CORE_PKG_REGEX then
-          [CORE_GROUP, jname]
-        elsif pkg.nil? or pkg['.'] then
-          raise AnnotationError.new("Entity group for Java class #{jname} could not be determined.")
-        else
-          [pkg, base]
-        end
+        # Others are in an annotation module with a designated group.
+        pkg == CORE_PKG ? [CORE_GROUP, jname] : [klass.annotation_module.group, base]
       end
       
       # @param (see #annotation_entity_id)
