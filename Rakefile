@@ -30,7 +30,7 @@ end
 desc "Builds the gem"
 task :gem do
   load "#{GEM}.gemspec"
-  Gem::Builder.new(SPEC).build
+  Gem::Builder.new(CaTissue::SPEC).build
 end
 
 desc "Installs the gem"
