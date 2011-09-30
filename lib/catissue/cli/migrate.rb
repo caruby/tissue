@@ -46,6 +46,17 @@ module CaTissue
         migrator = block_given? ? yield(opts) : CaTissue::Migrator.new(opts)
         migrator.migrate_to_database
       end
+      
+      def validate(opts)
+        tgt = opts[:target]
+        if tgt.nil? then raise ArgumentError.new("Missing required migration target class option") end
+        begin
+          opts[:target] = CaTissue.const_get(tgt)
+        rescue Exception
+          logger.fatal("Could not load CaTissue class #{tgt} - #{$!}.\n#{$@.qp}")
+          raise MigrationError.new("Could not load migration target class #{tgt}")
+        end
+      end
     end
   end
 end
