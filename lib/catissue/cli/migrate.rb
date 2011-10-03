@@ -24,7 +24,7 @@ module CaTissue
         [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"]
       ]
   
-      # Creates a {Migrate} command with the given standard command line specifications
+      # Creates a {Migrate} command with the given standard command line specifications.
       # as well as the {SPECS} command line specifications.
       #
       # @yield [opts] optional migrator factory

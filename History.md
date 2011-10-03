@@ -1,6 +1,10 @@
 This history lists major release themes. See the GitHub Commits (https://github.com/caruby/tissue)
 for change details.
 
+1.5.6 / 2011-09-30
+------------------
+* Added validate function back into migrate.
+
 1.5.5 / 2011-09-22
 ------------------
 * Use migration value filter option.
