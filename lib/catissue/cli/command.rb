@@ -1,15 +1,8 @@
-# the standard log file
-DEF_LOG_FILE = 'log/catissue.log' unless defined?(DEF_LOG_FILE)
+require 'rubygems'
+require 'bundler'
+Bundler.require
 
-begin
-  require 'catissue'
-rescue Exception => e
-  logger.error("caTissue client load was unsuccessful - #{e}:\n#{e.backtrace.qp}")
-  puts "caTissue client load was unsuccessful - #{e}."
-  puts "See the log at #{CaRuby::Log.instance.file} for more information."
-  exit 1
-end
-
+require 'catissue'
 require 'caruby/cli/command'
 require 'catissue/version'
 

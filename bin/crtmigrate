@@ -3,10 +3,6 @@
 # crtmigrate: migrates a source file to caTissue
 #
 
-# load the required gems
-require 'rubygems'
-gem 'caruby-tissue'
-
-require 'catissue/cli/migrate'
+require File.dirname(__FILE__) + '/../lib/catissue/cli/migrate'
 
 CaTissue::CLI::Migrate.new.start

@@ -1,4 +1,4 @@
-require 'catissue/cli/command'
+require File.dirname(__FILE__) + '/command'
 require 'caruby/util/collection'
 
 module CaTissue
