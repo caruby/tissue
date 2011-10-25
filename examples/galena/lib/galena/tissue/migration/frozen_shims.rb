@@ -1,5 +1,5 @@
 # load the defaults file in the seed directory
-require File.join(File.dirname(__FILE__), '..', 'seed', 'defaults')
+require File.dirname(__FILE__) + '/../helpers/seed'
 
 module CaTissue
   # Declares the classes modified for migration.
