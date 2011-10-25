@@ -1,4 +1,7 @@
+# This file is the entry point included by applications which reference a CaTissue object.
+
 require 'caruby/resource'
+require 'catissue/domain'
 require 'catissue/annotation/annotatable'
 
 module CaTissue
@@ -64,6 +67,9 @@ module CaTissue
     def self.unpsecified_value?(value)
       value.nil? or value == UNSPECIFIED
     end
+  
+    # Add meta-data capability to this Resource module.
+    CaTissue.extend_module(self)
   end
 end
 
