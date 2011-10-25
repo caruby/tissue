@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'test_case')
+require File.dirname(__FILE__) + '/../helpers/test_case'
 require 'caruby/database/store_template_builder'
 
 class TransferEventParametersTest < Test::Unit::TestCase
