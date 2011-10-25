@@ -27,12 +27,8 @@
 #
 # This program is licensed under the terms of the +LEGAL+ file in
 # the source distribution.
-#
-# load the required gems
-require 'rubygems'
-gem 'caruby-tissue'
 
-require 'catissue/cli/command'
+require File.dirname(__FILE__) + '/../lib/catissue/cli/command'
 require 'catissue/extract/delta'
 require 'catissue/extract/extractor'
 

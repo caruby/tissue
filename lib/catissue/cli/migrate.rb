@@ -1,7 +1,4 @@
-# the default log file
-DEF_LOG_FILE = 'log/migration.log'
-
-require 'catissue/cli/command'
+require File.dirname(__FILE__) + '/command'
 require 'catissue/migration/migrator'
 
 module CaTissue

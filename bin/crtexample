@@ -3,11 +3,7 @@
 # crtexample: list and run caRuby Tissue examples
 #
 
-# load the caruby-tissue gem
-require 'rubygems'
-gem 'caruby-tissue'
-
-require 'catissue/cli/example'
+require File.dirname(__FILE__) + '/../lib/catissue/cli/example'
 
 # run the command
 CaTissue::CLI::Example.new.start

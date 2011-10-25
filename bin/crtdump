@@ -3,14 +3,7 @@
 # crtdump: Dumps the content of a caTissue object to stdout
 #
 
-# load the caruby-tissue gem
-require 'rubygems'
-gem 'caruby-tissue'
-
-# the default log file
-DEF_LOG_FILE = 'log/catissue.log'
-
-require 'catissue/cli/command'
+require File.dirname(__FILE__) + '/../lib/catissue/cli/command'
       
 SPECS = [
   [:class, "class", "The class of the object"],
