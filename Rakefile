@@ -29,8 +29,7 @@ end
 
 desc "Builds the gem"
 task :gem do
-  load "#{GEM}.gemspec"
-  Gem::Builder.new(CaTissue::SPEC).build
+  sh "jgem build caruby-tissue.gemspec"
 end
 
 desc "Installs the gem"
