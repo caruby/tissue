@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'test_case')
+require File.dirname(__FILE__) + '/../helpers/test_case'
 require 'caruby/util/uniquifier'
 
 class StorageContainerTest < Test::Unit::TestCase

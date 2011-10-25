@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'test_case')
+require File.dirname(__FILE__) + '/../helpers/test_case'
 require 'catissue/extract/extractor'
 
 class ExtractorTest < Test::Unit::TestCase
