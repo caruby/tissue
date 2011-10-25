@@ -1,10 +1,10 @@
-$:.unshift 'examples/galena/lib'
+$:.unshift File.dirname(__FILE__) + '/examples/galena/lib'
 
 require 'test/lib/catissue/migration/test_case'
 require 'galena/tissue/seed/defaults'
 
 # Inject migrate methods that simulate administrative setup.
-require File.join(File.dirname(__FILE__), 'seedify')
+require File.dirname(__FILE__) + '/seed'
 
 module Galena
   module Tissue
