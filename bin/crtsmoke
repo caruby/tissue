@@ -8,15 +8,9 @@ quiet = ARGV.include?('--help') || ARGV.include?('--version')
 
 puts "Starting the smoke test..." unless quiet
 
-puts "Loading the caruby-tissue gem..." unless quiet
+puts "Loading the caTissue Tissue client..." unless quiet
 
-# load the caruby-tissue gem
-require 'rubygems'
-gem 'caruby-tissue'
-
-puts "Loading the caTissue client..." unless quiet
-
-require 'catissue/cli/smoke'
+require File.dirname(__FILE__) + '/../lib/catissue/cli/smoke'
 
 # run the command
 CaTissue::CLI::Smoke.new.start
