@@ -24,7 +24,7 @@ class AddressTest < Test::Unit::TestCase
     # Create the address.
     verify_save(@addr)
     # Modify the address.
-    expected = @addr.street = "#{Uniquifier.qualifier} Elm"
+    expected = @addr.street = "#{Uniquifier.qualifier} Elm St."
     verify_save(@addr)
     # Find the address.
     fetched = @addr.copy(:identifier).find
