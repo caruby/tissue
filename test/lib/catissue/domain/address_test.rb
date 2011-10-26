@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
+require File.join(File.dirname(__FILE__), '..', 'test_case')
 require 'caruby/util/uniquifier'
 
 class AddressTest < Test::Unit::TestCase
@@ -21,12 +21,11 @@ class AddressTest < Test::Unit::TestCase
   end
 
   def test_save
-    # Create the address.
+    assert_raises(CaRuby::DatabaseError, "Address save without owner incorrectly saved") { @addr.save }
+    @addr.user = @user
     verify_save(@addr)
-    # Modify the address.
-    expected = @addr.street = "#{Uniquifier.qualifier} Elm St."
+    expected = @addr.street = "#{Uniquifier.qualifier} Elm"
     verify_save(@addr)
-    # Find the address.
     fetched = @addr.copy(:identifier).find
     assert_equal(expected, fetched.street, "Address street not saved")
   end
