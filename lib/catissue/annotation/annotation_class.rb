@@ -16,8 +16,6 @@ module CaTissue
     # @param [Class] klass the {Annotation} class to enable
     # @param [Module] mod the {AnnotationModule} which scopes the class
     def self.extend_class(klass, mod)
-      # Enable the class meta-data.
-      klass.extend(CaRuby::Domain::Metadata)
       # Extend with annotation meta-data.
       klass.extend(self).add_annotation_metadata(mod)
     end
