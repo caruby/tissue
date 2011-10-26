@@ -119,8 +119,9 @@ module CaTissue
       SpecimenClass::UNIT_HASH[self.specimen_class]
     end
 
-    # Derives a specimen from this specimen. The params are described in {Specimen#create_specimen},
-    # with one addition: an optional :count, the optional number of specimens to derive.
+    # Derives a new specimen from this specimen. The parameters are described in
+    # {Specimen.create_specimen}, with one addition:
+    # * +:count+(+Integer+) - the optional number of specimens to derive
     #
     # If the :count parameter is greater than one and the :specimen_class,
     # :specimen_type and :specimen_characteristics parameters are not set to values
