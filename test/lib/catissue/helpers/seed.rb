@@ -7,7 +7,7 @@ module CaTissue
   module TestCase
     # caTissue test default admin fixture.
     class Seed
-      include Singleton, Enumerable
+      include Enumerable
 
       attr_reader :tissue_bank, :protocol, :registration, :specimen,
         :specimen_requirement, :specimen_collection_group, :box
@@ -181,11 +181,6 @@ module CaTissue
           :collection_site => hospital,
           :receiver => coord)
           
-          
-                    
-          
-  puts "s #{@specimen_collection_group.qp} #{@specimen_collection_group.registration.qp} #{@registration.qp}  #{@registration.specimen_collection_groups.qp} "
-
         # a storage container
         frz_type = CaTissue::StorageType.new(:name => 'Test Freezer', :columns => 10, :rows => 1, :row_label => 'Rack')
         rack_type = CaTissue::StorageType.new(:name => 'Test Rack', :columns => 10, :rows => 10)
