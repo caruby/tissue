@@ -1,6 +1,6 @@
 require 'caruby/util/properties'
 require 'caruby/migration/migrator'
-require 'catissue/resource'
+require 'catissue'
 require 'catissue/database/controlled_values'
 require 'catissue/database/controlled_value_finder'
 
