@@ -16,15 +16,9 @@ module CaTissue
       @de_integration_proxy_class or (superclass.de_integration_proxy_class if superclass < Annotatable)
     end
     
-    # Adds {CaRuby::Domain::Metadata} and {AnnotatableClass} functionality to the given class.
+    # Initializes the annotation holders for the given class.
     #
     # @param [Class] the domain class to extend
-    def self.extend_class(klass)
-      # Enable the class meta-data.
-      klass.extend(CaRuby::Domain::Metadata)
-      klass.extend(self)
-    end
-    
     def self.extended(klass)
       super
       # Initialize the class annotation hashes.
@@ -35,6 +29,7 @@ module CaTissue
         # the annotation module => proxy hash
         @ann_mod_pxy_hash = {}
       end
+      logger.debug { "#{klass} is extended with annotation capability." }
     end
 
     # @return [Integer, nil] this class's entity id, if it exists, otherwise the superclass effective entity id
@@ -167,6 +162,7 @@ module CaTissue
     # @option opts [String] :package the package name (default is the lower-case underscore name)
     # @option opts [String] :service the service name (default is the lower-case underscore name)
     # @option opts [String] :group the DE group short name (default is the package)
+    # @option opts [String] :proxy_name the DE proxy class name (default is the class name followed by +RecordEntry+)
     def add_annotation(name, opts={})
       # the module symbol
       mod_sym = name.camelize.to_sym
@@ -174,6 +170,8 @@ module CaTissue
       pkg = opts[:package] ||= name.underscore
       svc = opts[:service] ||= name.underscore
       grp = opts[:group] ||= pkg
+      pxy_nm = opts[:proxy_name] || "#{self.name.demodulize}RecordEntry"
+      self.annotation_proxy_class_name = pxy_nm
       # add the annotation entry
       @ann_spec_hash[mod_sym] = opts
       logger.info("Added #{qp} annotation #{name} with module #{mod_sym}, package #{pkg}, service #{svc} and group #{grp}.")
