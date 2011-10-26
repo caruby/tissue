@@ -208,7 +208,7 @@ module CaTissue
       end
       
       # @param (see #recursive_associated_entity_id)
-      # @return @return [Integer, nil] the directly associated entity id, if any
+      # @return [Integer, nil] the directly associated entity id, if any
       def nonrecursive_associated_entity_id(eid, role)
         logger.debug { "Finding entity id #{eid} #{role} associated entity id..." }
         result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, role) }
