@@ -8,7 +8,7 @@ module CaTissue
   class SpecimenProtocol
     set_secondary_key_attributes(:title)
 
-    # @quirk caTissue Bug #155: enrollment is incorrectly defined in SpecimenProtocol rather
+    # @quirk caTissue Bug #155: Enrollment is incorrectly defined in SpecimenProtocol rather
     #   than CollectionProtocol. It is defaulted here until this defect is fixed.
     add_attribute_defaults(:activity_status => 'Active', :enrollment => 0)
 
