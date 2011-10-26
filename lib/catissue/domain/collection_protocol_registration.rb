@@ -89,7 +89,7 @@ module CaTissue
 
     # @return all specimens collected for this CollectionProtocolRegistration
     def specimens
-      Flattener.new(specimen_collection_groups.map { |group| group.specimens })
+      Flattener.new(specimen_collection_groups.map { |scg| scg.specimens })
     end
 
     private
