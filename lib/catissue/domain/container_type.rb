@@ -83,7 +83,7 @@ module CaTissue
     #   not pick up ContainerType Resource overrides. Work-around is that each ContainerType
     #   subclass must alias +merge_attributes+ to this method.
     #
-    # @param (see #merge_attributes)
+    # @param (see CaRuby::Mergeable#merge_attributes)
     def merge_attributes(other, attributes=nil)
       if Hash === other then
         # partition the other hash into the Capacity attributes and ContainerType attributes
