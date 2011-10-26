@@ -18,13 +18,17 @@ module CaTissue
     include Singleton
     
     # return [CaRuby::SQLExecutor] a utility SQL executor
-    attr_reader :executor, :access_properties
+    attr_reader :executor
 
-    # Creates a new Database with the +catissuecore+ service and {CaTissue.access_properties}.
+    # Creates a new Database with the +catissuecore+ service and {#access_properties}.
     def initialize
-      @access_properties = CaTissue.access_properties
-      super(SVC_NAME, @access_properties)
-      @executor = CaRuby::SQLExecutor.new(@access_properties)
+      super(SVC_NAME) { access_properties }
+      @executor = CaRuby::SQLExecutor.new(access_properties)
+    end
+    
+    # @return (see CaTissue.access_properties)
+    def access_properties
+      CaTissue.access_properties
     end
 
     # @return [Annotator] the annotator utility
