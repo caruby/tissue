@@ -52,9 +52,6 @@ module CaTissue
     # SSN is a key, if present, but is not required.
     qualify_attribute(:social_security_number, :optional)
     
-    # The Participant proxy class.
-    self.annotation_proxy_class_name = 'ParticipantRecordEntry'
-    
     # The clinicial annotation.
     add_annotation('Clinical', :package => 'clinical_annotation', :service => 'CA')
     
