@@ -16,8 +16,7 @@ module CaTissue
   # @param [Module] mod the resource mix-in module to extend with metadata capability
   def self.extend_module(mod)
     # Enable the resource metadata aspect.
-    md_proc = Proc.new { |klass| AnnotatableClass.extend_class(klass) }
-    CaRuby::Domain.extend_module(self, :mixin => mod, :metadata => md_proc, :package => PKG, :directory => SRC_DIR)
+    CaRuby::Domain.extend_module(self, :mixin => mod, :metadata => AnnotatableClass, :package => PKG, :directory => SRC_DIR)
   end
   
   private
