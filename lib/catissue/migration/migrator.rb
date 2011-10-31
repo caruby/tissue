@@ -80,6 +80,7 @@ module CaTissue
     end
 
     private
+    
     # The default name of this migrator.
     NAME = 'caTissue Migrator'
 
