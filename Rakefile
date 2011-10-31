@@ -29,7 +29,7 @@ end
 
 desc "Builds the gem"
 task :gem do
-  sh "jgem build caruby-tissue.gemspec"
+  sh "jgem build #{GEM}.gemspec"
 end
 
 desc "Installs the gem"
