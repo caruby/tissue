@@ -319,6 +319,8 @@ module CaTissue
     # * Create the non-disposal events.
     # * Create the DisposalEventParameters.
     #
+    # {#save_changed_dependents} delegates to this method to handle the latter two steps.
+    #
     # A DisposalEventParameters cannot be created for a closed Specimen. Conversely, caTissue closes
     # the Specimen as a side-effect of creating a DisposalEventParameters. Therefore, even if the
     # client submits a closed Specimen for create, this CaTissue::Database must first create the
@@ -329,7 +331,7 @@ module CaTissue
     #
     # @param [CaTissue::Specimen] the specimen whose dependents are to be saved
     # @yield [dependent] calls the base {CaRuby::Writer#save_changed_dependents} 
-    # @yieldparam [Resource] dependent the dependent to save
+    # @yieldparam [Resource] specimen the specimen to save
     def save_changed_specimen_dependents(specimen)
       dsp = specimen.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
       if dsp then
@@ -556,11 +558,11 @@ module CaTissue
     # to a non-zero value, create the Specimen and then update the created Specimen with
     # the original values.
     #
-    # If spc has a disposal event, then this work-around interacts with the {#save_changed_dependents}
-    # work-around as follows:
-    # * delete that event from the Specimen.
+    # If the specimen has a disposal event, then this work-around interacts with the
+    # {#save_changed_dependents} work-around as follows:
+    # * Delete that event from the Specimen.
     # * Create the Specimen as described above.
-    # * Update the Specimen as described above, but do no set the activity_status to +Closed+.
+    # * Update the Specimen as described above, but do not set the activity_status to +Closed+.
     # * Create the pending disposal event.
     #
     # @param [CaTissue::Specimen] specimen the specimen to create
