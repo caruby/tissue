@@ -184,7 +184,7 @@ module CaTissue
     # @raise [AnnotationError] if this annotation is not {#primary?}
     # @raise [AnnotationError] if the proxy attribute is already set and references a different proxy class
     def define_proxy_attribute(klass)
-      # must be primary
+      # Only a primary annotation class can have a proxy.
       unless primary? then raise AnnotationError.new("Can't set proxy for non-primary annotation class #{qp}") end
       # If the proxy is already set, then confirm that this call is redundant, which is tolerated as a no-op,
       # as opposed to conflicting, which is not allowed.
@@ -196,7 +196,7 @@ module CaTissue
       # the annotation => proxy reference attribute
       attr_md = obtain_proxy_attribute_metadata(klass)
       # The canonical proxy attribute is named after the annotation module, e.g. clinical.
-      # caTissue 1.1.x confusingly names the proxy the same as the hook. Correct this by recasting the
+      # caTissue 1.1.x confusingly names the proxy the same as the hook. Correct this by repurposing the
       # proxy as the hook attribute and making a separate proxy attribute named by the annotation module.
       hook_attr = klass.hook.name.demodulize.underscore.to_sym
       if attr_md.to_sym == hook_attr then
