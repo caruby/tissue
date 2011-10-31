@@ -37,10 +37,14 @@ module CaTissue
       
       # Adds each proxy => annotation reference as a dependent attribute.
       # Recursively adds dependents of all referenced annotations.
+      #
+      # This method defines a proxy attribute in each primary annotation class
+      # for each #{non_proxy_annotation_classes} class hierarchy.
       def build_annotation_dependency_hierarchy
         logger.debug { "Building annotation dependency hierarchy..." }
         non_proxy_annotation_classes.each do |klass|
-          klass.annotation_hierarchy.each do |anc|
+          # Define the superclass proxy attributes, starting with the most general class.
+          klass.annotation_hierarchy.to_a.reverse_each do |anc|
             if anc.primary? and anc.proxy_attribute.nil? then
               anc.define_proxy_attribute(self)
             end
@@ -54,7 +58,8 @@ module CaTissue
       
       # Creates a reference attribute from this proxy to the given primary {Annotation} class. 
       #
-      # @param [Class] klass the annotation class
+      # @param [Class] klass the target annotation class
+      # @return [Symbol] the new annotation reference attribute
       def create_annotation_attribute(klass)
         # the new attribute symbol
         attr = klass.name.demodulize.underscore.pluralize.to_sym
@@ -65,6 +70,7 @@ module CaTissue
         add_attribute(attr, klass, :collection)
         # The annotation is dependent.
         add_dependent_attribute(attr, :logical)
+        logger.debug { "Created annotation proxy #{qp} dependent attribute #{attr}." }
         attr
       end
       
