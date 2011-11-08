@@ -3,7 +3,7 @@ require 'caruby/helpers/collection'
 module CaTissue
   # The StorageTypeHolder mix-in adds common methods for the StorageType or StorageContainer child type accessors.
   module StorageTypeHolder
-    include PartialOrder
+    include CaRuby::PartialOrder
     
     # @return [StorageType] the allowable child storage types
     def child_storage_types
