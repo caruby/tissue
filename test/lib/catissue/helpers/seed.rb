@@ -1,7 +1,6 @@
 require 'singleton'
 require 'caruby/util/validation'
 require 'caruby/util/uniquifier'
-require 'catissue'
 
 module CaTissue
   module TestCase
