@@ -6,11 +6,11 @@ require 'test/unit'
 
 # Open the logger.
 require 'catissue/util/log'
-CaRuby::Log.instance.open(File.dirname(__FILE__) + '/../../results/log/catissue.log',
-  :shift_age => 3, :shift_size => 1048576, :debug => true)
+CaRuby::Log.instance.open(File.dirname(__FILE__) + '/../../../results/log/catissue.log',
+  :shift_age => 5, :shift_size => 1048576, :debug => true)
 
 # Load the default test object definitions.
-require File.dirname(__FILE__) + '/seed'
+require File.expand_path('seed', File.dirname(__FILE__))
 
 module CaTissue
   module TestCase
@@ -19,7 +19,7 @@ module CaTissue
     def setup
       super
       logger.info("Testing #{name}...")
-      @database = CaTissue::Database.instance
+      @database = Database.instance
     end
 
     def teardown
