@@ -49,7 +49,7 @@ module CaTissue
       logger.debug{ "Verifying #{subject.qp} save with content:\n#{dump(subject)}" }
       # capture the save operation time
       @database.clear
-      st = Stopwatch.measure { @database.open { |db| db.save(subject) } }.elapsed
+      st = CaRuby::Stopwatch.measure { @database.open { |db| db.save(subject) } }.elapsed
       # the database execution time
       dt = @database.execution_time
       logger.debug { "#{subject.qp} save took #{'%.2f' % st} seconds, of which #{'%.2f' % dt} were database operations." }
