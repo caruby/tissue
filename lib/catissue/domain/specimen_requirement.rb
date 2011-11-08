@@ -1,4 +1,4 @@
-require 'caruby/util/validation'
+require 'caruby/helpers/validation'
 
 module CaTissue
   # import the Java class

@@ -1,5 +1,5 @@
-require 'catissue/util/location'
-require 'caruby/util/validation'
+require 'catissue/helpers/location'
+require 'caruby/helpers/validation'
 
 module CaTissue
   # The Position mix-in encapsulates the location of an occupant in a holder.

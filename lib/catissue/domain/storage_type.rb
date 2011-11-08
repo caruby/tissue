@@ -1,6 +1,6 @@
-require 'caruby/util/collection'
-require 'caruby/util/partial_order'
-require 'catissue/util/storage_type_holder'
+require 'caruby/helpers/collection'
+require 'caruby/helpers/partial_order'
+require 'catissue/helpers/storage_type_holder'
 require 'catissue/domain/hash_code'
 
 module CaTissue

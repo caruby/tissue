@@ -1,11 +1,11 @@
 require 'singleton'
-require 'caruby/util/log'
-require 'caruby/util/collection'
-require 'caruby/util/options'
-require 'caruby/util/visitor'
+require 'caruby/helpers/log'
+require 'caruby/helpers/collection'
+require 'caruby/helpers/options'
+require 'caruby/helpers/visitor'
 require 'catissue/resource'
 require 'catissue/database'
-require 'catissue/util/controlled_value'
+require 'catissue/helpers/controlled_value'
 require 'caruby/domain/properties'
 
 module CaTissue

@@ -1,5 +1,5 @@
-require 'caruby/util/coordinate'
-require 'caruby/util/validation'
+require 'caruby/helpers/coordinate'
+require 'caruby/helpers/validation'
 
 module CaTissue
   # A Location is a non-Resource utility class which represents a Container row and column.

@@ -1,4 +1,4 @@
-require 'caruby/util/inflector'
+require 'caruby/helpers/inflector'
 require 'caruby/migration/migratable'
 require 'galena/tissue/seed/defaults'
 

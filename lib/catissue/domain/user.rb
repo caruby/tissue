@@ -1,6 +1,6 @@
-require 'caruby/util/validation'
+require 'caruby/helpers/validation'
 require 'catissue/resource'
-require 'catissue/util/person'
+require 'catissue/helpers/person'
 
 module CaTissue
   # import the Java class

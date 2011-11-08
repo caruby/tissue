@@ -1,6 +1,6 @@
-require 'caruby/util/validation'
-require 'caruby/util/inflector'
-require 'catissue/util/collectible'
+require 'caruby/helpers/validation'
+require 'caruby/helpers/inflector'
+require 'catissue/helpers/collectible'
 
 module CaTissue
   # import the Java class

@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + '/command'
-require 'caruby/util/collection'
+require 'caruby/helpers/collection'
 
 module CaTissue
   module CLI

@@ -1,4 +1,4 @@
-require 'caruby/util/options'
+require 'caruby/helpers/options'
 
 module CaTissue
   # import the Java class

@@ -1,8 +1,8 @@
 require 'date'
 require 'caruby/csv/csvio'
-require 'caruby/util/log'
-require 'caruby/util/collection'
-require 'caruby/util/pretty_print'
+require 'caruby/helpers/log'
+require 'caruby/helpers/collection'
+require 'caruby/helpers/pretty_print'
 require 'catissue/database'
 
 module CaTissue

@@ -5,7 +5,7 @@ Bundler.require(:test, :development)
 require 'test/unit'
 
 # Open the logger.
-require 'catissue/util/log'
+require 'catissue/helpers/log'
 CaRuby::Log.instance.open(File.dirname(__FILE__) + '/../../../results/log/catissue.log',
   :shift_age => 5, :shift_size => 1048576, :debug => true)
 

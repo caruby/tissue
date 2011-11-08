@@ -1,10 +1,10 @@
 require 'singleton'
-require 'caruby/util/uniquifier'
-require 'caruby/util/validation'
-require 'caruby/util/topological_sync_enumerator'
+require 'caruby/helpers/uniquifier'
+require 'caruby/helpers/validation'
+require 'caruby/helpers/topological_sync_enumerator'
 require 'caruby/database'
 require 'catissue/database/annotation/annotator'
-require 'catissue/util/collectible_event_parameters'
+require 'catissue/helpers/collectible_event_parameters'
 
 module CaTissue
   # Database mediates access to the caTissue application server.

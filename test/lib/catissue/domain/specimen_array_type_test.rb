@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + '/../helpers/test_case'
-require 'caruby/util/uniquifier'
+require 'caruby/helpers/uniquifier'
 
 class SpecimenArrayTypeTest < Test::Unit::TestCase
   include CaTissue::TestCase

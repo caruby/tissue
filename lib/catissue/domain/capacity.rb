@@ -1,4 +1,4 @@
-require 'caruby/util/coordinate'
+require 'caruby/helpers/coordinate'
 
 module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.Capacity
