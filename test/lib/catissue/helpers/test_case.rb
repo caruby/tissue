@@ -122,11 +122,11 @@ module CaTissue
       # kludge for annotation proxy nonsense (cf. Annotation#owner)
       ownr = Annotation === dependent ? (dependent.proxy or dependent.owner) : dependent.owner
       assert_not_nil(ownr, "Owner missing for dependent: #{dependent}")
-      attribute = ownr.class.dependent_attribute(dependent.class)
-      assert_not_nil(attribute, "#{ownr.class.qp} => #{dependent.class.qp} reference attribute not found")
+      attr = ownr.class.dependent_attribute(dependent.class)
+      assert_not_nil(attr, "#{ownr.class.qp} => #{dependent.class.qp} reference attribute not found")
       # a dependent collection reference must be refetched
-      if ownr.class.collection_attribute?(attribute) then
-        verify_saved_dependent_collection_member(dependent, ownr, attribute)
+      if ownr.class.collection_attribute?(attr) then
+        verify_saved_dependent_collection_member(dependent, ownr, attr)
       else
         assert_not_nil(dependent.identifier, "Stored dependent #{dependent} identifier is not set")
       end
