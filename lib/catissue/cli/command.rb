@@ -2,8 +2,8 @@ require 'rubygems'
 require 'bundler'
 Bundler.require
 
-require 'catissue'
 require 'caruby/cli/command'
+require 'caruby/database'
 require 'catissue/version'
 
 module CaTissue
@@ -37,9 +37,9 @@ module CaTissue
         if opts[:version] then
           puts "#{CaTissue::VERSION} for caTissue v#{CaTissue::CATISSUE_VERSIONS}"
         else
-          CaRuby::ACCESS_OPTS.each do |opt, *spec|
+          CaRuby::Database::ACCESS_OPTS.each do |opt, *spec|
             value = opts.delete(opt)
-            CaTissue.access_properties[opt] = value if value
+            CaTissue.properties[opt] = value if value
           end
         end
       end
