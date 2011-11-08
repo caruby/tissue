@@ -1,7 +1,7 @@
-require 'caruby/util/validation'
-require 'caruby/util/coordinate'
-require 'catissue/util/storable'
-require 'catissue/util/location'
+require 'caruby/helpers/validation'
+require 'caruby/helpers/coordinate'
+require 'catissue/helpers/storable'
+require 'catissue/helpers/location'
 
 module CaTissue
   # import the Java class

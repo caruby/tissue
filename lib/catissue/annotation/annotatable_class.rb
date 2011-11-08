@@ -1,4 +1,4 @@
-require 'caruby/util/inflector'
+require 'caruby/helpers/inflector'
 require 'caruby/domain/metadata'
 require 'catissue/annotation/annotation_module'
 require 'catissue/annotation/de_integration'

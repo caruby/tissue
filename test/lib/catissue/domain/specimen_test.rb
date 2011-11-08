@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + '/../helpers/test_case'
-require 'caruby/util/transitive_closure'
+require 'caruby/helpers/transitive_closure'
 
 class SpecimenTest < Test::Unit::TestCase
   include CaTissue::TestCase

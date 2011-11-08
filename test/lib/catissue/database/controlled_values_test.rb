@@ -2,8 +2,8 @@ $:.unshift 'lib'
 $:.unshift '../caruby/lib'
 
 require "test/unit"
-require 'caruby/util/log'
-require 'caruby/util/uniquifier'
+require 'caruby/helpers/log'
+require 'caruby/helpers/uniquifier'
 require 'catissue/database/controlled_values'
 
 class ControlledValuesTest < Test::Unit::TestCase

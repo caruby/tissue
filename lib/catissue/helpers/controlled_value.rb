@@ -1,4 +1,4 @@
-require 'caruby/util/controlled_value'
+require 'caruby/helpers/controlled_value'
 
 module CaTissue
   class ControlledValue < CaRuby::ControlledValue

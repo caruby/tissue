@@ -1,6 +1,6 @@
 require 'set'
-require 'caruby/util/collection'
-require 'caruby/util/partial_order'
+require 'caruby/helpers/collection'
+require 'caruby/helpers/partial_order'
 require 'catissue/annotation/annotation'
 require 'catissue/annotation/proxy_1_1'
 require 'catissue/annotation/record_entry_proxy'

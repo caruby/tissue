@@ -1,4 +1,4 @@
-require 'caruby/util/person'
+require 'caruby/helpers/person'
 
 module CaTissue
   # Mix-in for domain classes that define the +first_name+, +last_name+ and optional +middle_name+ attributes.

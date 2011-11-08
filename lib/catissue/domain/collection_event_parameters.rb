@@ -1,5 +1,5 @@
-require 'catissue/util/collectible_event_parameters'
-require 'caruby/util/validation'
+require 'catissue/helpers/collectible_event_parameters'
+require 'caruby/helpers/validation'
 
 module CaTissue
   # import the Java class

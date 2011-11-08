@@ -1,4 +1,4 @@
-require 'caruby/util/log'
+require 'caruby/helpers/log'
 require 'catissue/database/controlled_values'
 
 module CaTissue
