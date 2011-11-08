@@ -107,7 +107,7 @@ module CaTissue
     def add_defaults_local
       super
       self.registration_date ||= Java.now
-      self.protocol_participant_identifier ||= Uniquifier.qualifier.to_s
+      self.protocol_participant_identifier ||= CaRuby::Uniquifier.qualifier.to_s
     end
   end
 end

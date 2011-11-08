@@ -396,7 +396,7 @@ module CaTissue
       elsif CaTissue::Specimen === obj then
         if template.label.nil? then
           logger.debug { "Work around caTissue label bug by setting the #{obj.qp} update template #{template.qp} label to a unique value." }
-          template.label = Uniquifier.qualifier
+          template.label = CaRuby::Uniquifier.qualifier
         end
       elsif obj.identifier.nil? and CaTissue::ExternalIdentifier === obj then
         # application service save
