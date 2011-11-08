@@ -26,9 +26,5 @@ class AddressTest < Test::Unit::TestCase
     # Modify the address.
     expected = @addr.street = "#{CaRuby::Uniquifier.qualifier} Elm St."
     verify_save(@addr)
-    # Find the address.
-    fetched = @addr.copy(:identifier).find
-    assert_not_nil(fetched, "Address not saved")
-    assert_equal(expected, fetched.street, "Address street not saved")
   end
 end
