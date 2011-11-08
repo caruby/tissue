@@ -116,7 +116,7 @@ module CaTissue
       
       # Obtains the undocumented caTisue container id for the given primary entity id.
       #
-      # @quirk caTissue EntityManager.getContainerIdForEntitycontainer uses incorrect table
+      # @quirk caTissue 1.1.2 EntityManager.getContainerIdForEntitycontainer uses incorrect table
       #   (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=421&sid=5252d951301e598eebf3e90036da43cb).
       #   The standard DE API call submits the query:
       #     SELECT IDENTIFIER FROM dyextn_container WHERE ENTITY_ID = ?
@@ -126,13 +126,13 @@ module CaTissue
       #     SELECT IDENTIFIER FROM dyextn_container WHERE ABSTRACT_ENTITY_ID = ?
       #   The work-around is to call this SQL directly.
       #
-      # @quirk caTissue in 1.2, there are deprecated primary annotations with an entity id but no container id.
+      # @quirk caTissue 1.2 there are deprecated primary annotations with an entity id but no container id.
       # 
       # @return [Integer] eid the primary entity id
       def container_id(eid)
-        # The following call is broken (see method doc).
+        # The following call is broken in caTissue 1.1.2 (see method doc).
         # EntityManager.instance.get_container_id_for_entity(eid)
-        # Work-around caTissue bug with direct query.
+        # Work-around this caTissue bug with a direct query.
         result = @executor.execute { |dbh| dbh.select_one(CTR_ID_SQL, eid) }
         if result.nil? then
           logger.debug("Dynamic extension container id not found for annotation with entity id #{eid}")
