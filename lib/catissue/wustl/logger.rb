@@ -15,15 +15,15 @@ module Wustl
     #   * add +conf/wustl+ to the classpath.
     #   * call +LoggerConfig.configureLogger+ with the config directory as an argument
     #
-    # @quirk caTissue The caTissue client log location is unfortunately hard-coded in a caTissue client
+    # @quirk caTissue 1.1.2 The caTissue client log location is unfortunately hard-coded in a caTissue
     #   configuration file, does not create the parent directory on demand, and issues an obscure error
-    #   message if the directory does not exist in release 1.1.x. The work-around is to ensure that the
-    #   working directory contains a log subdirectory.
+    #   client message if the directory does not exist. The work-around is to ensure that the working
+    #   directory contains a log subdirectory.
     def self.configure
       # Set the configured flag. Configure only once.
       if @configured then return else @configured = true end
-      # make the required log subdirectory in the working directory
-      ensure_log_directory_exists
+      ## make the required log subdirectory in the working directory
+      # ensure_log_directory_exists
       # the caTissue 1.1.x mechanism
       log_cls = Java::edu.wustl.common.util.logger.Logger
       if log_cls.respond_to?(:configure) then
