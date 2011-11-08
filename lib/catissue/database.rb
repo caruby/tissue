@@ -26,9 +26,10 @@ module CaTissue
       @executor = CaRuby::SQLExecutor.new(access_properties)
     end
     
-    # @return (see CaTissue.access_properties)
+    # @return (see CaRuby::Domain.properties)
     def access_properties
-      CaTissue.access_properties
+      # The access properties are a subset of the application properties.
+      CaTissue.properties
     end
 
     # @return [Annotator] the annotator utility
