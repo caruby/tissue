@@ -1,4 +1,4 @@
-require 'catissue/util/collectible_event_parameters'
+require 'catissue/helpers/collectible_event_parameters'
 
 module CaTissue
   # import the Java class

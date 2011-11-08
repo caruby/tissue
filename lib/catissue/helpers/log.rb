@@ -1,4 +1,4 @@
-require 'caruby/util/log'
+require 'caruby/helpers/log'
 require 'catissue/wustl/logger'
 
 # CaTissue wraps the caTissue Java API.

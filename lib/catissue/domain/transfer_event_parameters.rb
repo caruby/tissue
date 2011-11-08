@@ -1,5 +1,5 @@
-require 'caruby/util/validation'
-require 'catissue/util/location'
+require 'caruby/helpers/validation'
+require 'catissue/helpers/location'
 
 module CaTissue
   # import the Java class

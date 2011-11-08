@@ -1,4 +1,4 @@
-require 'caruby/util/collection'
+require 'caruby/helpers/collection'
 
 module CaTissue
   # The StorageTypeHolder mix-in adds common methods for the StorageType or StorageContainer child type accessors.

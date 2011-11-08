@@ -1,4 +1,4 @@
-require 'caruby/util/collection'
+require 'caruby/helpers/collection'
 require 'catissue/domain/hash_code'
 
 module CaTissue

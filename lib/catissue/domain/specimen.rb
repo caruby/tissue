@@ -1,8 +1,8 @@
-require 'caruby/util/inflector'
-require 'caruby/util/uniquifier'
-require 'caruby/util/validation'
-require 'catissue/util/storable'
-require 'catissue/util/collectible'
+require 'caruby/helpers/inflector'
+require 'caruby/helpers/uniquifier'
+require 'caruby/helpers/validation'
+require 'catissue/helpers/storable'
+require 'catissue/helpers/collectible'
 
 module CaTissue
   # import the Java class

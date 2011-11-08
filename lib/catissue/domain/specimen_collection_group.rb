@@ -1,6 +1,6 @@
-require 'caruby/util/transitive_closure'
-require 'caruby/util/validation'
-require 'catissue/util/collectible'
+require 'caruby/helpers/transitive_closure'
+require 'caruby/helpers/validation'
+require 'catissue/helpers/collectible'
 
 module CaTissue
   # import the Java class

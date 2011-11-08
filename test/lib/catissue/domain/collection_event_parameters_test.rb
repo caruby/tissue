@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + '/../helpers/test_case'
-require 'caruby/util/validation'
+require 'caruby/helpers/validation'
 
 class CollectionEventParametersTest < Test::Unit::TestCase
   include CaTissue::TestCase

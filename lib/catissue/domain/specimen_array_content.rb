@@ -1,4 +1,4 @@
-require 'catissue/util/position'
+require 'catissue/helpers/position'
 
 module CaTissue
   # import the Java class

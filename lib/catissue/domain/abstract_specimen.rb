@@ -1,6 +1,6 @@
 require 'set'
-require 'caruby/util/inflector'
-require 'caruby/util/validation'
+require 'caruby/helpers/inflector'
+require 'caruby/helpers/validation'
 
 module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.AbstractSpecimen

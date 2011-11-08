@@ -1,7 +1,7 @@
 require 'enumerator'
-require 'caruby/util/validation'
-require 'caruby/util/partial_order'
-require 'catissue/util/storage_type_holder'
+require 'caruby/helpers/validation'
+require 'caruby/helpers/partial_order'
+require 'catissue/helpers/storage_type_holder'
 
 module CaTissue
   # import the Java class

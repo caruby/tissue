@@ -1,4 +1,4 @@
-require 'caruby/util/collection'
+require 'caruby/helpers/collection'
 
 module CaTissue
   # The Storable mix-in adds methods for a domain class which can be stored and implements

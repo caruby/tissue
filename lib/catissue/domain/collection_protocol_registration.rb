@@ -1,5 +1,5 @@
-require 'caruby/util/collection'
-require 'caruby/util/validation'
+require 'caruby/helpers/collection'
+require 'caruby/helpers/validation'
 
 module CaTissue
   # import the Java class

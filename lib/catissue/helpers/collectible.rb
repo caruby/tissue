@@ -1,4 +1,4 @@
-require 'caruby/util/validation'
+require 'caruby/helpers/validation'
 
 module CaTissue
   # A Collectible mix-in instance can hold a #{ReceivedEventParameters} and a #{CollectedEventParameters}.

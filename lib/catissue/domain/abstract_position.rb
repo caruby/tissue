@@ -1,4 +1,4 @@
-require 'catissue/util/position'
+require 'catissue/helpers/position'
 
 module CaTissue
   resource_import Java::edu.wustl.catissuecore.domain.AbstractPosition

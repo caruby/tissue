@@ -1,2 +1,2 @@
 require 'caruby/migration/uniquify'
-require 'catissue/util/uniquify'
+require 'catissue/helpers/uniquify'

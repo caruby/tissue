@@ -1,4 +1,4 @@
-require 'caruby/util/properties'
+require 'caruby/helpers/properties'
 require 'caruby/migration/migrator'
 require 'catissue'
 require 'catissue/database/controlled_values'
