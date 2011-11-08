@@ -17,7 +17,7 @@ module CaTissue
 
     # @return [Database] the database which stores this object
     def database
-      CaTissue::Database.instance
+      Database.instance
     end
   end
 end
