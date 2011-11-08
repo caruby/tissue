@@ -41,7 +41,7 @@ class UserTest < Test::Unit::TestCase
   def test_save
     addr = @user.email_address
     at_ndx = addr.index('@')
-    modifier = "_#{Uniquifier.qualifier.to_s}"
+    modifier = "_#{CaRuby::Uniquifier.qualifier.to_s}"
     @user.email_address = addr.insert(at_ndx, modifier)
     @user.login_name = nil
     verify_save(@user)

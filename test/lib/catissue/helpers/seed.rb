@@ -57,7 +57,7 @@ module CaTissue
         # make the CP and MRN unique; these values will ripple through the SCG, CPR, et al.
         # to make them unique as well
         @protocol.title = @protocol.title.uniquify
-        @registration.participant.medical_identifiers.each { |mid| mid.medical_record_number = Uniquifier.qualifier }
+        @registration.participant.medical_identifiers.each { |mid| mid.medical_record_number = CaRuby::Uniquifier.qualifier }
         # unset the SCG name and specimen label so the default is set to a new unique value
         @specimen_collection_group.name = @specimen.label = nil
         self
