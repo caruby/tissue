@@ -16,7 +16,7 @@ module CaTissue
     include Singleton
 
     def initialize
-      @executor = CaTissue::Database.instance.executor
+      @executor = Database.instance.executor
       @pid_loaded_hash = LazyHash.new { |pid| load_pid_cvs(pid) }
       @pid_value_cv_hash = LazyHash.new do |pid|
         CaseInsensitiveHash.new { |hash, value| hash[value] = load_cv(pid, value) unless value.nil? }

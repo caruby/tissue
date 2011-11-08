@@ -39,7 +39,7 @@ module CaTissue
         values = database_parameters(annotation)
         logger.debug { "Saving #{annotation} to #{@table}..." }
         # dispatch the SQL update or create statement
-        CaTissue::Database.instance.executor.execute do |dbh|
+        Database.instance.executor.execute do |dbh|
           dbh.prepare(sql) { |sth| sth.execute(*values) }
         end
         if @parent then
@@ -101,7 +101,7 @@ module CaTissue
         attr_md = klass.attribute_metadata(attribute)
         # skip an attribute declared by the superclass
         return unless attr_md.declarer == klass
-        xctr = CaTissue::Database.instance.executor
+        xctr = Database.instance.executor
         prop = attr_md.property_descriptor.name
         logger.debug { "Finding #{klass.qp} #{attribute} column for entity id #{eid} and property #{prop}..." }
         result = xctr.execute { |dbh| dbh.select_one(NONDOMAIN_COLUMN_SQL, prop, eid) }
@@ -124,14 +124,14 @@ module CaTissue
         logger.debug { "Finding #{klass.qp} #{attribute} column in the context of entity id #{eid}..." }
         # The referenced class name (confusingly called a source role in the caTissue schema).
         tgt_nm = klass.attribute_metadata(attribute).type.name.demodulize
-        result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm) }
+        result = Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm) }
         col = result[0] if result
         if col.nil? then
-          result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize) }
+          result = Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize) }
           col = result[0] if result
         end
         if col.nil? then
-          result = CaTissue::Database.instance.executor.execute { |dbh| dbh.select_one(ALT_1_1_OWNER_COLUMN_SQL, eid) }
+          result = Database.instance.executor.execute { |dbh| dbh.select_one(ALT_1_1_OWNER_COLUMN_SQL, eid) }
           col = result[0] if result
         end
         if col.nil? then raise AnnotationError.new("Column not found for #{klass.qp} owner attribute #{attribute}") end
