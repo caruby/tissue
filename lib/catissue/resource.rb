@@ -1,6 +1,7 @@
 # This file is the entry point included by applications which reference a CaTissue object.
 
 require 'caruby/resource'
+require 'caruby/domain/id_alias'
 require 'catissue/domain'
 require 'catissue/annotation/annotatable'
 
