@@ -9,7 +9,7 @@ module CaTissue
 
   # The StorageType domain class.
   class StorageType < CaTissue::ContainerType
-    include StorageTypeHolder, PartialOrder, HashCode
+    include StorageTypeHolder, CaRuby::PartialOrder, HashCode
 
     add_attribute_aliases(:default_temperature => :default_temprature_in_centigrade)
 
