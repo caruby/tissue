@@ -24,14 +24,13 @@ module CaTissue
     #
     # @param (see #extract_event_parameters)
     # @option opts (see #extract_event_parameters)
-    # @return [CaTissue::SpecimenEventParameters] the augmented SEPS
     # @raise [ValidationError] if this SCG has already been received
     def collect(opts)
       raise ValidationError.new("#{self} is already collected") if received?
       specimen_event_parameters.merge!(extract_event_parameters(opts))
     end
 
-    # Returns whether this SCG has a collected event.
+    # @return [Boolean] whether this SCG has a collected event.
     def collected?
       collection_event_parameters
     end
