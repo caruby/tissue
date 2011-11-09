@@ -89,7 +89,7 @@ module CaTissue
     # The class name suffix for all event parameter classes.
     SUBCLASS_SUFFIX = 'EventParameters'
 
-    # @raise [ValidationError] if the subject is missing
+    # @raise [ValidationError] if the subject is missing or there is both a SCG and a Specimen owner
     def validate_local
       super
       if subject.nil? then
