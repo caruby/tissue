@@ -3,9 +3,6 @@ require 'catissue/database/annotation/reference_writer'
 
 module CaTissue
   module AnnotationClass
-    # @return [Symbol, nil] the annotation => proxy attribute, or nil if this is not a primary annotation
-    attr_reader :proxy_attribute_metadata
-    
     # @return [Integer, nil] the annotation class designator that is used by caTissue to persist primary
     #   annotation objects, or nil if this is not a primary annotation
     attr_reader :entity_id
@@ -30,6 +27,22 @@ module CaTissue
       class_hierarchy.filter { |klass| klass < Annotation }
     end
     
+    # @return [Boolean] whether this annotation class references a hook proxy
+    def primary?
+      @is_primary
+    end
+    
+    # @return [Boolean] whether this annotation refers to a {#primary?} annotation
+    def secondary?
+      ref = domain_attributes.detect_with_metadata { |attr_md| attr_md.type < Annotation and attr_md.type.primary? }
+      not ref.nil?
+    end
+    
+    # @return [Boolean] whether this annotation is neither a {#primary?} nor a #{secondary} annotation
+    def tertiary?
+      not (primary? or secondary?)
+    end
+    
     # Adds metadata to this annotation class.
     #
     # @param (see AnnotationClass.extend_class)
@@ -45,7 +58,6 @@ module CaTissue
         if @container_id.nil? then raise AnnotationError.new("Primary annotation #{self} is missing a container id") end
         logger.debug { "Primary annotation #{self} has container id #{@container_id}." }
       end
-      pxy = mod.proxy || return
     end
     
     # @return [Symbol] the domain attributes which include {Annotation}
@@ -68,17 +80,6 @@ module CaTissue
       dependent_attributes.each { |attr| save_dependent_attribute(annotation, attr) }
     end
     
-    # @return [Boolean] whether this annotation refers to a {#primary?} annotation
-    def secondary?
-      ref = domain_attributes.detect_with_metadata { |attr_md| attr_md.type < Annotation and attr_md.type.primary? }
-      not ref.nil?
-    end
-    
-    # @return [Boolean] whether this annotation is neither a {#primary?} nor a #{secondary} annotation
-    def tertiary_annotation
-      not (primary? or secondary?)
-    end
-    
     # @return [ProxyClass] the annotation proxy class
     def proxy_class
       annotation_module.proxy
@@ -93,7 +94,13 @@ module CaTissue
     
     alias :hook :hook_class
     
-    # @return [Symbol, nil] the attribute which references the hook proxy,
+    # @return [CaRuby::Domain::Attribute, nil] the attribute metadata which references
+    #   the hook proxy, or nil if this is not a primary annotation class
+    def proxy_attribute_metadata
+      @pxy_attr_md
+    end
+    
+    # @return [Symbol, nil] the attribute symbol which references the hook proxy,
     #   or nil if this is not a primary annotation class
     def proxy_attribute
       @pxy_attr_md.to_sym if @pxy_attr_md
@@ -106,18 +113,9 @@ module CaTissue
       @pxy_attr_md.inverse if @pxy_attr_md
     end
     
-    # @return [Boolean] whether this annotation class references a hook proxy
-    def primary?
-      @is_primary
-    end
-    
     # @return [Array] an empty array, since no annotation reference is lazy-loaded by caTissue.
     def toxic_attributes
       Array::EMPTY_ARRAY
-    end
-    
-    def proxy_attribute_metadata
-      @pxy_attr_md
     end
     
     protected
