@@ -50,7 +50,7 @@ module CaTissue
 
     # @return [Boolean] whether other is a Location and has the same content as this Location
     def ==(other)
-      super rescue false
+      container == other.container and coordinate == other.coordinate
     end
 
     # @return [Location, nil] a new Location at the next slot in this Location's {#container},
