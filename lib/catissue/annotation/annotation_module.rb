@@ -94,8 +94,8 @@ module CaTissue
       logger.debug { "Importing #{qp} #{hook.qp} annotation proxy..." }
       begin
         klass = const_get(name.to_sym)
-      rescue NameError
-        raise AnnotationError.new("#{hook.qp} annotation #{qp} does not have a hook proxy class - #{$!}")
+      rescue NameError => e
+        CaRuby.fail(AnnotationError, "#{hook.qp} annotation #{qp} does not have a hook proxy class", e)
       end
       klass.extend(Annotation::ProxyClass)
       klass.hook = hook
