@@ -10,15 +10,6 @@ class CollectionEventParametersTest < Test::Unit::TestCase
     @spc = defaults.specimen
   end
   
-  def test_scg_owner_conflict
-    assert_raises(ValidationError, "Owner conflict allowed") { @scg.received_event_parameters.specimen = @spc }
-  end
-  
-  def test_specimen_owner_conflict
-    @spc.collect(:receiver => @scg.receiver)
-    assert_raises(ValidationError, "Owner conflict allowed") { @spc.received_event_parameters.specimen_collection_group = @scg }
-  end
-  
   def test_update_scg_cep
     assert_nothing_raised("#{@scg} not created") { database.create(@scg) }
     cep = @scg.collection_event_parameters
