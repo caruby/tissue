@@ -133,13 +133,6 @@ module CaTissue
       infer_inverses
       # Select the annotation attributes to make dependent.
       attrs = domain_attributes.compose do |attr_md|
-        
-        
-        if attr_md.to_sym == :details
-          puts "ac #{self} #{attr_md}(#{attr_md.type}) #{attr_md.dependent?.qp} #{attr_md.owner?.qp} #{attr_md.declarer.qp}"
-        end
-        
-        
         attr_md != @pxy_attr_md and attr_md.type < Annotation and not (attr_md.dependent? or attr_md.owner?) and attr_md.declarer == self
       end
       # Copy the attributes to an array before iteration, since adding a dependent attribute
