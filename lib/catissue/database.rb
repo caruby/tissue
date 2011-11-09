@@ -482,7 +482,7 @@ module CaTissue
     def copy_annotation_proxy_owner_to_template(obj, template)
       attr_md = obj.class.proxy_attribute_metadata
       # Ignore the proxy attribute if it is defined by caRuby rather than caTissue.
-      return unless attr_md.java_property?
+      return unless attr_md and attr_md.java_property?
       rdr, wtr = attr_md.property_accessors
       pxy = obj.send(rdr)
       logger.debug { "Setting #{obj.qp} template #{template.qp} proxy owner to #{pxy}..." }
