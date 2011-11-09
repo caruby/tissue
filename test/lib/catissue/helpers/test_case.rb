@@ -30,7 +30,7 @@ module CaTissue
 
     # @return [Seed] the test object fixture
     def defaults
-      @defaults ||= Seed.new
+      @defaults ||= Seed.new.uniquify
     end
     
     # Tests the domain object +add_defaults_local+ method.
