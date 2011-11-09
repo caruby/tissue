@@ -77,6 +77,7 @@ module CaTissue
       attrs = super
       # TODO - KLUDGE!!!! simple_test migration test fails to set user ---- FIX!!!!
       if identifier and not attrs.include?(:user) then
+        logger.debug { "Worked around caRuby SEP bug by adding user to the #{qo} saved fetch attributes." }
         attrs + [:user]
       else
         attrs
