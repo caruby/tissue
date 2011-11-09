@@ -70,7 +70,16 @@ module CaTissue
     end
 
     def default_label
-      "#{protocol.short_title.sub(' ', '_')}_#{event_point}" if protocol and protocol.short_title and event_point
+      pcl = protocol_label_component
+      if pcl and event_point then
+        "#{pcl}_#{event_point}"
+      end
+    end
+    
+    def protocol_label_component
+      return if protocol.nil?
+      pcl = protocol.short_title || protocol.title || return
+      pcl.sub(' ', '_')
     end
   end
 end
