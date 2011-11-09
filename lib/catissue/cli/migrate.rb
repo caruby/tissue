@@ -21,7 +21,7 @@ module CaTissue
         [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"]
       ]
   
-      # Creates a {Migrate} command with the given standard command line specifications
+      # Creates a {Migrate} command with the given standard command line specifications.
       # as well as the {SPECS} command line specifications.
       #
       # @yield [opts] optional migrator factory
@@ -42,6 +42,17 @@ module CaTissue
         validate(opts)
         migrator = block_given? ? yield(opts) : CaTissue::Migrator.new(opts)
         migrator.migrate_to_database
+      end
+      
+      def validate(opts)
+        tgt = opts[:target]
+        if tgt.nil? then raise ArgumentError.new("Missing required migration target class option") end
+        begin
+          opts[:target] = CaTissue.const_get(tgt)
+        rescue Exception
+          logger.fatal("Could not load CaTissue class #{tgt} - #{$!}.\n#{$@.qp}")
+          raise MigrationError.new("Could not load migration target class #{tgt}")
+        end
       end
     end
   end

@@ -17,10 +17,6 @@ module CaTissue
   end
 
   class TissueSpecimen
-    # Transforms the +Frozen?+ flag input field to the caTissue specimen type +Frozen Tissue+ value.
-    def migrate_specimen_type(value, row)
-      value =~ /TRUE/i ? 'Frozen Tissue' : 'Fixed Tissue'
-    end
     # Parses the source field as a UOM::Measurement if it is a string.
     # Otherwises, returns the source value.
     def migrate_initial_quantity(value, row)

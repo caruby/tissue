@@ -349,7 +349,7 @@ module CaTissue
       # save the deferred disposal if any
       if dsp then
         logger.debug { "Creating deferred #{specimen.qp} dependent #{dsp.qp}..." }
-        save_dependent(dsp)
+        save_changed_dependents(dsp)
       end
     end
     
