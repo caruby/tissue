@@ -50,6 +50,8 @@ class ParticipantTest < Test::Unit::TestCase
 
   def test_exposure_annotation
     exp = CaTissue::Participant::Clinical::EnvironmentalExposuresHealthAnnotation.new
+    assert(exp.class.primary?, "#{exp.class} is not primary.")
+    assert(exp.respond_to?(:participant), "Proxy reference attribute was not added to #{exp.class}")
     exp.merge_attributes(:years_agent_free => 2, :participant => @pnt)
     cln = @pnt.clinical.first
     assert_not_nil(cln, "Clinical annotation not added to participant")
