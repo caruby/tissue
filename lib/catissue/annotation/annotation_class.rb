@@ -55,8 +55,11 @@ module CaTissue
       # A primary entity has a container id.
       if primary? then
         @container_id = efcd.container_id(@entity_id)
-        if @container_id.nil? then raise AnnotationError.new("Primary annotation #{self} is missing a container id") end
+        if @container_id.nil? then
+          raise AnnotationError.new("Primary annotation #{self} is missing a container id")
+        end
         logger.debug { "Primary annotation #{self} has container id #{@container_id}." }
+        mod.proxy.ensure_primary_references_proxy(self)
       end
     end
     
@@ -182,7 +185,9 @@ module CaTissue
     # @raise [AnnotationError] if the proxy attribute is already set and references a different proxy class
     def define_proxy_attribute(klass)
       # Only a primary annotation class can have a proxy.
-      unless primary? then raise AnnotationError.new("Can't set proxy for non-primary annotation class #{qp}") end
+      unless primary? then
+        raise AnnotationError.new("Can't set proxy for non-primary annotation class #{qp}")
+      end
       # If the proxy is already set, then confirm that this call is redundant, which is tolerated as a no-op,
       # as opposed to conflicting, which is not allowed.
       if @pxy_attr_md then
@@ -310,7 +315,7 @@ module CaTissue
     def create_proxy_attribute_metadata(klass)
       # the proxy attribute symbol
       attr = annotation_module.name.demodulize.underscore.to_sym
-      logger.debug { "Creating primary annotation #{qp} proxy #{klass} attribute #{attr}..." }
+      logger.debug { "Creating primary annotation #{qp} => proxy #{klass} attribute #{attr}..." }
       # make the attribute
       attr_accessor(attr)
       
