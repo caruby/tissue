@@ -1,38 +1,34 @@
-$:.unshift 'lib'
-$:.unshift '../caruby/lib'
-
-require "test/unit"
-require 'caruby/helpers/log'
+require File.dirname(__FILE__) + '/../helpers/test_case'
 require 'caruby/helpers/uniquifier'
 require 'catissue/database/controlled_values'
 
 class ControlledValuesTest < Test::Unit::TestCase
-  LOG_FILE = 'test/results/catissue/log/catissue.log'
-
-  def setup
-    CaRuby::Log.instance.open(LOG_FILE, :debug => true)
+  
+  def test_search_by_public_id
+    races = CaTissue::ControlledValues.instance.for_public_id('Race_PID')
+    assert_not_nil(races, "Race CVs not loaded")
+    assert_not_nil(races.detect { |cv| cv.value == 'White' }, "Race not found")
   end
 
-# works but takes a long time
-#  def test_search_by_public_id
-#    tissue_sites = CaTissue::ControlledValues.instance.for_public_id(:tissue_site)
-#    assert_not_nil(tissue_sites, "Tissue site CVs not loaded")
-#    parent = tissue_sites.detect { |cv| cv.value == 'DIGESTIVE ORGANS' }
-#    assert_not_nil(parent, "DIGESTIVE ORGANS tissue site CVs not loaded")
-#    child = parent.children.detect { |cv| cv.value == 'ESOPHAGUS' }
-#    assert_not_nil(child, "DIGESTIVE ORGANS CV missing ESOPHAGUS child")
-#    gc = child.children.detect { |cv| cv.value == 'Esophagus, NOS' }
-#    assert_not_nil(gc, "ESOPHAGUS CV missing 'Esophagus, NOS' child")
-#    assert(!parent.children.include?(gc), "DIGESTIVE ORGANS CV children incorrectly includes ESOPHAGUS child")
-#    assert(parent.descendants.include?(gc), "DIGESTIVE ORGANS CV missing 'Esophagus, NOS' descendant")
-#  end
-
   def test_find
-    assert_not_nil(CaTissue::ControlledValues.instance.find(:tissue_site, 'Esophagus, NOS'), "'Esophagus, NOS' CV not found")
+    cv = CaTissue::ControlledValues.instance.find(:tissue_site, 'Esophagus, NOS')
+    assert_not_nil(cv, "'Esophagus, NOS' CV not found")
   end
 
   def test_find_case_insensitive
-    assert_not_nil(CaTissue::ControlledValues.instance.find(:tissue_site, 'esophagus, NOS'), "Case-insensitive look-up inoperative")
+    cv = CaTissue::ControlledValues.instance.find(:tissue_site, 'esophagus, NOS')
+    assert_not_nil(cv, "Case-insensitive look-up inoperative")
+  end
+
+  def test_find_recursive
+    gp = CaTissue::ControlledValues.instance.find(:tissue_site, 'DIGESTIVE ORGANS', true)
+    assert_not_nil(gp, "DIGESTIVE ORGANS CV not found")
+    assert(!gp.children.empty?, "CV missing children")
+    parent = gp.children.detect { |cv| cv.value == 'ESOPHAGUS' }
+    assert_not_nil(parent, "DIGESTIVE ORGANS 'ESOPHAGUS' child CV not found")
+    child = parent.children.detect { |cv| cv.value == 'Esophagus, NOS' }
+    assert_not_nil(child, "ESOPHAGUS 'Esophagus, NOS' child CV not found")
+    assert(gp.descendants.include?(child), "DIGESTIVE ORGANS CV missing 'Esophagus, NOS' descendant")
   end
 
   def test_create_delete

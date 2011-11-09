@@ -17,7 +17,9 @@ module CaTissue
 
     def initialize
       @executor = Database.instance.executor
+      # The pid => { value => CV } that associates each loaded parent CV to its children.
       @pid_loaded_hash = LazyHash.new { |pid| load_pid_cvs(pid) }
+      # The pid => { value => CV } that associates each fetched parent CV to its children.
       @pid_value_cv_hash = LazyHash.new do |pid|
         CaseInsensitiveHash.new { |hash, value| hash[value] = load_cv(pid, value) unless value.nil? }
       end
@@ -27,37 +29,50 @@ module CaTissue
     # The CVs are loaded from the database if necessary.
     #
     # The following public id aliases are supported:
-    # * :tissue_site
-    # * :clinical_diagnosis
+    # * +:tissue_site+
+    # * +:clinical_diagnosis+
     #
-    #@param [String,Symbol] public_id_or_alias the caTissue public id or an alias defined above
-    # @return [<ControlledValue>] instances for the given public_id_or_alias
+    # @param [String, Symbol] public_id_or_alias the caTissue public id or an alias defined above
+    # @return [<CaRuby::ControlledValue>] instances for the given public_id_or_alias
     def for_public_id(public_id_or_alias)
       pid = ControlledValue.standard_public_id(public_id_or_alias)
       @pid_loaded_hash[pid].values
     end
 
-    # Returns the ControlledValue with the given public_id_or_alias and value.
-    # Loads the CV if necessary from the database. The loaded CV does not have a parent or children.
+    # Returns the CV with the given public_id_or_alias and value. Loads the CV if necessary
+    # from the database. The loaded CV does not have a parent or children.
     #
-    #@param [String,Symbol] public_id_or_alias the supported for_public_id alias
-    # @see #for_public_id load the CV hierarchy with supported aliases
-    def find(public_id_or_alias, value)
+    # @param [String, Symbol] public_id_or_alias the caTissue public id or alias
+    # @param [String] value the CV value
+    # @param [Boolean] recursive whether to load the CV children as well.
+    # @return [CaRuby::ControlledValue, nil] the matching CV, or nil if no match
+    def find(public_id_or_alias, value, recursive=false)
       pid = ControlledValue.standard_public_id(public_id_or_alias)
-      @pid_value_cv_hash[pid][value]
+      value_cv_hash = @pid_value_cv_hash[pid]
+      cv = value_cv_hash[value]
+      if recursive then
+        fetch_descendants(cv, value_cv_hash)
+      end
+      cv
     end
 
     # Creates a new controlled value record in the database from the given ControlledValue cv.
     # The default identifier is the next identifier in the permissible values table.
     #
     # @param [ControlledValue] cv the controlled value to create
-    # @return cv
+    # @return [ControlledValue] the created CV
     def create(cv)
+      if cv.public_id.nil? then
+        raise ArgumentError.new("Controlled value create is missing a public id")
+      end
+      if cv.value.nil? then
+        raise ArgumentError.new("Controlled value create is missing a value")
+      end
       cv.identifier ||= next_id
-      raise ArgumentError.new("Controlled value create is missing a public id") if cv.public_id.nil?
-      raise ArgumentError.new("Controlled value create is missing a value") if cv.value.nil?
       logger.debug { "Creating controlled value #{cv} in the database..." }
-      @executor.execute { |dbh| dbh.prepare(INSERT_STMT).execute(cv.identifier, cv.parent_identifier, cv.public_id, cv.value) }
+      @executor.execute do |dbh|
+        dbh.prepare(INSERT_STMT).execute(cv.identifier, cv.parent_identifier, cv.public_id, cv.value)
+      end
       logger.debug { "Controlled value #{cv.public_id} #{cv.value} created with identifier #{cv.identifier}" }
       @pid_value_cv_hash[cv.public_id][cv.value] = cv
     end
@@ -72,7 +87,7 @@ module CaTissue
 
     private
 
-    PUBLIC_ID_ROOTS_STMT = "select identifier, value from catissue_permissible_value where public_id = ? and parent_identifier is null or parent_identifier = 0"
+    PID_ROOTS_STMT = "select identifier, value from catissue_permissible_value where public_id = ? and (parent_identifier is null or parent_identifier = 0)"
 
     CHILDREN_STMT = "select identifier, value from catissue_permissible_value where parent_identifier = ?"
 
@@ -111,29 +126,35 @@ module CaTissue
       logger.debug { "Controlled value #{cv} deleted." }
     end
 
+    # @param [String] pid the public id to find
+    # @param [String => CaRuby::ControlledValue] the pid children value => CV hash
     def fetch_cvs_with_public_id(pid, value_cv_hash)
-      id_cv_hash = {}
       logger.debug { "Loading #{pid} controlled values from the database..." }
       cvs = []
       @executor.execute do |dbh|
-        dbh.select_all(PUBLIC_ID_ROOTS_STMT, pid) do |row|
+        dbh.select_all(PID_ROOTS_STMT, pid) do |row|
           identifier, value = row
           cvs << value_cv_hash[value] ||= make_controlled_value(:identifier => identifier, :public_id => pid, :value => value)
         end
         # load the root CVs children
-        cvs.each { |cv| fetch_descendants(cv, dbh, value_cv_hash) }
+        cvs.each { |cv| fetch_descendants(cv, value_cv_hash, dbh) }
       end
+      logger.debug { "Loaded #{value_cv_hash.size} #{pid} controlled values from the database." }
       value_cv_hash
     end
 
-    def fetch_descendants(cv, dbh, value_cv_hash)
+    def fetch_descendants(cv, value_cv_hash, dbh=nil)
+      if dbh.nil? then
+        return @executor.execute { |dbh| fetch_descendants(cv, value_cv_hash, dbh) }
+      end
+      pid = cv.public_id
       children = []
       dbh.select_all(CHILDREN_STMT, cv.identifier) do |row|
          identifier, value = row
          children << value_cv_hash[value] = make_controlled_value(:identifier => identifier, :public_id => pid, :parent => cv, :value => value)
       end
       # recurse to chidren
-      children.each { |cv| fetch_descendants(cv, dbh, value_cv_hash) }
+      children.each { |cv| fetch_descendants(cv, value_cv_hash, dbh) }
     end
     
     # Returns a new ControlledValue with attributes set by the given attribute => value hash.
