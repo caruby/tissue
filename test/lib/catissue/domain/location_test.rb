@@ -21,10 +21,10 @@ class LocationTest < Test::Unit::TestCase
     assert_not_nil(successor, "Successor location not created")
     assert_not_same(@loc, successor, "Location same as successor")
     assert_same(@loc.container, successor.container, "Location container differs from successor container")
-    assert_not_nil(successor.row, "Successor row not set")
     assert_not_nil(successor.column, "Successor column not set")
-    assert_equal(0, successor.row, "Successor row incorrect")
-    assert_equal(1, successor.column, "Successor column incorrect")
+    assert_not_nil(successor.row, "Successor row not set")
+    assert_equal(0, successor.column, "Successor row incorrect")
+    assert_equal(1, successor.row, "Successor column incorrect")
     assert_nil(successor.succ, "Location out of bounds")
   end
 
