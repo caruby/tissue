@@ -86,8 +86,10 @@ module CaTissue
     
     private
 
+    # The class name suffix for all event parameter classes.
     SUBCLASS_SUFFIX = 'EventParameters'
 
+    # @raise [ValidationError] if the subject is missing
     def validate_local
       super
       if subject.nil? then
@@ -104,6 +106,7 @@ module CaTissue
       self.user ||= default_user
     end
 
+    # @return [CaTissue::User] the SCG receiver
     def default_user
       scg = specimen_collection_group || (specimen.specimen_collection_group if specimen)
       scg.receiver if scg
