@@ -133,6 +133,13 @@ module CaTissue
       infer_inverses
       # Select the annotation attributes to make dependent.
       attrs = domain_attributes.compose do |attr_md|
+        
+        
+        if attr_md.to_sym == :details
+          puts "ac #{self} #{attr_md}(#{attr_md.type}) #{attr_md.dependent?.qp} #{attr_md.owner?.qp} #{attr_md.declarer.qp}"
+        end
+        
+        
         attr_md != @pxy_attr_md and attr_md.type < Annotation and not (attr_md.dependent? or attr_md.owner?) and attr_md.declarer == self
       end
       # Copy the attributes to an array before iteration, since adding a dependent attribute
@@ -159,8 +166,13 @@ module CaTissue
     # @param [<CaRuby::Domain::Attribute>] path the visited attributes
     def add_dependent_attribute_closure(path=[])
       return if path.include?(self)
-      attrs = dependent_attributes(false)
-      return if attrs.empty?
+
+      # add breadth-first dependencies
+      deps = dependent_attributes(false)
+      return if deps.empty?
+      logger.debug { "Adding #{qp} annotation dependents #{deps.qp}..." }
+      deps.each_metadata { |attr_md| attr_md.type.add_dependent_attributes }
+      logger.debug { "Added #{qp} dependents #{deps.qp}." }
       
       # recurse to dependents
       path.push(self)
@@ -169,12 +181,6 @@ module CaTissue
         klass.add_dependent_attribute_closure(path)
       end
       path.pop
-
-      # add breadth-first dependencies
-      deps = dependent_attributes(false)
-      logger.debug { "Adding #{qp} annotation dependents #{deps.qp}..." }
-      deps.each_metadata { |attr_md| attr_md.type.add_dependent_attributes }
-      logger.debug { "Added #{qp} dependents #{deps.qp}." }
     end
     
     # Creates the proxy attribute that references the given proxy class, if it is not
