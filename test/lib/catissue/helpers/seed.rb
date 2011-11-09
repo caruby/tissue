@@ -6,8 +6,6 @@ module CaTissue
   module TestCase
     # caTissue test default admin fixture.
     class Seed
-      include Enumerable
-
       attr_reader :tissue_bank, :protocol, :registration, :specimen,
         :specimen_requirement, :specimen_collection_group, :box
   
@@ -50,9 +48,10 @@ module CaTissue
       # Repopulates the defaults and makes the following attributes unique:
       # * collection_protocol short title
       # * participant MRN
+      # * SCG name
       # * specimen label
       #
-      # @return this fixture
+      # @return [Seed] this fixture
       def uniquify
         # make the CP and MRN unique; these values will ripple through the SCG, CPR, et al.
         # to make them unique as well

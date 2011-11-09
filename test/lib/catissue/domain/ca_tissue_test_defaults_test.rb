@@ -9,11 +9,11 @@ class CaTissueTestDefaultsTest < Test::Unit::TestCase
 
   # Fetches the test data, creating new objects if necessary
   def test_find
-    assert_nothing_raised("Defaults store unsuccessful") { defaults.each { |obj| database.find(obj) } }
+    assert_nothing_raised("Defaults store unsuccessful") { defaults.domain_objects.each { |obj| database.find(obj) } }
   end
 
   # Store the test data
   def test_save
-    defaults.each { |obj| verify_save(obj) }
+    defaults.domain_objects.each { |obj| verify_save(obj) }
   end
 end
