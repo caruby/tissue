@@ -104,19 +104,6 @@ class StorageContainerTest < Test::Unit::TestCase
     assert(@frz.completely_full?, "Freezer incorrectly not completely full")
   end
 
-  def test_comparison
-    @frz << @spc
-    assert_equal(@frz, @frz, "Same not equal")
-    rack = @frz.subcontainers.first
-    assert_not_nil(rack, "Rack missing")
-    box = rack.subcontainers.first
-    assert_not_nil(box, "Box missing")
-    assert(rack < @frz, "Rack not < freezer")
-    assert(@frz > rack, "Freezer not > rack")
-    assert(box < rack, "Box not < rack")
-    assert(box < @frz, "Box not < rack")
-  end
-
   def test_save
     @frz << @spc
     rack = @frz.subcontainers.first
