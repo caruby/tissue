@@ -16,14 +16,14 @@ class TransferEventParametersTest < Test::Unit::TestCase
   end
 
   def test_inverse_setter
-    assert(@xfr.specimen.event_parameters.include?(@xfr), "EventParameters not found in specimen")
+    assert(@xfr.specimen.event_parameters.include?(@xfr), "#{@xfr} not found in specimen")
   end
 
   def test_save
-    logger.debug { "#{self} testing #{xfr.specimen} storage at #{xfr.to.coordinate.qp}." }
+    logger.debug { "#{self} testing #{@xfr.specimen} storage at #{@xfr.to.coordinate.qp}." }
     verify_save(@xfr)
     shift(@xfr)
-    logger.debug { "#{self} testing #{xfr.specimen} move from #{xfr.from.coordinate.qp} to #{xfr.to.coordinate.qp}." }
+    logger.debug { "#{self} testing #{@xfr.specimen} move from #{@xfr.from.coordinate.qp} to #{@xfr.to.coordinate.qp}." }
     verify_save(@xfr)
   end
 
