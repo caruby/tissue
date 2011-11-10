@@ -9,6 +9,9 @@ module CaTissue
   module Annotation
     # Annotation hook proxy class mix-in.
     module ProxyClass
+      # @return [CaRuby::Attribute] the hook class attribute meta-data for this proxy
+      attr_reader :hook_attribute_metadata
+      
       # @param [Class] klass the proxy class
       def self.extended(klass)
         super
@@ -19,7 +22,7 @@ module CaTissue
       
       # @return [AnnotatableClass] the hook class for this proxy
       def hook
-        owner_type
+        hook_attribute_metadata.type
       end
       
       # Sets this proxy's hook to the given class and creates the
@@ -31,7 +34,7 @@ module CaTissue
         attr = klass.name.demodulize.underscore
         attr_accessor(attr)
         # The attribute type is the given hook class.
-        add_attribute(attr, klass)
+        @hook_attribute_metadata = add_attribute(attr, klass)
         logger.debug { "Added #{klass.qp} annotation proxy => hook attribute #{attr}." }
       end
       
@@ -43,17 +46,23 @@ module CaTissue
       def build_annotation_dependency_hierarchy
         logger.debug { "Building annotation dependency hierarchy..." }
         non_proxy_annotation_classes.each do |klass|
-          # Define the superclass proxy attributes, starting with the most general class.
-          klass.annotation_hierarchy.to_a.reverse_each do |anc|
-            if anc.primary? and anc.proxy_attribute.nil? then
-              anc.define_proxy_attribute(self)
-            end
-          end
-          logger.info(klass.pp_s)
+          ensure_primary_references_proxy(klass)
         end
         set_inverses
         add_dependent_attributes
         add_dependent_attribute_closure
+      end
+      
+      # Ensures that the given primary class references this proxy.
+      #
+      # @param [AnnotationClass] klass the primary annotation class to check
+      def ensure_primary_references_proxy(klass)
+        # Define the superclass proxy attributes, starting with the most general class.
+        klass.annotation_hierarchy.to_a.reverse_each do |anc|
+          if anc.primary? and anc.proxy_attribute.nil? then
+            anc.define_proxy_attribute(self)
+          end
+        end
       end
       
       # Creates a reference attribute from this proxy to the given primary {Annotation} class. 
@@ -95,8 +104,7 @@ module CaTissue
       
       # @return <AnnotationClass> the non-proxy annotation classes
       def non_proxy_annotation_classes
-        consts = annotation_module.constants.map { |s| annotation_module.const_get(s) }
-        consts.select { |c| Class === c and c < Annotation and not c < Proxy }
+        annotation_module.annotation_classes.filter { |klass| not klass < Proxy }
       end
     end
   end

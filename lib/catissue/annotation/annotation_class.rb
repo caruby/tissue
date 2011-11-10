@@ -59,8 +59,11 @@ module CaTissue
           raise AnnotationError.new("Primary annotation #{self} is missing a container id")
         end
         logger.debug { "Primary annotation #{self} has container id #{@container_id}." }
-        mod.proxy.ensure_primary_references_proxy(self)
+        pxy = mod.proxy
+        if pxy then pxy.ensure_primary_references_proxy(self) end
       end
+      # Register this class with the module.
+      mod.annotation_classes << self
     end
     
     # @return [Symbol] the domain attributes which include {Annotation}
@@ -274,7 +277,7 @@ module CaTissue
       # Wrap the proxy reader with a proxy => hook converter.
       convert_proxy_reader_result_to_hook(attr_md.reader)
       # the proxy => hook attribute metadata
-      pxy_hook_attr_md = annotation_module.proxy.owner_attribute_metadata
+      pxy_hook_attr_md = annotation_module.proxy.hook_attribute_metadata
       # the hook => proxy attribute
       hook_pxy_attr = pxy_hook_attr_md.inverse
       # Wrap the proxy writer with a hook -> proxy converter.

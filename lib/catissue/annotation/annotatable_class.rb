@@ -211,18 +211,11 @@ module CaTissue
     # @raise [AnnotationError] if there is no annotation proxy class
     def import_annotation(name, opts)
       logger.debug { "Importing #{qp} annotation #{name}..." }
-      # Make the annotation module scoped by this Annotatable class.
+      # Make the annotation module class scoped by this Annotatable class.
       class_eval("class #{name}; end")
       klass = const_get(name)
       # Append the AnnotationModule methods.
-      AnnotationModule.extend_module(klass, self, opts)
-      # Make the proxy attribute.
-      attr = create_proxy_attribute(klass)
-      # The proxy is a logical dependent.
-      add_dependent_attribute(attr, :logical)
-      logger.debug { "Created #{qp} annotation proxy logical dependent reference attribute #{attr}." }
-      # Fill out the dependency hierarchy.
-      klass.proxy.build_annotation_dependency_hierarchy
+      AnnotationModule.extend_module(klass, self, opts) { |pxy| create_proxy_attribute(klass, pxy) }
       klass
     end
 
@@ -241,19 +234,19 @@ module CaTissue
     # receiver {Annotatable} instance on demand.
     # 
     # @param [AnnotationModule] klass the subject annotation
-    # @return [Symbol] the proxy attribute
-    def create_proxy_attribute(klass)
-      # the proxy class
-      pxy = klass.proxy
+    # @return [ProxyClass] proxy the proxy class
+    def create_proxy_attribute(klass, proxy)
       # the proxy attribute symbol
       attr = klass.name.demodulize.underscore.to_sym
       # Define the proxy attribute.
       attr_create_on_demand_accessor(attr) { Set.new }
       # Register the attribute.
-      add_attribute(attr, pxy, :collection, :saved)
-      logger.debug { "Added #{qp} #{klass.qp} annotation proxy attribute #{attr} of type #{pxy}." }
+      add_attribute(attr, proxy, :collection, :saved)
       # the annotation module => proxy attribute association
       @ann_mod_pxy_hash[klass] = attr
+      # The proxy is a logical dependent.
+      add_dependent_attribute(attr, :logical)
+      logger.debug { "Created #{qp} #{klass.qp} annotation proxy logical dependent reference attribute #{attr} to #{proxy}." }
       attr
     end
   end
