@@ -8,6 +8,9 @@ require 'catissue/annotation/de_integration'
 module CaTissue
   module AnnotationModule
     include CaRuby::Domain
+    
+    # @return [<AnnotationClass>] this module's annotation classes
+    attr_reader :annotation_classes
 
     # @return [ProxyClass] the annotation proxy class 
     attr_reader :proxy
@@ -28,20 +31,27 @@ module CaTissue
     # @option opts [String] :service the DE service name
     # @option opts [String] :group the DE group short name
     # @option opts [String] :record_entry the record entry name class for post-1.1.x caTissue
-    def self.extend_module(mod, hook, opts)
+    # @yield (see #initialize_annotation)
+    # @yieldparam (see #initialize_annotation)
+    def self.extend_module(mod, hook, opts, &proxy_builder)
       mod.extend(self)
-      mod.initialize_annotation(hook, opts)
+      mod.initialize_annotation(hook, opts, &proxy_builder)
     end
     
     # Builds the annotation module.
     # This method intended to be called only by {AnnotationModule.extend_module}.
     #
     # @param (see AnnotationModule.extend_module)
+    # @yield [proxy] makes the hook => proxy reference attribute
+    # @yieldparam [ProxyClass] proxy the proxy class
+    # @yield [proxy] makes the hook => proxy reference attribute
+    # @yieldparam [ProxyClass] proxy the proxy class
     def initialize_annotation(hook, opts)
       logger.debug { "Building #{hook.qp} annotation #{qp}..." }
       pkg = opts[:package]
       @svc_nm = opts[:service]
       @group = opts[:group]
+      @annotation_classes = []
       # Enable the resource metadata aspect.
       md_proc = Proc.new { |klass| AnnotationClass.extend_class(klass, self) }
       CaRuby::Domain::Importer.extend_module(self, :mixin => Annotation, :metadata => md_proc, :package => pkg)
@@ -51,7 +61,14 @@ module CaTissue
         pxy_nm = dei.name.demodulize
       end
       @proxy = import_proxy(hook, pxy_nm)
+      # Make the hook => proxy reference
+      yield @proxy
+      # Load the annotation Ruby source files.
       load_annotation_class_definitions(hook)
+      # Fill out the dependency hierarchy.
+      @proxy.build_annotation_dependency_hierarchy
+      # Print all known annotation classes.
+      @annotation_classes.each { |klass| logger.info(klass.pp_s) }
       logger.debug { "Built #{hook.qp} annotation #{qp}." }
     end
     
@@ -70,6 +87,10 @@ module CaTissue
     # The location of the domain class definitions.
     DOMAIN_DIR = File.join(File.dirname(File.dirname(__FILE__)), 'domain')
     
+    # Loads the Ruby class definitions. This method is called by the {AnnotationModule}
+    # annotation builder.
+    #
+    # @param [AnnotatableClass] hook this module's hook class
     def load_annotation_class_definitions(hook)
       dir = File.join(DOMAIN_DIR, hook.name.demodulize.underscore, name.demodulize.underscore)
       load_dir(dir)
