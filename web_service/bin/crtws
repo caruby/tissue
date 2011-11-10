@@ -1,0 +1,37 @@
+#!/usr/bin/env jruby
+#
+# crtws: Start a caTissue web service
+#
+
+# load the core gem
+require 'rubygems'
+require 'bundler/setup'
+require 'sinatra'
+require 'json/pure'
+
+require 'catissue/web_service'
+
+ws = CaTissue::WebService.instance
+
+# match on class/id or class/?attribute=value[&attribute=value ...]
+get  %r{/(\w+)/(\d+)?} do |name, id|
+  # The value hash is either the id argument or the URL parameters.
+  vh = id ? {'id' => id} : params.delete_if { |k, v| k == 'captures' }
+  # delegate to the web service
+  ws.find(name, vh)
+end
+
+# match on attribute=value[&attribute=value ...]
+post '/query' do
+  ws.create(params[:json])
+end
+
+# match on attribute=value[&attribute=value ...]
+post '/' do
+  ws.create(params[:json])
+end
+
+# match on attribute=value[&attribute=value ...]
+put '/' do
+  ws.update(params[:json])
+end

@@ -1,0 +1,54 @@
+PATH
+  remote: ~/workspace/caruby
+  specs:
+    caruby-core (1.5.5)
+      dbd-jdbc
+      dbi
+      fastercsv
+      json_pure
+      uom
+
+PATH
+  remote: ~/workspace/catissue
+  specs:
+    caruby-tissue (1.5.5)
+      caruby-core (>= 1.5.5)
+
+PATH
+  remote: ~/workspace/catissuews
+  specs:
+    caruby-tissuews (1.1.1)
+      caruby-tissue (>= 1.5.5)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    dbd-jdbc (0.1.4)
+    dbi (0.4.5)
+      deprecated (= 2.0.1)
+    deprecated (2.0.1)
+    extensional (1.3.1)
+    fastercsv (1.5.4)
+    json_pure (1.5.4)
+      spruz (~> 0.2.8)
+    rack (1.3.2)
+    rack-test (0.6.1)
+      rack (>= 1.0)
+    sinatra (1.2.6)
+      rack (~> 1.1)
+      tilt (>= 1.2.2, < 2.0)
+    spruz (0.2.13)
+    tilt (1.3.3)
+    uom (1.2.1)
+      extensional
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  caruby-core!
+  caruby-tissue!
+  caruby-tissuews!
+  json_pure
+  rack-test
+  sinatra

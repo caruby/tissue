@@ -1,0 +1,12 @@
+source :rubygems
+gemspec
+
+gem 'json_pure'
+gem 'sinatra'
+gem 'rack-test', :group => :test
+group :development do
+  gem 'ruby-debug'
+  gem 'caruby-core', :path => File.dirname(__FILE__) + '/../../core'
+  gem 'caruby-tissue', :path => File.dirname(__FILE__) + '/../../tissue'
+  gem 'caruby-tissue-web-service', :group => :test, :path => File.dirname(__FILE__)
+end
