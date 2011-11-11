@@ -39,7 +39,7 @@ end
 
 desc "Runs all tests"
 task :test do
-  Dir[File.dirname(__FILE__) + '/**/test/**/*_test.rb'].each { |f| sh "jruby #{f}" }
+  Dir[File.dirname(__FILE__) + '/**/test/**/*_test.rb'].each { |f| system('jruby', f) }
 end
 
 desc "Archives the source"
