@@ -1,5 +1,5 @@
 # Borrow the Galena test apparatus.
-require 'test/lib/examples/galena/tissue/migration/test_case'
+require 'test/lib/examples/galena/tissue/migration/helpers/test_case'
 
 # Tests the PSBIN example migration.
 module PSBIN
