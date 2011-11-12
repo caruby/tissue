@@ -48,7 +48,7 @@ module Galena
       
       private
       
-      ALT_ID_SHIM = 'test/lib/examples/galena/migration/alt_key_shims.rb'
+      ALT_ID_SHIM = File.expand_path('alt_key_shims.rb', File.dirname(__FILE__) + '/helpers')
       
       def clear
         # push aside the existing test participant
