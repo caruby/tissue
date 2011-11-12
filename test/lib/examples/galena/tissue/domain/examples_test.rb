@@ -1,7 +1,4 @@
-$:.unshift 'examples/galena/lib'
-
-require 'test/lib/catissue/test_case'
-require 'galena/tissue/seed/defaults'
+require File.dirname(__FILE__) + '/../helpers/test_case'
 
 # Verifies the Galena caTissue usage examples.
 class ExamplesTest < Test::Unit::TestCase
