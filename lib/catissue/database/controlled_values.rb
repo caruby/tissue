@@ -6,7 +6,6 @@ require 'caruby/helpers/visitor'
 require 'catissue/resource'
 require 'catissue/database'
 require 'catissue/helpers/controlled_value'
-require 'caruby/domain/properties'
 
 module CaTissue
   # This ControlledValues class loads caTissue permissible values from the database.
