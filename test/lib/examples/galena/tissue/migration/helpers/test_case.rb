@@ -1,7 +1,5 @@
-$:.unshift File.dirname(__FILE__) + '/examples/galena/lib'
-
-require 'test/lib/catissue/migration/helpers/test_case'
-require 'galena/tissue/seed/defaults'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../../../catissue/migration/helpers/test_case'
 
 # Inject migrate methods that simulate administrative setup.
 require File.dirname(__FILE__) + '/seed'
@@ -12,15 +10,6 @@ module Galena
     module MigrationTestCase
       include CaTissue::MigrationTestCase
     
-      # The default migration input data directory.
-      FIXTURES = 'examples/galena/data'
-    
-      # The default migration shims directory.
-      SHIMS = 'examples/galena/lib/galena/tissue/migration'
-      
-      # The dfault migration configuration directory.
-      CONFIGS = 'examples/galena/conf/migration'
-    
       # The migration options are obtained from the file named _fixture_+_migration.yaml+
       # in the {CONFIGS} directory.
       #
@@ -30,6 +19,15 @@ module Galena
       end
       
       private
+
+      # The default migration input data directory.
+      FIXTURES = Galena::ROOT_DIR + '/data'
+  
+      # The default migration shims directory.
+      SHIMS = Galena::ROOT_DIR + '/lib/galena/tissue/migration'
+    
+      # The dfault migration configuration directory.
+      CONFIGS = Galena::ROOT_DIR + '/conf/migration'
       
       # @return [Galena::Seed::Defaults] the {Galena::Seed.defaults}
       def defaults
