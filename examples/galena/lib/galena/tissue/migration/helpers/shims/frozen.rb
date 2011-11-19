@@ -1,5 +1,4 @@
-# load the defaults file in the seed directory
-require File.dirname(__FILE__) + '/../helpers/seed'
+require File.dirname(__FILE__) + '/../migrator'
 
 module CaTissue
   # Declares the classes modified for migration.
@@ -21,13 +20,12 @@ module CaTissue
     # 
     # @return [StorageContainer] the new box
     def create_galena_box
-      defs = Galena::Seed.defaults
       # the box container type
-      self.container_type = defs.box_type
+      self.container_type = Galena::Migrator.administrative_objects.box_type
       # the required box site
-      self.site = defs.tissue_bank
+      self.site = Galena::Migrator.administrative_objects.tissue_bank
       # A freezer with a slot for the box.
-      frz = defs.freezer_type.find_available(site, :create)
+      frz = Galena::Migrator.administrative_objects.freezer_type.find_available(site, :create)
       # Add the box to the first open slot in the first unfilled rack in the freezer.
       frz << self
       logger.debug { "Placed the tissue box #{self} in freezer #{frz}." }

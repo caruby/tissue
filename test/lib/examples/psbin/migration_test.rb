@@ -1,5 +1,5 @@
 # Borrow the Galena test apparatus.
-require 'test/lib/examples/galena/tissue/migration/helpers/test_case'
+require File.dirname(__FILE__) + '/../galena/tissue/migration/helpers/test_case'
 
 # Tests the PSBIN example migration.
 module PSBIN
@@ -49,9 +49,6 @@ module PSBIN
     # since the patient migration does not create an SCG and therefore cannot fill in the
     # anticipated SCG. Otherwise, the migrations can be run in any order with the same
     # result.
-    #
-    # NOTE: Occasionally a test case fails sporadically when run as a suite. Testing individually succeeds.
-    # Presumably a test artifact. TODO - isolate. 1.1.2 only?
 
     def test_save_biopsy
       logger.debug { "#{qp} saving biopsy SCG..." }
@@ -96,38 +93,38 @@ module PSBIN
     private
   
     # The default migration input data directory.
-    FIXTURES = 'examples/psbin/data'
+    FIXTURES = File.dirname(__FILE__) + '/../../../../examples/psbin/data'
   
     # The default migration shims directory.
-    SHIMS = 'examples/psbin/lib/psbin'
+    SHIMS = File.dirname(__FILE__) + '/../../../../examples/psbin/lib/psbin/migration/helpers/shims'
     
     # The dfault migration configuration directory.
-    CONFIGS = 'examples/psbin/conf'
+    CONFIGS = File.dirname(__FILE__) + '/../../../../examples/psbin/conf'
     
     PATIENT_OPTS = {
       :target => CaTissue::Participant,
-      :mapping => File.join(CONFIGS, 'patient_fields.yaml'),
-      :defaults => File.join(CONFIGS, 'patient_defaults.yaml'),
+      :mapping => File.expand_path('patient_fields.yaml', CONFIGS),
+      :defaults => File.expand_path('patient_defaults.yaml', CONFIGS),
     }
     
     BIOPSY_OPTS = {
       :target => CaTissue::SpecimenCollectionGroup,
-      :mapping => File.join(CONFIGS, 'biopsy_fields.yaml'),
-      :defaults => File.join(CONFIGS, 'biopsy_defaults.yaml'),
-      :shims => [File.join(SHIMS, 'biopsy_shims.rb')]
+      :mapping => File.expand_path('biopsy_fields.yaml', CONFIGS),
+      :defaults => File.expand_path('biopsy_defaults.yaml', CONFIGS),
+      :shims => File.expand_path('biopsy.rb', SHIMS)
     }
     
     SURGERY_OPTS = {
       :target => CaTissue::SpecimenCollectionGroup,
-      :mapping => File.join(CONFIGS, 'surgery_fields.yaml'),
-      :defaults => File.join(CONFIGS, 'surgery_defaults.yaml'),
-      :shims => [File.join(SHIMS, 'surgery_shims.rb')]
+      :mapping => File.expand_path('surgery_fields.yaml', CONFIGS),
+      :defaults => File.expand_path('surgery_defaults.yaml', CONFIGS),
+      :shims => File.expand_path('surgery.rb', SHIMS)
     }
     
     T_STAGE_OPTS = {
       :target => CaTissue::Participant::Clinical::LabAnnotation,
-      :mapping => File.join(CONFIGS, 't_stage_fields.yaml'),
-      :defaults => File.join(CONFIGS, 't_stage_defaults.yaml'),
+      :mapping => File.expand_path('t_stage_fields.yaml', CONFIGS),
+      :defaults => File.expand_path('t_stage_defaults.yaml', CONFIGS),
     }
     
     def self.therapy_options(timing, agent)
@@ -137,8 +134,8 @@ module PSBIN
       end
       {
         :target => target,
-        :mapping => File.join(CONFIGS, 'therapy_fields.yaml'),
-        :defaults => File.join(CONFIGS, "#{timing}_#{agent}_defaults.yaml")
+        :mapping => File.expand_path('therapy_fields.yaml', CONFIGS),
+        :defaults => File.expand_path("#{timing}_#{agent}_defaults.yaml", CONFIGS)
       }
     end
     
