@@ -6,7 +6,6 @@ require 'catissue/annotation/de_integration'
 module CaTissue
   # Mix-in for extending a caTissue domain class with annotations.
   module AnnotatableClass
-    
     # @return [Integer, nil] the the hook class designator that is used by caTissue to persist primary
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
@@ -100,11 +99,15 @@ module CaTissue
     def attribute_metadata(attribute)
       begin
         super
-      rescue
+      rescue Exception => e
+        # Test whether the attribute references an annotation.
+        # This test will load the annotation on demand. If the test
+        # succeeds, then it is safe to call the base implementation
+        # again.
         if annotation_attribute?(attribute) then
-          attribute_metadata(attribute)
+          super
         else
-          raise
+          raise e
         end
       end
     end

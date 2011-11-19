@@ -11,8 +11,8 @@ module CaTissue
       # Otherwise, delegate to super for the standard error.
       begin
         self.class.annotation_attribute?(attr) ? send(mth, *args) : super
-      rescue AnnotationError
-        raise
+      rescue AnnotationError => e
+        raise e
       rescue NoMethodError
         super
       end
