@@ -1,12 +1,5 @@
-$:.unshift File.join(File.dirname(__FILE__), 'lib')
-
-# yardoc makes the example documentation
-require 'rubygems'
-gem 'yard'
-
 require 'fileutils'
-require 'catissue/version'
-require 'rbconfig'
+require File.expand_path('version', File.dirname(__FILE__) + '/lib/catissue')
 
 include FileUtils
 
