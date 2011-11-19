@@ -3,19 +3,16 @@
 # seed: seeds the Galena example administrative objects in the database
 #
 
-# load the caRuby Tissue gem
 require 'rubygems'
-gem 'caruby-tissue'
+gem 'bundler/setup'
+Bundler.require
 
-# add the Galena lib to the path
+# Add the Galena lib to the path.
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
-
-# the default log file
-DEF_LOG_FILE = 'log/migration.log'
 
 require 'catissue'
 require 'catissue/cli/command'
 
 require 'galena/tissue/seed/defaults'
 
-CaTissue::CLI::Command.new.start { Galena::Seed.defaults.ensure_exists }
+CaTissue::CLI::Command.new.start { Galena.seed }

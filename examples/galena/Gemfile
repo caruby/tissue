@@ -1,0 +1,5 @@
+source :rubygems
+
+gem 'caruby-tissue', :require => 'catissue'
+gem 'galena', :path => File.dirname(__FILE__)
+
