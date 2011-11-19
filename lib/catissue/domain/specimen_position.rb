@@ -22,7 +22,13 @@ module CaTissue
     #   Creating a TransferEventParameters sets the SpecimenPosition as a side-effect. Therefore,
     #   SpecimenPosition save is accomplished by creating a proxy TransferEventParameters instead.
     def saver_proxy
-      xfr = CaTissue::TransferEventParameters.new(:specimen => specimen, :to => location)
+      # Look for a transfer event that matches the position.
+      xfr = specimen.events.detect do |sep|
+        CaTissue::TransferEventParameters === sep and sep.to == location
+      end
+      # Create a new transfer event, if necessary.
+      xfr ||= CaTissue::TransferEventParameters.new(:specimen => specimen, :to => location)
+      # If this position changed, then copy the original position to the transfer event from attributes.
       if snapshot and changed? then
         xfr.from_storage_container = snapshot[:storage_container]
         xfr.from_position_dimension_one = snapshot[:position_dimension_one]
