@@ -14,7 +14,7 @@ module CaTissue
 
     add_mandatory_attributes(:principal_investigator, :activity_status, :start_date, :short_title)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
     #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:start_date, :update_only)
 

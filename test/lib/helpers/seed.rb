@@ -45,8 +45,8 @@ module CaTissue
         domain_objects.each { |obj| obj.find(:create) unless obj.identifier or obj.class.dependent? }
       end
 
-      # Repopulates the defaults and makes the following attributes unique:
-      # * collection_protocol short title
+      # Makes the following attributes unique:
+      # * collection protocol title
       # * participant MRN
       # * SCG name
       # * specimen label

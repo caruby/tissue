@@ -23,7 +23,7 @@ module Galena
       
       private
       
-      BAD_FILE = 'test/results/examples/galena/bad.csv'
+      BAD_FILE = File.expand_path('bad.csv', Galena::ROOT_DIR + '/../../test/results/examples/galena')
     end
   end
 end

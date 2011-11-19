@@ -379,12 +379,17 @@ module CaTissue
       annotation
     end
 
-    # Overrides {CaRuby::Database::Writer#save_with_template} to work around caTissue bugs.
-    # @quirk caTissue  Bug #63: a SpecimenCollectionGroup update requires the referenced CollectionProtocolRegistration
-    #   with an identifier to hold extraneous CollectionProtocolRegistration content, including the CPR
-    #   collection protocol and PPI.
-    # @quirk caTissue Bug: CollectionProtocolRegistration must cascade throughCP, but the CP events
-    #   cannot cascade to SpecimenRequirement without raising an Exception. Work-around is to clear the template CP events.
+    # Overrides {CaRuby::Database::Writer#save_with_template} to work around the following
+    # caTissue bugs:
+    #
+    # @quirk caTissue  Bug #63: a SpecimenCollectionGroup update requires the referenced
+    #   CollectionProtocolRegistration with an identifier to hold extraneous
+    #   CollectionProtocolRegistration content, including the CPR collection protocol and PPI.
+    #
+    # @quirk caTissue Bug: CollectionProtocolRegistration must cascade throughCP, but the
+    #   CP events cannot cascade to SpecimenRequirement without raising an Exception.
+    #   Work-around is to clear the template CP events.
+    #
     # @quirk caTissue Create Specimen with nil label does not auto-generate the label.
     #   Work-around is to set the label to a unique value.
     #
@@ -398,28 +403,30 @@ module CaTissue
           logger.debug { "Work around caTissue label bug by setting the #{obj.qp} update template #{template.qp} label to a unique value." }
           template.label = CaRuby::Uniquifier.qualifier
         end
-      elsif obj.identifier.nil? and CaTissue::ExternalIdentifier === obj then
-        # application service save
-        result = submit_save_template(obj, template)
-        # if app service is not broken, then sync the result and return
-        if obj.identifier then
-          sync_saved(obj, result)
-          return
-        end
-        logger.debug { "Work around caTissue ExternalIdentifier create bug by updating the bogus caTissue auto-generated empty #{obj.specimen} EID directly with SQL..." }
-        # app service is broken; fetch the identifier and set directly via SQL
-        tmpl = obj.class.new
-        tmpl.setSpecimen(obj.specimen)
-        eids = query(tmpl).select { |eid| eid.name.nil? }
-        if eids.size > 1 then
-          raise DatabaseError.new("#{spc} has more than external identifier without a name: #{eids}")
-        end
-        # Set the identifier.
-        obj.identifier = eids.first.identifier
-        # Call the SQL
-        @executor.execute { |dbh| dbh.do(UPD_EID_SQL, obj.name, obj.value, obj.specimen.identifier, obj.identifier) }
-        logger.debug { "caTissue #{obj} create work-around completed." }
-        return
+      # TODO - is there a test case for this? Isn't EID create delegated to
+      # specimen create, which cascades to the EID?
+      # elsif obj.identifier.nil? and CaTissue::ExternalIdentifier === obj then
+      #   # application service save
+      #   result = submit_save_template(obj, template)
+      #   # if app service is not broken, then sync the result and return
+      #   if obj.identifier then
+      #     sync_saved(obj, result)
+      #     return
+      #   end
+      #   logger.debug { "Work around caTissue ExternalIdentifier create bug by updating the phantom caTissue auto-generated empty #{obj.specimen} EID directly with SQL..." }
+      #   # app service is broken; fetch the identifier and set directly via SQL
+      #   tmpl = obj.class.new
+      #   tmpl.setSpecimen(obj.specimen)
+      #   eids = query(tmpl).select { |eid| eid.name.nil? }
+      #   if eids.size > 1 then
+      #     raise DatabaseError.new("#{spc} has more than external identifier without a name: #{eids}")
+      #   end
+      #   # Set the identifier.
+      #   obj.identifier = eids.first.identifier
+      #   # Call the SQL
+      #   @executor.execute { |dbh| dbh.do(UPD_EID_SQL, obj.name, obj.value, obj.specimen.identifier, obj.identifier) }
+      #   logger.debug { "caTissue #{obj} create work-around completed." }
+      #   return
       elsif obj.identifier and CaTissue::SpecimenEventParameters === obj then
         # TODO - this case occurs in the simple_test migration; fix it there and remove this check
         # TODO - KLUDGE!!!! FIX AT SOURCE AND REMOVE SEP KLUDGE AS WELL!!!!
@@ -605,6 +612,21 @@ module CaTissue
       logger.debug { "#{specimen} caTissue Bug #160 work-around completed." }
       specimen
     end
+    
+    # Overrides {CaRuby::Database::Persistifier#detoxify} to work around the
+    # caTissue bugs described in {CaTissue::Specimen.remove_phantom_external_identifier}
+    # and {CaTissue::Participant.remove_phantom_medical_identifier}.
+    def detoxify(toxic)
+      if toxic.collection? then
+        case toxic.first
+          when CaTissue::ExternalIdentifier then
+            CaTissue::Specimen.remove_phantom_external_identifier(toxic)
+          when CaTissue::ParticipantMedicalIdentifier then
+            CaTissue::Participant.remove_phantom_medical_identifier(toxic)    
+        end
+      end
+      super
+    end
 
     # Overrides {CaRuby::Database::Reader#fetch_object} to circumvent {Annotation} fetch, since an annotation
     # does not have a key.
@@ -642,24 +664,10 @@ module CaTissue
     # Annotations are created following the owner create.
     #
     # @param obj (see #create_object)
-    # @param [Attribute] attr_md the candidate attribute metadata
+    # @param [CaRuby::Attribute] attr_md the candidate attribute metadata
     # @return [Boolean] whether the attribute should not be included in the create template
     def exclude_pending_create_attribute?(obj, attr_md)
       attr_md.type < Annotation or super
-    end
-      
-    # Override {CaRuby::Database#query_safe} to work around the following +caTissue+ bugs:
-    # * @quirk caTissue Specimen auto-generates blank ExternalIdentifier.
-    #     cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=436&sid=ef98f502fc0ab242781b7759a0eaff36
-    # * @quirk caTissue Specimen auto-generates blank PMI. 
-    def query_safe(obj_or_hql, *path)
-      if path.last == :external_identifiers then
-        CaTissue::Specimen.remove_empty_external_identifier(super)
-      elsif path.last == :participant_medical_identifiers then
-        CaTissue::Specimen.remove_empty_medical_identifier(super)
-      else
-        super
-      end
     end
 
     # @quirk caTissue Bug #147: SpecimenRequirement query ignores CPE.

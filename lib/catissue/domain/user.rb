@@ -76,14 +76,12 @@ module CaTissue
     add_mandatory_attributes(:activity_status, :address, :cancer_research_group, :department,
       :email_address, :first_name, :institution, :last_name, :page_of, :role_id)
 
-    # @quirk caTissue User address can be created but not updated in 1.2.
-    #
-    # @quirk caTissue User address is not fetched on create in 1.2.
-    #
-    # @quirk caRuby adding the :saved_fetch qualifier results in JRuby load_error. TODO - fix this.
+    # @quirk caTissue 1.2 User address can be updated in 1.1.2, but not 1.2.
+    # @quirk caTissue 1.2 User address is fetched on create in 1.1.2, but not 1.2.
     add_dependent_attribute(:address)
 
-    # Password cannot be saved in 1.2.
+    # Password is removed as a visible caRuby attribute, since it is immutable in 1.2 and there
+    # is no use case for its access.
     remove_attribute(:passwords)
 
     set_attribute_inverse(:protocols, :assigned_protocol_users)

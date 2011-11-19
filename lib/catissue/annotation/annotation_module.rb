@@ -82,6 +82,26 @@ module CaTissue
       @ann_svc ||= Database.instance.annotator.create_annotation_service(self, @svc_nm)
     end
     
+    # This method implements the {CaRuby::MetdataLoader#add_metadata} callback to ensure
+    # that the metadata load is complete.
+    #
+    # Annotation classes are introspected, but the annotation constant is not set properly
+    # in the annotation module. This occurs sporadically, e.g. in the PSBIN migration_test
+    # test_biopsy_target test case the NewDiagnosisHealthAnnotation class is introspected
+    # but when subsequently referenced by the migrator, the NewDiagnosisHealthAnnotation
+    # class is not introspected and the class object id differs from the original class
+    # object id. The cause of this bug is a complete mystery. The work-around is for this
+    # callback to call const_get on the given class. This is a seemingly unnecessary
+    # action to take, but was the most reasonable remedy discovered after two days of
+    # futile investigation. The const_get can only be done with annotation classes,
+    # and breaks non-annotation classes.
+    #
+    # TODO - refactor the doman class introspector yet again to simplify and unravel this bug.
+    #
+    def metadata_added(klass)
+      const_get(klass.name.demodulize)
+    end
+        
     private
     
     # The location of the domain class definitions.

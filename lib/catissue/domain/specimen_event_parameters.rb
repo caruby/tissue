@@ -73,17 +73,6 @@ module CaTissue
       specimen_collection_group.collection_protocol if specimen_collection_group
     end
     
-    def saved_fetch_attributes(operation)
-      attrs = super
-      # TODO - KLUDGE!!!! simple_test migration test fails to set user ---- FIX!!!!
-      if identifier and not attrs.include?(:user) then
-        logger.debug { "Worked around caRuby SEP bug by adding user to the #{qo} saved fetch attributes." }
-        attrs + [:user]
-      else
-        attrs
-      end
-    end
-    
     private
 
     # The class name suffix for all event parameter classes.

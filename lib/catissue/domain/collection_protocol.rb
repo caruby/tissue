@@ -7,7 +7,7 @@ module CaTissue
 
   # The CollectionProtocol domain class.
   #
-  # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+  # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
   #   Create CollectionProtocol in API ignores startDate.
   class CollectionProtocol
     include HashCode
@@ -30,15 +30,15 @@ module CaTissue
 
     add_dependent_attribute(:consent_tiers)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
     #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:start_date, :update_only)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
     #   Create CollectionProtocol in API ignores startDate.
     set_attribute_type(:coordinators, CaTissue::User)
 
-    # @quirk caTissue Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
     #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:coordinators, :fetched)
 

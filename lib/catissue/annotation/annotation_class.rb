@@ -14,7 +14,8 @@ module CaTissue
     # @param [Module] mod the {AnnotationModule} which scopes the class
     def self.extend_class(klass, mod)
       # Extend with annotation meta-data.
-      klass.extend(self).add_annotation_metadata(mod)
+      klass.extend(self)
+      klass.add_annotation_metadata(mod)
     end
     
     # @return [Module] the scoping annotation module
@@ -185,14 +186,15 @@ module CaTissue
     #
     # @param [Annotation::ProxyClass] klass the annotation module proxy class
     # @raise [AnnotationError] if this annotation is not {#primary?}
-    # @raise [AnnotationError] if the proxy attribute is already set and references a different proxy class
+    # @raise [AnnotationError] if the proxy attribute is already set and references a
+    #   different proxy class
     def define_proxy_attribute(klass)
       # Only a primary annotation class can have a proxy.
       unless primary? then
         raise AnnotationError.new("Can't set proxy for non-primary annotation class #{qp}")
       end
-      # If the proxy is already set, then confirm that this call is redundant, which is tolerated as a no-op,
-      # as opposed to conflicting, which is not allowed.
+      # If the proxy is already set, then confirm that this call is redundant, which is tolerated
+      # as a no-op, as opposed to conflicting, which is not allowed.
       if @pxy_attr_md then
         return if @pxy_attr_md.type == klass
         raise AnnotationError.new("Can't reset #{self} proxy from #{@pxy_attr_md.type} to #{klass}")
@@ -201,8 +203,9 @@ module CaTissue
       # the annotation => proxy reference attribute
       attr_md = obtain_proxy_attribute_metadata(klass)
       # The canonical proxy attribute is named after the annotation module, e.g. clinical.
-      # caTissue 1.1.x confusingly names the proxy the same as the hook. Correct this by repurposing the
-      # proxy as the hook attribute and making a separate proxy attribute named by the annotation module.
+      # caTissue 1.1.x confusingly names the proxy the same as the hook. Correct this by repurposing
+      # the proxy as the hook attribute and making a separate proxy attribute named by the annotation
+      # module.
       hook_attr = klass.hook.name.demodulize.underscore.to_sym
       if attr_md.to_sym == hook_attr then
         wrap_1_1_proxy_attribute(attr_md)
@@ -220,15 +223,6 @@ module CaTissue
     end
     
     private
-      
-    # Removes the superclass proxy reference attribute, if any from this annotation class,
-    # since each proxy is class-specific.
-    def occlude_superclass_proxy_attribute
-      return unless superclass < Annotation
-      attr = superclass.proxy_attribute || return
-      remove_attribute(attr)
-      logger.debug { "Occluded #{qp} superclass #{superclass.qp} proxy reference #{attr}." }
-    end
     
     # Sets the caTissue 1.2 and higher proxy attribute. The attribute is aliased
     # to the demodulized annotation module name, e.g. +clinical+. A hook attribute
@@ -254,9 +248,6 @@ module CaTissue
       define_method("#{hook_attr}=".to_sym) { |obj| pxy = obj.proxy_for(aliaz, self) if obj; send(attr_md.writer, pxy) }
       add_attribute(hook_attr, attr_md.type.hook)
       logger.debug { "Defined #{qp} => #{attr_md.type.hook.qp} hook attribute #{hook_attr}." }
-      
-      # Remove the superclass proxy attribute, if necessary.
-      occlude_superclass_proxy_attribute
     end
     
     # Wraps the caTissue 1.1.x proxy attribute with a hook argument and return value.

@@ -1,6 +1,6 @@
 require 'caruby/helpers/inflector'
 require 'caruby/migration/migratable'
-require 'galena/tissue/seed/defaults'
+require 'galena/tissue/migration/helpers/migrator'
 
 module CaTissue
   # Augment the classes below with sufficient content to pass the create mandatory attribute validation.
@@ -17,9 +17,9 @@ module CaTissue
     def migrate(row, migrated)
       super
       self.title ||= migration_default_title(migrated)
-      self.principal_investigator ||= Galena::Seed.defaults.protocol.principal_investigator
-      sites << Galena::Seed.defaults.tissue_bank if sites.empty?
-      coordinators << Galena::Seed.defaults.tissue_bank.coordinator if coordinators.empty?
+      self.principal_investigator ||= Galena::Migrator.administrative_objects.protocol.principal_investigator
+      sites << Galena::Migrator.administrative_objects.tissue_bank if sites.empty?
+      coordinators << Galena::Migrator.administrative_objects.tissue_bank.coordinator if coordinators.empty?
     end
     
     private
@@ -29,7 +29,7 @@ module CaTissue
     #   matches this protocol's event, or nil if no match 
     def migration_default_title(migrated)
       cpe = migrated.detect { |obj| CaTissue::CollectionProtocolEvent === obj } || return
-      pcl = Galena::Seed.defaults.protocols.detect { |p| p.events.first.label == cpe.label } || return
+      pcl = Galena::Migrator.administrative_objects.protocols.detect { |p| p.events.first.label == cpe.label } || return
       pcl.title
     end
   end
@@ -42,7 +42,7 @@ module CaTissue
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
-      match = Galena::Seed.defaults.protocols.detect_value do |pcl|
+      match = Galena::Migrator.administrative_objects.protocols.detect_value do |pcl|
         cpe = pcl.events.first
         cpe if cpe.label == label
       end
@@ -72,7 +72,7 @@ module CaTissue
     
     private
     
-    TEMPLATES = [Galena::Seed.defaults.hospital, Galena::Seed.defaults.tissue_bank]
+    TEMPLATES = [Galena::Migrator.administrative_objects.hospital, Galena::Migrator.administrative_objects.tissue_bank]
   end
 
   class StorageContainer
@@ -83,8 +83,8 @@ module CaTissue
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
       super
-      self.site ||= Galena::Seed.defaults.tissue_bank
-      self.storage_type ||= Galena::Seed.defaults.box_type
+      self.site ||= Galena::Migrator.administrative_objects.tissue_bank
+      self.storage_type ||= Galena::Migrator.administrative_objects.box_type
     end
   end
   
@@ -109,7 +109,7 @@ module CaTissue
         self.last_name = n2.capitalize
       end
       # the coordinator serves as the User content template
-      coord = Galena::Seed.defaults.hospital.coordinator
+      coord = Galena::Migrator.administrative_objects.hospital.coordinator
       # deep copy of the address
       self.address = coord.address.copy
       # shallow copy of the mandatory references

@@ -67,7 +67,7 @@ module CaTissue
     # must exist. This is checked in the special purpose {#validate_local} method.
     qualify_attribute(:protocol_participant_identifier, :optional)
 
-    # @quirk caTissue  Augment the standard metadata storable reference attributes to work around caTissue Bug #150:
+    # @quirk caTissue  Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
     #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:registration_date, :update_only)
 

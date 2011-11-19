@@ -1,16 +1,6 @@
-require 'rubygems'
-require 'bundler'
-Bundler.require(:test, :development)
-
+require File.dirname(__FILE__) + '/../helper'
 require 'test/unit'
-
-# Open the logger.
-require 'catissue/helpers/log'
-CaRuby::Log.instance.open(File.dirname(__FILE__) + '/../../../results/log/catissue.log',
-  :shift_age => 5, :shift_size => 1048576, :debug => true)
-
-# Load the default test object definitions.
-require File.expand_path('seed', File.dirname(__FILE__))
+require 'caruby/database/writer_template_builder'
 
 module CaTissue
   module TestCase
@@ -85,29 +75,32 @@ module CaTissue
       @database.lazy_loader.suspend { obj.dump }
     end
   
-    # @param (see #mock_storable_template)
-    # @return (see #mock_storable_template)
+    # @param (see #mock_writer_template)
+    # @return (see #mock_writer_template)
     def mock_create_template(obj)
-      mock_storable_template(obj) { |ref| ref.class.creatable_domain_attributes }
+      mock_writer_template(obj) { |ref| ref.class.creatable_domain_attributes }
     end
   
-    # @param (see #mock_storable_template)
-    # @return (see #mock_storable_template)
+    # @param (see #mock_writer_template)
+    # @return (see #mock_writer_template)
     def mock_update_template(obj)
-      mock_storable_template(obj) { |ref| ref.class.updatable_domain_attributes }
+      mock_writer_template(obj) { |ref| ref.class.updatable_domain_attributes }
     end
     
     # @param [Resource] obj the domain object to "save"
     # @return [Resource] the template to use in the save operation
-    # @yield [ref] the storable attributes
+    # @yield [ref] the savable attributes
     # @yieldparam [Resource] ref the domain object to "save"
-    def mock_storable_template(obj, &selector)
-      # add fake identifiers to prerequisite references
-      obj.class.storable_prerequisite_attributes.each do |attr|
-        obj.send(attr).enumerate { |ref| ref.identifier = 1 }
+    def mock_writer_template(obj, &selector)
+      # the mock template builder
+      bldr = CaRuby::Database::Writer::TemplateBuilder.new(@database, &selector)
+      class << bldr
+        # Adds fake identifiers to the prerequisite references.
+        def collect_prerequisites(obj)
+          super.each { |ref|  ref.identifier = 1 }
+          Array::EMPTY_ARRAY
+        end
       end
-      # the template builder
-      bldr = CaRuby::StoreTemplateBuilder.new(@database, &selector)
       # the save template
       bldr.build_template(obj)
     end

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
 require 'caruby/helpers/transitive_closure'
 
 class SpecimenTest < Test::Unit::TestCase
@@ -133,7 +133,7 @@ class SpecimenTest < Test::Unit::TestCase
     end
   end
 
-  # Tests whether a Specimen with a position save template does not include the position.
+  # Tests whether a specimen with a position save template does not include the position.
   # The position is saved as a caTissue side-effect by creating a proxy transfer event.
   def test_position_save_template
     defaults.box << @spc
@@ -281,11 +281,10 @@ class SpecimenTest < Test::Unit::TestCase
   
   # Exercise creation of a child specimen.
   def test_derived_create
-    # verify creating a derived specimen
-    logger.debug { "Verifying creating a derived specimen..." }
     # derive a specimen
     drv = @spc.derive(:specimen_class => :molecular, :initial_quantity => 20, :specimen_type => 'DNA')
-    # store the derived specimen
+    logger.debug { "#{name} verifying creation of derived specimen #{@spc}..." }
+    # save the derived specimen
     verify_save(drv)
     # verify the derived specimen parent
     assert_same(@spc, drv.parent, "Derived specimen parent incorrect after store")
@@ -313,7 +312,7 @@ class SpecimenTest < Test::Unit::TestCase
     verify_save(drv)
   end
   
-  def test_save_prostate_annotation
+  def test_prostate_annotation_save
     pa = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pa.specimen = @spc
     grade = CaTissue::Specimen::Pathology::SpecimenHistologicGrade.new
@@ -332,7 +331,7 @@ class SpecimenTest < Test::Unit::TestCase
     assert_not_nil(gleason.identifier, "#{gleason} not saved")
   end
 
-  def test_save_melanoma_annotation
+  def test_melanoma_annotation_save
     ma = CaTissue::Specimen::Pathology::MelanomaSpecimenPathologyAnnotation.new
     ma.merge_attributes(:specimen => @spc, :comments => "Test Comment", :depth_of_invasion => 2.0, :mitotic_index => "Less than 1 mitotic figure per mm-square",
       :ulceration => "Absent", :tumor_regression => "Present involving 75% or more of lesion", :tumor_infiltrating_lymphocytes => "Brisk")
