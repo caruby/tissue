@@ -1,5 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
-require 'caruby/database/store_template_builder'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
 
 class TransferEventParametersTest < Test::Unit::TestCase
   include CaTissue::TestCase

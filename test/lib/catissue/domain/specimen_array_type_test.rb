@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
 require 'caruby/helpers/uniquifier'
 
 class SpecimenArrayTypeTest < Test::Unit::TestCase
@@ -15,8 +15,8 @@ class SpecimenArrayTypeTest < Test::Unit::TestCase
     verify_defaults(@type)
   end
 
-  def test_create
-    array = @type.create
+  def test_new_container
+    array = @type.new_container
     assert_same(CaTissue::SpecimenArray, array.class, "Created instance class incorrect")
     assert_same(@type, array.container_type, "Created array type incorrect")
   end

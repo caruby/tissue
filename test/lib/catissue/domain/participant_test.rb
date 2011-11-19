@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
 require 'caruby/helpers/uniquifier'
 
 require 'json'
@@ -31,6 +31,16 @@ class ParticipantTest < Test::Unit::TestCase
     # add the preferred SSN key
     expected = @pnt.social_security_number = '555-55-5555'
     assert_equal(expected, @pnt.key, 'Person key is not the SSN')
+  end
+  
+  def test_phantom_mrn_filter
+    pnt = defaults.registration.participant
+    pmis = pnt.participant_medical_identifiers
+    pmi = pmis.first
+    pmi.medical_record_number = nil
+    CaTissue::Participant.remove_phantom_medical_identifier(pmis)
+    assert_nil(pmi.participant, "#{@pmi} participant not unset")
+    assert_nil(pmis.first, "#{@pmi} not cleared from #{pnt}")
   end
 
   def test_treatment_annotation
@@ -107,9 +117,24 @@ class ParticipantTest < Test::Unit::TestCase
 
    ## DATABASE TEST CASES
 
-  # Tests creating a participant.
-  def test_save
+   # Tests creating a participant.
+   def test_save
+     verify_save(@pnt)
+   end
+  
+  # Exercises the phantom PMI fetch filter on a patient with an MRN.
+  def test_find_phantom_mrn_filter
+    # add an MRN
+    site = defaults.registration.participant.participant_medical_identifiers.first.site
+    @pnt.add_mrn(site, CaRuby::Uniquifier.qualifier)
+    # save the patient
     verify_save(@pnt)
+    # fetch the saved patient
+    svd = @pnt.copy(:identifier)
+    svd.find
+    # the phantom PMI should be removed
+    phantom = @pnt.participant_medical_identifiers.detect { |pmi| pmi.medical_record_number.nil? }
+    assert_nil(phantom, "#{svd} phantom PMI #{phantom} was not filtered out")
   end
 
   def test_save_alcohol_annotation

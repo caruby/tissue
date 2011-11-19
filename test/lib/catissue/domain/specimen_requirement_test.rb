@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
 
 class SpecimenRequirementTest < Test::Unit::TestCase
   include CaTissue::TestCase

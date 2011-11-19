@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../helpers/test_case'
+require File.dirname(__FILE__) + '/../../helpers/test_case'
 
 class ExternalIdentifierTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -7,6 +7,10 @@ class ExternalIdentifierTest < Test::Unit::TestCase
     super
     spc = defaults.specimen
     @eid = CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :value => 'Test Value'.uniquify, :specimen => spc)
+  end
+
+  def test_defaults
+    verify_defaults(@eid)
   end
 
   # Exercises the CaTissue::Specimen external_identifiers logical dependency work-around.
