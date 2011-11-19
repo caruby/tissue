@@ -14,7 +14,8 @@ module CaTissue
     # @param [Module] mod the {AnnotationModule} which scopes the class
     def self.extend_class(klass, mod)
       # Extend with annotation meta-data.
-      klass.extend(self).add_annotation_metadata(mod)
+      klass.extend(self)
+      klass.add_annotation_metadata(mod)
     end
     
     # @return [Module] the scoping annotation module
