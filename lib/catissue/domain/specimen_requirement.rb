@@ -36,10 +36,8 @@ module CaTissue
     # parent CPE is created.
     qualify_attribute(:child_specimens, :logical)
     
-    # Overrides {Resource#owner} to return the parent_specimen, if it exists, or the collection_protocol_event otherwise.
-    def owner
-      parent_specimen or collection_protocol_event
-    end
+    # The preferred owner attribute evaluation order is the parent specimen, then the CPE.
+    order_owner_attributes(:parent_specimen, :collection_protocol_event)
     
     # Returns the SpecimenRequirement in others which matches this SpecimenRequirement in the scope of an owner CollectionProtocolEvent.
     # This method relaxes {CaRuby::Resource#match_in_owner_scope} for a SpecimenRequirement that matches any SpecimenRequirement

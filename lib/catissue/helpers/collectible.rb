@@ -70,10 +70,10 @@ module CaTissue
     
     private
    
-    #  Overrides {CaRuby::Resource#each_defaults_dependent} to visit the {CaTissue::ReceivedEventParameters}.
+    #  Overrides {CaRuby::Resource#each_defaultable_reference} to visit the {CaTissue::ReceivedEventParameters}.
     #
-    # @yield (see CaRuby::Resource#each_defaults_dependent)
-    def each_defaults_dependent
+    # @yield (see CaRuby::Resource#each_defaultable_reference)
+    def each_defaultable_reference
       # visit ReceivedEventParameters first
       rep = received_event_parameters
       yield rep if rep
