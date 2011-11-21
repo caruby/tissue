@@ -64,7 +64,7 @@ module CaTissue
       # The standard units used for each specimen class.
       UNIT_HASH = {TISSUE => 'gm', FLUID => 'ml', MOLECULAR => 'ug'}
 
-      # @return whether the value is an accepted tissue class value
+      # @return [Boolean] whether the value is an accepted tissue class value
       def self.include?(value)
         EXTENT.include?(value)
       end
@@ -81,33 +81,33 @@ module CaTissue
       self.specimen_class ||= infer_specimen_class(self.class)
     end
 
-    # @return whether this specimen is derived from a parent specimen
+    # @return [Boolean] whether this specimen is derived from a parent specimen
     def derived?
-      not parent.nil?
+      !!parent
     end
 
-    # @return whether this specimen is an aliquot
+    # @return [Boolean] whether this specimen is an aliquot
     def aliquot?
       lineage ||= default_lineage
       lineage == 'Aliquot'
     end
 
-    # @return this specimen's aliquots
+    # @return [<AbstractSpecimen>] this specimen's aliquots
     def aliquots
       children.filter { |child| child.aliquot? }
     end
 
-    # @return whether this specimen's type is 'Fresh Tissue'
+    # @return [Boolean] whether this specimen's type is 'Fresh Tissue'
     def fresh?
       specimen_type == 'Fresh Tissue'
     end
 
-    # @return whether this specimen's type starts with 'Fixed'
+    # @return [Boolean] whether this specimen's type starts with 'Fixed'
     def fixed?
       specimen_type =~ /^Fixed/
     end
 
-    # @return whether this specimen's type starts with 'Frozen'
+    # @return [Boolean] whether this specimen's type starts with 'Frozen'
     def frozen?
       specimen_type =~ /^Frozen/
     end

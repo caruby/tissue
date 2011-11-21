@@ -203,7 +203,7 @@ module CaTissue
     end
     
     # @param [Attribute] attr_md the saved attribute to check
-    # @return whether the attribute is fetched, creatable and not volatile
+    # @return [Boolean] whether the attribute is fetched, creatable and not volatile
     def verify_saved_attribute?(attr_md)
       attr_md.fetched? and attr_md.creatable? and not attr_md.volatile?
     end

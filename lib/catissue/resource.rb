@@ -59,12 +59,12 @@ module CaTissue
     # The unspecified value.
     UNSPECIFIED = 'Not Specified'
     
-    # @return whether the given value equals the other value or one of the values is nil or 'Not Specified'
+    # @return [Boolean] whether the given value equals the other value or one of the values is nil or 'Not Specified'
     def self.tolerant_value_match?(value, other)
       value == other or unpsecified_value?(value) or unpsecified_value?(other)
     end
     
-    # @return whether the given value equals nil or {Resource.UNSPECIFIED}
+    # @return [Boolean] whether the given value equals nil or {Resource.UNSPECIFIED}
     def self.unpsecified_value?(value)
       value.nil? or value == UNSPECIFIED
     end

@@ -38,7 +38,7 @@ module CaTissue
       self.column = @location.column
     end
     
-    # @return whether either the column or the row is nil
+    # @return [Boolean] whether either the column or the row is nil
     def unspecified?
       column.nil? or row.nil?
     end
