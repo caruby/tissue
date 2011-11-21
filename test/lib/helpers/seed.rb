@@ -29,7 +29,7 @@ module CaTissue
 
       # Fetches the default instances from the database. Creates new objects if necessary.
       #
-      # @raise [ValidationError] if a domain object fails validation
+      # @raise [CaRuby::ValidationError] if a domain object fails validation
       def validate
         # identifiers are required for validation; these are removed following validation
         objs_without_ids = domain_objects.select { |obj| obj.identifier.nil? }

@@ -24,9 +24,9 @@ module CaTissue
     #
     # @param (see #extract_event_parameters)
     # @option opts (see #extract_event_parameters)
-    # @raise [ValidationError] if this SCG has already been received
+    # @raise [CaRuby::ValidationError] if this SCG has already been received
     def collect(opts)
-      raise ValidationError.new("#{self} is already collected") if received?
+      raise CaRuby::ValidationError.new("#{self} is already collected") if received?
       specimen_event_parameters.merge!(extract_event_parameters(opts))
     end
 

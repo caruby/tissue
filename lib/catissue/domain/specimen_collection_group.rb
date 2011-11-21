@@ -248,7 +248,7 @@ module CaTissue
     #   'Complete' and there is no other ReceivedEventParameters. The receiver is an arbitrary
     #   protocol coordinator.
     #
-    # @raise [ValidationError] if the default ReceivedEventParameters could not be created because
+    # @raise [CaRuby::ValidationError] if the default ReceivedEventParameters could not be created because
     #   there is no protocol or protocol coordinator
     # @see CollectionProtocol#first_event
     def add_defaults_local
@@ -319,11 +319,11 @@ module CaTissue
     def create_default_received_event_parameters
       cp = collection_protocol
       if cp.nil? then
-        raise ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol: #{self}")
+        raise CaRuby::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol: #{self}")
       end
       rcvr = cp.coordinators.first
       if rcvr.nil? then
-        raise ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
+        raise CaRuby::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
       end
       # make the REP
       ev = CaTissue::SpecimenEventParameters.create_parameters(:received, self, :user => rcvr)
@@ -341,7 +341,7 @@ module CaTissue
       ev
     end
 
-    # @raise [ValidationError] if there is a registration consent tier response without a corresponding SCG consent tier status
+    # @raise [CaRuby::ValidationError] if there is a registration consent tier response without a corresponding SCG consent tier status
     def validate_consent
       return unless registration
       # the default consent statuses
@@ -349,15 +349,15 @@ module CaTissue
       registration.consent_tier_responses.each do |ctr|
         ct = ctr.consent_tier
         unless ctses.include?(ct) then
-          raise ValidationError.new("#{self} is missing a ConsentTierStatus for consent statement #{ct.statement}")
+          raise CaRuby::ValidationError.new("#{self} is missing a ConsentTierStatus for consent statement #{ct.statement}")
         end
       end
     end
 
-    # @raise [ValidationError] if the SCG has neither an identifier nor Received and Collection event parameters
+    # @raise [CaRuby::ValidationError] if the SCG has neither an identifier nor Received and Collection event parameters
     def validate_event_parameters
       if identifier.nil? and event_parameters.empty? then
-        raise ValidationError.new("#{self} create is missing the required Received and Collection event parameters")
+        raise CaRuby::ValidationError.new("#{self} create is missing the required Received and Collection event parameters")
       end
     end
   end

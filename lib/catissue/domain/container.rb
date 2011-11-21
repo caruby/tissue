@@ -178,10 +178,10 @@ module CaTissue
     # @raise [TypeError] if this container cannot hold the storable
     def validate_type(storable)
       unless container_type then
-        raise ValidationError.new("Container #{self} is missing a type")
+        raise CaRuby::ValidationError.new("Container #{self} is missing a type")
       end
       unless container_type.can_hold_child?(storable) then
-        raise ValidationError.new("Container #{self} cannot hold an item of the #{storable} type #{storable.container_type}")
+        raise CaRuby::ValidationError.new("Container #{self} cannot hold an item of the #{storable} type #{storable.container_type}")
       end
     end
 

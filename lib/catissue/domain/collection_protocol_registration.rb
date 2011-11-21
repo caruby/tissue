@@ -97,7 +97,7 @@ module CaTissue
     def validate_local
       super
       if participant.nil? and protocol_participant_identifier.nil? then
-        raise ValidationError.new("#{qp} requires a participant or a protocol participant identifier.")
+        raise CaRuby::ValidationError.new("#{qp} requires a participant or a protocol participant identifier.")
       end
     end
     

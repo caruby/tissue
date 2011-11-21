@@ -14,6 +14,6 @@ class ReceivedEventParametersTest < Test::Unit::TestCase
     @spc.collect(:receiver => @scg.receiver)
     rep = @spc.received_event_parameters
     assert_nothing_raised("Owner conflict unexpectedly disallowed") { rep.specimen_collection_group = @scg }
-    assert_raises(ValidationError, "Owner conflict allowed") { rep.validate }
+    assert_raises(CaRuby::ValidationError, "Owner conflict allowed") { rep.validate }
   end
 end

@@ -5,7 +5,7 @@ class CaTissueTestDefaultsTest < Test::Unit::TestCase
 
   # Validates the #{CaTissue::TestCase::Seed} data.
   def test_validation
-    assert_nothing_raised(ValidationError, "Defaults validation unsuccessful") { defaults.add_defaults.validate }
+    assert_nothing_raised(CaRuby::ValidationError, "Defaults validation unsuccessful") { defaults.add_defaults.validate }
   end
 
   # Saves the #{CaTissue::TestCase::Seed} data.

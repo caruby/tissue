@@ -15,7 +15,7 @@ class SpecimenEventParametersTest < Test::Unit::TestCase
 
   def test_missing_scg
     @sep.specimen_collection_group = nil
-    assert_raises(ValidationError, "Parameters without SCG passes SCG validation") { @sep.validate }
+    assert_raises(CaRuby::ValidationError, "Parameters without SCG passes SCG validation") { @sep.validate }
   end
 
   def test_java_date

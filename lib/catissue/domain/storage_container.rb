@@ -142,10 +142,10 @@ module CaTissue
     #
     # @param @storable (see #add)
     # @return [StorageContainer, nil] self if added, nil otherwise
-    # @raise [ValidationError] if this container does not have a storage type, or if a circular
+    # @raise [CaRuby::ValidationError] if this container does not have a storage type, or if a circular
     #   containment reference is detected
     def add_to_existing_container(storable)
-      if storage_type.nil? then raise ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
+      if storage_type.nil? then raise CaRuby::ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer from among #{scs.pp_s} to place #{storable.qp}..." } unless scs.empty?
@@ -155,7 +155,7 @@ module CaTissue
         # in CaTissue::Database#query_object. The work-around circumvents the bug for now, but
         # it doesn't hurt to check again.
         if identifier and sc.identifier == identifier then
-          raise ValidationError.new("#{self} has a circular containment reference to subcontainer #{sc}")
+          raise CaRuby::ValidationError.new("#{self} has a circular containment reference to subcontainer #{sc}")
         end
         # No circular reference; add to subcontainer if possible
         sc.add_to_existing_container(storable) if StorageContainer === sc

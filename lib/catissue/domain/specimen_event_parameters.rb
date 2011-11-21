@@ -78,11 +78,11 @@ module CaTissue
     # The class name suffix for all event parameter classes.
     SUBCLASS_SUFFIX = 'EventParameters'
 
-    # @raise [ValidationError] if the subject is missing or there is both a SCG and a Specimen owner
+    # @raise [CaRuby::ValidationError] if the subject is missing or there is both a SCG and a Specimen owner
     def validate_local
       super
       if subject.nil? then
-        raise ValidationError.new("Both specimen_collection_group and specimen are missing in SpecimenEventParameters #{self}")
+        raise CaRuby::ValidationError.new("Both specimen_collection_group and specimen are missing in SpecimenEventParameters #{self}")
       end
     end
 

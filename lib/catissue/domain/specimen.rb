@@ -305,18 +305,18 @@ module CaTissue
     # Otherwise an exception is thrown.
     #
     # @param [CaTissue::ConsentTier, nil] optional consent tier of the SCG CaTissue::ConsentTierStatus to withdraw
-    # @raise [ValidationError] if an unambiguous SCG CaTissue::ConsentTierStatus to withdraw could not be determined
+    # @raise [CaRuby::ValidationError] if an unambiguous SCG CaTissue::ConsentTierStatus to withdraw could not be determined
     def withdraw_consent(consent_tier=nil)
       statuses = specimen_collection_group.consent_tier_statuses
       status = if consent_tier then
         statuses.detect { |cts| cts.consent_tier.identifier == consent_tier.identifier } or
-        raise ValidationError.new("SCG #{specimen_collection_group} consent status not found for consent '#{consent_tier.statement}'")
+        raise CaRuby::ValidationError.new("SCG #{specimen_collection_group} consent status not found for consent '#{consent_tier.statement}'")
       elsif specimen_collection_group.consent_tier_statuses.size == 1 then
         statuses.first
       elsif specimen_collection_group.consent_tier_statuses.size == 0 then
-        raise ValidationError.new("Specimen #{self} SCG does not have a consent tier status")
+        raise CaRuby::ValidationError.new("Specimen #{self} SCG does not have a consent tier status")
       else
-        raise ValidationError.new("Specimen #{self} SCG consent tier is ambiguous:#{consent_tier_statuses.select { |cts| "\n  #{cts.statement}" }.to_series('or')}")
+        raise CaRuby::ValidationError.new("Specimen #{self} SCG consent tier is ambiguous:#{consent_tier_statuses.select { |cts| "\n  #{cts.statement}" }.to_series('or')}")
       end
       ct = status.consent_tier
       cts = consent_tier_statuses.detect { |item| item.consent_tier == ct }
@@ -365,24 +365,24 @@ module CaTissue
     # Updating Specimen with the availablity flag set and available_quantity zero
     # silently leaves the availablity flag unset.
     #
-    #  @raise [ValidationError] if the validation fails
+    #  @raise [CaRuby::ValidationError] if the validation fails
     def validate_local
       super
       if parent.nil? and specimen_collection_group.nil? then
-        raise ValidationError.new("Top-level specimen #{self} is missing specimen collection group")
+        raise CaRuby::ValidationError.new("Top-level specimen #{self} is missing specimen collection group")
       end
       if available_quantity and initial_quantity and available_quantity > initial_quantity then
-        raise ValidationError.new("#{self} available quantity #{available_quantity} cannot exceed initial quantity #{initial_quantity}")
+        raise CaRuby::ValidationError.new("#{self} available quantity #{available_quantity} cannot exceed initial quantity #{initial_quantity}")
       end
       if available? and available_quantity.zero? then
-        raise ValidationError.new("#{self} availablility flag cannot be set when the avaialble quantity is zero")
+        raise CaRuby::ValidationError.new("#{self} availablility flag cannot be set when the avaialble quantity is zero")
       end
       if collected? then
         unless event_parameters.detect { |ep| CaTissue::CollectionEventParameters === ep } then
-          raise ValidationError.new("#{self} is missing CollectionEventParameters")
+          raise CaRuby::ValidationError.new("#{self} is missing CollectionEventParameters")
         end
         unless event_parameters.detect { |ep| CaTissue::ReceivedEventParameters === ep } then
-          raise ValidationError.new("#{self} is missing ReceivedEventParameters")
+          raise CaRuby::ValidationError.new("#{self} is missing ReceivedEventParameters")
         end
       end
     end
@@ -548,14 +548,14 @@ module CaTissue
     def decrement_derived_quantity(child)
       return unless specimen_type == child.specimen_type and child.initial_quantity
       if available_quantity.nil? then
-        raise ValidationError.new("Derived specimen has an initial quantity #{child.initial_quantity} but the parent is missing an available quantity")
+        raise CaRuby::ValidationError.new("Derived specimen has an initial quantity #{child.initial_quantity} but the parent is missing an available quantity")
       elsif (available_quantity - child.initial_quantity).abs < 0.00000001 then
         # rounding error
         self.available_quantity = 0.0
       elsif child.initial_quantity <= available_quantity then
         self.available_quantity -= child.initial_quantity
       else
-        raise ValidationError.new("Derived specimen initial quantity #{child.initial_quantity} exceeds parent available quantity #{available_quantity}")
+        raise CaRuby::ValidationError.new("Derived specimen initial quantity #{child.initial_quantity} exceeds parent available quantity #{available_quantity}")
       end
     end
   end

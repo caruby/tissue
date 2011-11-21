@@ -20,11 +20,11 @@ module CaTissue
     
     private
     
-    # @raise [ValidationError] if the parent is the same as the occupant 
+    # @raise [CaRuby::ValidationError] if the parent is the same as the occupant 
     def validate_local
       super
       if parent == occupant or (parent.identifier and parent.identifier == occupant.identifier) then
-         raise ValidationError.new("#{self} has a circular containment reference to subcontainer #{occupant}")
+         raise CaRuby::ValidationError.new("#{self} has a circular containment reference to subcontainer #{occupant}")
       end
     end
   end

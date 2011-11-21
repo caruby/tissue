@@ -28,7 +28,7 @@ module CaTissue
     def verify_defaults(subject)
       subject.add_defaults
       msg = "#{subject.qp} with default attributes fails validation"
-      assert_nothing_raised(ValidationError, msg) { subject.validate }
+      assert_nothing_raised(CaRuby::ValidationError, msg) { subject.validate }
     end
 
     # Tests saving the subject. Calls {Database#save} on the subject and verifies that subject and its

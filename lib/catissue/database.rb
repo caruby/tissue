@@ -439,19 +439,19 @@ module CaTissue
       elsif obj.identifier and CaTissue::SpecimenCollectionGroup === obj then
         # add the extraneous SCG template CPR protocol and PPI, if necessary 
         cpr = obj.collection_protocol_registration
-        if cpr.nil? then raise ValidationError.new("#{obj} cannot be updated since it is missing a CPR") end
+        if cpr.nil? then raise CaRuby::ValidationError.new("#{obj} cannot be updated since it is missing a CPR") end
         tcpr = template.collection_protocol_registration
-        if tcpr.nil? then raise ValidationError.new("#{obj} CPR #{cpr} was not copied to the update template #{tcpr}") end
+        if tcpr.nil? then raise CaRuby::ValidationError.new("#{obj} CPR #{cpr} was not copied to the update template #{tcpr}") end
         if tcpr.collection_protocol.nil? then
           pcl = lazy_loader.enable { cpr.collection_protocol }
-          if pcl.nil? then raise ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} protocol") end
+          if pcl.nil? then raise CaRuby::ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} protocol") end
           tpcl = pcl.copy(:identifier)
           logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} protocol #{tpcl}..." }
           tmpl.collection_protocol = tpcl
         end
         if tcpr.protocol_participant_identifier.nil? then
           ppi = lazy_loader.enable { cpr.protocol_participant_identifier }
-          if ppi.nil? then raise ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} PPI") end
+          if ppi.nil? then raise CaRuby::ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} PPI") end
           tppi = ppi.copy(:identifier)
           logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} PPI #{tppi}..." }
           tmpl.protocol_participant_identifier = tppi

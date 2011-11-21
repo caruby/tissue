@@ -125,10 +125,10 @@ module CaTissue
     # @quirk caTissue multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
     #   in obscure downstream errors (cf. Bug #151).
     #
-    # @raise [ValidationError] if this SpecimenRequirement has multiple non-aliquot derivatives
+    # @raise [CaRuby::ValidationError] if this SpecimenRequirement has multiple non-aliquot derivatives
     def validate_local
       super
-      if multiple_derivatives? then raise ValidationError.new("Multiple derivatives not supported by caTissue") end
+      if multiple_derivatives? then raise CaRuby::ValidationError.new("Multiple derivatives not supported by caTissue") end
     end
 
     # Adds the following default values, if necessary:

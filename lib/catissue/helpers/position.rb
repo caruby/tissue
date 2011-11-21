@@ -48,7 +48,7 @@ module CaTissue
       [column, row]
     end
     
-    # @raise [ValidationError] if the holder cannot hold the occupant type
+    # @raise [CaRuby::ValidationError] if the holder cannot hold the occupant type
     def validate
       super
       logger.debug { "Validating that #{holder} can hold #{occupant}..." }
@@ -56,10 +56,10 @@ module CaTissue
       if curr_occ.nil? then
         unless holder.can_hold_child?(occupant) then
           reason = holder.full? ? "it is full" : "the occupant type is not among the supported types #{holder.container_type.child_types.qp}"
-          raise ValidationError.new("#{holder} cannot hold #{occupant} since #{reason}")
+          raise CaRuby::ValidationError.new("#{holder} cannot hold #{occupant} since #{reason}")
         end
       elsif curr_occ != occupant
-        raise ValidationError.new("#{holder} cannot hold #{occupant} since the location #{[colum, row]} is already occupied by #{curr_occ}")
+        raise CaRuby::ValidationError.new("#{holder} cannot hold #{occupant} since the location #{[colum, row]} is already occupied by #{curr_occ}")
       end
     end
   end

@@ -153,7 +153,7 @@ module CaTissue
     # e.g. 3090_3 for the third child in parent specimen with label 3090.
     #
     # @return the new derived specimen if _count_ is one, otherwise an Array of _count_ derived specimens
-    # @raise [ValidationError] if an aliquoted parent available quantity is not greater than zero
+    # @raise [CaRuby::ValidationError] if an aliquoted parent available quantity is not greater than zero
     #   or the derived specimen quantities exceed the parent available quantity
     def derive(params={})
       # add defaults

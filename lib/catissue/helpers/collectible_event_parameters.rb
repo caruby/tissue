@@ -39,7 +39,7 @@ module CaTissue
         next if attr == attribute
         other = send(attr)
         if other then
-          raise ValidationError.new("Cannot add #{qp} to #{attribute} #{obj.qp}, since it is already owned by #{attr} #{other}")
+          raise CaRuby::ValidationError.new("Cannot add #{qp} to #{attribute} #{obj.qp}, since it is already owned by #{attr} #{other}")
         end
       end
     end
