@@ -17,19 +17,20 @@ module CaTissue
   class Database < CaRuby::Database
     include Singleton
     
-    # return [CaRuby::SQLExecutor] a utility SQL executor
-    attr_reader :executor
-
     # Creates a new Database with the +catissuecore+ service and {#access_properties}.
     def initialize
       super(SVC_NAME) { access_properties }
-      @executor = CaRuby::SQLExecutor.new(access_properties)
     end
     
     # @return (see CaRuby::Domain.properties)
     def access_properties
-      # The access properties are a subset of the application properties.
+      # Augment the application properties with Hibernate.
       CaTissue.properties
+    end
+    
+    # return [CaRuby::SQLExecutor] a utility SQL executor
+    def executor
+      @executor ||= create_executor
     end
 
     # @return [Annotator] the annotator utility
@@ -66,6 +67,22 @@ module CaTissue
     UPD_EID_SQL = 'update catissue_external_identifier set name = ?, value = ?, specimen_id = ? where identifier = ?'
     
     UPD_CTR_SQL = 'update catissue_consent_tier_response set response = ? where identifier = ?'
+    
+    # return (see #executor)
+    def create_executor
+      # Augment the user-defined application properties with Hibernate properties.
+      props = access_properties
+      hprops = Java::edu.wustl.common.hibernate.HibernateUtil.configuration.properties.to_hash rescue nil
+      if hprops then
+        props[:database_user] ||= hprops['connection.username']
+        props[:database_password] ||= hprops['connection.password']
+        if not props.has_key?(:database_name) and not props.has_key?(:database_port) and hprops.has_key?('connection.url') then
+          props[:database_url] ||= hprops['connection.url']
+        end
+        props[:database_driver_class] ||= hprops['connection.driver_class']
+      end
+      CaRuby::SQLExecutor.new(props)
+    end
 
     # Overrides #{CaRuby::Database::Writer#recursive_save?} to support the update work-around
     # described in {#update_object}. A recursive SCG update is allowed if the nested
@@ -359,15 +376,27 @@ module CaTissue
     # @param (see CaRuby::Database#build_save_template)
     # @return (see CaRuby::Database#build_save_template)
     def build_save_template(obj, builder)
-      Annotation === obj ? prepare_annotation_for_save(obj) : super
+      Annotation === obj ? prepare_annotation_as_save_template(obj) : super
+    end
+    
+    # Validates and completes the given annotation object prior to save.
+    # The annotation is submitted directly to the caTissue save rather
+    # than building a save template, since an annotation save does not
+    # recurse to references, unlike a standard save.
+    #
+    # @param [Annotation] annotation the object to create
+    # @return [Annotation] the annotation object
+    # @raise (see #ensure_primary_annotation_has_hook)
+    def prepare_annotation_as_save_template(annotation)
+      ensure_primary_annotation_has_hook(annotation) if annotation.class.primary?
+      annotation
     end
     
     # Ensures that a primary annotation hook exists.
     #
-    # @param [Annotation] annotation the object to create
-    # @return [Annotation] the annotation object
-    # @raise [DatabaseError] if the annotation does not reference a hook entity
-    def prepare_annotation_for_save(annotation)
+    # @param (see #prepare_annotation_for_save)
+    # @raise [CaRuby::DatabaseError] if the annotation does not reference a hook entity
+    def ensure_primary_annotation_has_hook(annotation)
       hook = annotation.hook
       if hook.nil? then
         raise CaRuby::DatabaseError.new("Cannot save annotation #{annotation} since it does not reference a hook entity")
@@ -376,7 +405,6 @@ module CaTissue
         logger.debug { "Ensuring that the annotation #{annotation.qp} hook entity #{hook.qp} exists in the database..." }
         ensure_exists(hook)
       end
-      annotation
     end
 
     # Overrides {CaRuby::Database::Writer#save_with_template} to work around the following
