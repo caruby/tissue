@@ -1,5 +1,5 @@
 require 'date'
-require File.expand_path('version', File.dirname(__FILE__) + '/lib/catissue')
+require File.dirname(__FILE__) + '/lib/catissue/version'
 
 Gem::Specification.new do |s|
   s.name          = "caruby-tissue"
@@ -10,11 +10,11 @@ Gem::Specification.new do |s|
   s.author        = "OHSU"
   s.email         = "caruby.org@gmail.com"
   s.homepage      = "http://caruby.rubyforge.org/tissue.html"
-  s.files         = Dir.glob("{bin,conf,examples,lib,test/{bin,fixtures,lib}}/**/*") + ['History.md', 'LEGAL', 'LICENSE', 'README.md']
+  s.files         = Dir.glob("{bin,conf,examples,lib}/**/*") + ['History.md', 'LEGAL', 'LICENSE', 'README.md']
   s.require_path  = 'lib'
   s.bindir        = 'bin'
   s.executables   = `git ls-files -- bin/*`.split("\n").map{|f| File.basename(f)}
-  s.test_files    = Dir['test/lib/**/*test.rb']
+  s.test_files    = Dir['test/lib/**/*.rb']
   s.add_dependency 'caruby-core', '>= 1.5.5'
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'yard'
