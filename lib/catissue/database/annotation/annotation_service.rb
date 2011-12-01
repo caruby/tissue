@@ -43,14 +43,8 @@ module CaTissue
 
       # @param [Annotation] (see #create)
       def create_annotation(annotation)
-        # get the hook
-        hook = annotation.hook
-        # If no hook, then this is not a primary annotation. In that case, find a referenced
-        # primary annotation.
-        # If no hook, then this is not a primary annotation. In that case, find a referenced
-        # primary annotation.
-        if hook then
-          create_primary_annotation(annotation, hook)
+        if annotation.class.primary? then
+          create_primary_annotation(annotation, annotation.hook)
         else
           create_nonprimary_annotation(annotation)
         end
