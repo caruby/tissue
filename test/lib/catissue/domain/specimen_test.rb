@@ -143,7 +143,7 @@ class SpecimenTest < Test::Unit::TestCase
     assert_nil(tmpl.position, "#{@spc.qp} save template incorrectly includes the position")
   end
 
-  def test_pathology_annotation
+  def test_prostate_annotation
     pst = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pst.merge_attributes(:specimen => @spc)
     grade = CaTissue::Specimen::Pathology::SpecimenHistologicGrade.new
@@ -162,10 +162,9 @@ class SpecimenTest < Test::Unit::TestCase
     assert_same(htype, pst.histologic_types.first, "Prostate annotation histologic types incorrect")
   end
 
-  # Verifies that caRuby Tissue is compatible with both the caTissue 1.1 and 1.2 Specimen annotation class names. 
+  # Verifies that caRuby Tissue is compatible with both the caTissue 1.1.2 and 1.2 Specimen annotation class names. 
   def test_rename
     assert_same(CaTissue::Specimen::Pathology::SpecimenAdditionalFinding, CaTissue::Specimen::Pathology::AdditionalFinding, "caTissue 1.2 annotation class rename unsupported")
-    assert_same(CaTissue::Specimen::Pathology::SpecimenBaseSolidTissuePathologyAnnotation, CaTissue::Specimen::Pathology::SpecimenBaseSolidTissuePathologyAnnotation, "caTissue 1.2 annotation class rename unsupported")
     assert_same(CaTissue::Specimen::Pathology::SpecimenDetails, CaTissue::Specimen::Pathology::Details, "caTissue 1.2 annotation class rename unsupported")
     assert_same(CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore, CaTissue::Specimen::Pathology::GleasonScore, "caTissue 1.2 annotation class rename unsupported")
     assert_same(CaTissue::Specimen::Pathology::SpecimenHistologicGrade, CaTissue::Specimen::Pathology::HistologicGrade, "caTissue 1.2 annotation class rename unsupported")
