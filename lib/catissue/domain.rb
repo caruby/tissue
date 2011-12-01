@@ -31,15 +31,15 @@ module CaTissue
   #   precedence of jars prior to configs.
   #
   #   The caRuby FAQ shows an example +~/.catissue+ +path+ property that was originally
-  #   borrowed from the caTissue 1.1.1 client example. This incorrect precedence was a time bomb
-  #   that exploded in 1.2. This 1.2 regression is now noted in the FAQ.
+  #   borrowed from the caTissue 1.1.1 client example. This incorrect precedence was a time
+  #   bomb that exploded in 1.2. This 1.2 regression is now noted in the FAQ.
   #
   # @quirk caTissue 1.2 per the caTissue API client Ant build file, the +catissuecore.jar+
   #   should not be included in the client class path, even though it is in the client lib
   #   directory.
   #
   # @param [Module] mod the resource mix-in module to extend with metadata capability
-  def self.extend_module(mod)
+  def self.resource_mixin=(mod)
     # Enable the resource metadata aspect.
     CaRuby::Domain.extend_module(self, :mixin => mod, :metadata => AnnotatableClass, :package => PKG, :directory => SRC_DIR)
     # TODO - somehow filter the path to exclude catissuecore.jar.

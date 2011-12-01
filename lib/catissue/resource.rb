@@ -70,7 +70,7 @@ module CaTissue
     end
   
     # Add meta-data capability to this Resource module.
-    CaTissue.extend_module(self)
+    CaTissue.resource_mixin = self
   end
 end
 
