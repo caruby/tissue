@@ -14,22 +14,6 @@ module CaTissue
     def de_integration_proxy_class
       @de_integration_proxy_class or (superclass.de_integration_proxy_class if superclass < Annotatable)
     end
-    
-    # Initializes the annotation holders for the given class.
-    #
-    # @param [Class] the domain class to extend
-    def self.extended(klass)
-      super
-      # Initialize the class annotation hashes.
-      klass.class_eval do
-        # Enable the class meta-data.
-        # the annotation name => spec hash
-        @ann_spec_hash = {}
-        # the annotation module => proxy hash
-        @ann_mod_pxy_hash = {}
-      end
-      logger.debug { "#{klass} is extended with annotation capability." }
-    end
 
     # @return [Integer, nil] this class's entity id, if it exists, otherwise the superclass effective entity id
     #   if the superclass is an annotation class
@@ -65,7 +49,7 @@ module CaTissue
     # @param [AnnotationModule] mod the annotation module
     # @return [Symbol] the corresponding annotation proxy reference attribute
     def annotation_proxy_attribute(mod)
-      @ann_mod_pxy_hash[mod] or
+      (@ann_mod_pxy_hash and @ann_mod_pxy_hash[mod]) or
         (superclass.annotation_proxy_attribute(mod) if superclass < Annotatable) or
         raise AnnotationError.new("#{qp} #{mod} proxy attribute not found.")
     end
@@ -113,6 +97,7 @@ module CaTissue
     end
     
     def annotation_attributes
+      @ann_mod_pxy_hash ||= {}
       @ann_attrs ||= append_ancestor_enum(@ann_mod_pxy_hash.enum_values) do |sc|
         sc.annotation_attributes if sc < Annotatable
       end
@@ -176,24 +161,26 @@ module CaTissue
       pxy_nm = opts[:proxy_name] || "#{self.name.demodulize}RecordEntry"
       self.annotation_proxy_class_name = pxy_nm
       # add the annotation entry
+      @ann_spec_hash ||= {}
       @ann_spec_hash[mod_sym] = opts
       logger.info("Added #{qp} annotation #{name} with module #{mod_sym}, package #{pkg}, service #{svc} and group #{grp}.")
     end
     
     # @return [Boolean] whether this annotatable class's annotations are loaded
     def annotations_loaded?
-      not @ann_mods.nil?
+      !!@ann_mods
     end
     
     # Loads this class's annotations.
     #
     # @return [<AnnotationModule>] the loaded annotation modules
     def load_local_annotations
+      return Array::EMPTY_ARRAY if @ann_spec_hash.nil?
       # an annotated class has a hook entity id
-      unless @ann_spec_hash.empty? then initialize_annotation_holder end
+      initialize_annotation_holder
       # build the annotations
       @ann_spec_hash.map { |name, opts| import_annotation(name, opts) }
-    end    
+    end
     
     # Determines this annotated class's {#entity_id} and {#de_integration_proxy_class}.
     def initialize_annotation_holder
@@ -246,6 +233,7 @@ module CaTissue
       # Register the attribute.
       add_attribute(attr, proxy, :collection, :saved)
       # the annotation module => proxy attribute association
+      @ann_mod_pxy_hash ||= {}
       @ann_mod_pxy_hash[klass] = attr
       # The proxy is a logical dependent.
       add_dependent_attribute(attr, :logical)
