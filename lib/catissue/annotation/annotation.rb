@@ -1,6 +1,6 @@
 require 'caruby/resource'
 require 'caruby/domain/id_alias'
-require 'catissue/domain/hash_code'
+require 'catissue/helpers/hash_code'
 
 module CaTissue
   # Annotation acceess error class.
