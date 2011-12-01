@@ -7,8 +7,6 @@ require 'catissue/annotation/de_integration'
 
 module CaTissue
   module AnnotationModule
-    include CaRuby::Domain
-    
     # @return [<AnnotationClass>] this module's annotation classes
     attr_reader :annotation_classes
 
@@ -37,7 +35,6 @@ module CaTissue
       mod.extend(self)
       mod.initialize_annotation(hook, opts, &proxy_builder)
     end
-    
     # Builds the annotation module.
     # This method intended to be called only by {AnnotationModule.extend_module}.
     #
@@ -48,13 +45,11 @@ module CaTissue
     # @yieldparam [ProxyClass] proxy the proxy class
     def initialize_annotation(hook, opts)
       logger.debug { "Building #{hook.qp} annotation #{qp}..." }
-      pkg = opts[:package]
+      # Make this module a CaRuby Domain
+      enable_metadata(hook, opts)
       @svc_nm = opts[:service]
       @group = opts[:group]
       @annotation_classes = []
-      # Enable the resource metadata aspect.
-      md_proc = Proc.new { |klass| AnnotationClass.extend_class(klass, self) }
-      CaRuby::Domain::Importer.extend_module(self, :mixin => Annotation, :metadata => md_proc, :package => pkg)
       dei = hook.de_integration_proxy_class
       if dei then
         import_record_entry_class(dei, hook)
@@ -63,8 +58,6 @@ module CaTissue
       @proxy = import_proxy(hook, pxy_nm)
       # Make the hook => proxy reference
       yield @proxy
-      # Load the annotation Ruby source files.
-      load_annotation_class_definitions(hook)
       # Fill out the dependency hierarchy.
       @proxy.build_annotation_dependency_hierarchy
       # Print all known annotation classes.
@@ -105,15 +98,16 @@ module CaTissue
     private
     
     # The location of the domain class definitions.
-    DOMAIN_DIR = File.join(File.dirname(File.dirname(__FILE__)), 'domain')
+    DOMAIN_DIR = File.dirname(__FILE__) + '/../domain'
     
-    # Loads the Ruby class definitions. This method is called by the {AnnotationModule}
-    # annotation builder.
-    #
-    # @param [AnnotatableClass] hook this module's hook class
-    def load_annotation_class_definitions(hook)
+    # @param (see #initialize_annotation)
+    def enable_metadata(hook, opts)
+      # the annotation Ruby source files
       dir = File.join(DOMAIN_DIR, hook.name.demodulize.underscore, name.demodulize.underscore)
-      load_dir(dir)
+      opts[:directory] = dir if File.directory?(dir)
+      opts[:mixin] = Annotation
+      opts[:metadata] = Proc.new { |klass| AnnotationClass.extend_class(klass, self) }
+      CaRuby::Domain.extend_module(self, opts)
     end
     
     # Sets the record entry instance variables for the given class name, if it exists
