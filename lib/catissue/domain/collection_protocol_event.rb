@@ -1,11 +1,11 @@
 require 'caruby/helpers/collection'
-require 'catissue/domain/hash_code'
+require 'catissue/helpers/hash_code'
 
 module CaTissue
   # import the Java class
   resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocolEvent
 
-  # The CollectionProtocolRegistration domain class.
+  # The CollectionProtocolEvent domain class.
   class CollectionProtocolEvent
     include HashCode
     
