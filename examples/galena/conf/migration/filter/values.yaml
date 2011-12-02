@@ -8,9 +8,6 @@
 #   'TRUE' : 'Frozen Tissue'
 #   'FALSE' : 'Fixed Tissue'
 #
-#TissueSpecimen.specimen_type:
-#  !ruby/regexp '/TRUE/i' : 'Frozen Tissue'
-#  !ruby/regexp '/FALSE/i' : 'Fixed Tissue'
 TissueSpecimen.specimen_type:
   /TRUE/i : 'Frozen Tissue'
   /FALSE/i : 'Fixed Tissue'
