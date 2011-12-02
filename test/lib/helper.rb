@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'bundler'
+require 'bundler/setup'
 Bundler.require(:test, :development)
 
 # Open the logger.
