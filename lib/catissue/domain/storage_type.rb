@@ -1,7 +1,7 @@
 require 'caruby/helpers/collection'
 require 'caruby/helpers/partial_order'
 require 'catissue/helpers/storage_type_holder'
-require 'catissue/domain/hash_code'
+require 'catissue/helpers/hash_code'
 
 module CaTissue
   # import the Java class
