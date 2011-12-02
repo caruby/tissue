@@ -3,7 +3,6 @@ require 'caruby/helpers/uniquifier'
 require 'catissue/database/controlled_values'
 
 class ControlledValuesTest < Test::Unit::TestCase
-  
   def test_search_by_public_id
     races = CaTissue::ControlledValues.instance.for_public_id('Race_PID')
     assert_not_nil(races, "Race CVs not loaded")
