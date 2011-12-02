@@ -3,16 +3,14 @@
 # seed: seeds the Galena example administrative objects in the database
 #
 
+# Add the Galena lib to the path.
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
 require 'rubygems'
 gem 'bundler/setup'
 Bundler.require
 
-# Add the Galena lib to the path.
-$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
-
-require 'catissue'
 require 'catissue/cli/command'
-
 require 'galena/tissue/seed/defaults'
 
 CaTissue::CLI::Command.new.start { Galena.seed }
