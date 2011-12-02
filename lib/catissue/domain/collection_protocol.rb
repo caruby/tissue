@@ -1,5 +1,5 @@
 require 'date'
-require 'catissue/domain/hash_code'
+require 'catissue/helpers/hash_code'
 
 module CaTissue
   # import the Java class
@@ -9,7 +9,7 @@ module CaTissue
   #
   # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
   #   Create CollectionProtocol in API ignores startDate.
-  class CollectionProtocol
+  class CollectionProtocol < CaTissue::SpecimenProtocol
     include HashCode
     
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
