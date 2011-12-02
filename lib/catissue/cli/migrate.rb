@@ -18,30 +18,39 @@ module CaTissue
         [:shims, "-s", "--shims FILE[,FILE...]", Array, "Migration customization shim file(s) to load"],
         [:bad, "-b", "--bad FILE", "Write each invalid record to the given file and continue migration"],
         [:unique, "-u", "--unique", "Make the migrated objects unique for testing"],
-        [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"]
+        [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"],
+        [:extract, "--extract EXTRACTOR", "Write the migrated caTissue object to the given appendable object as well as the database"]
       ]
-  
-      # Creates a {Migrate} command with the given standard command line specifications.
-      # as well as the {SPECS} command line specifications.
+
+      # Creates a {Migrate} command with the {SPECS} command line specifications
+      # as well as the optional specifications parameter.
       #
-      # @yield [opts] optional migrator factory
-      # @yieldparam [{Symbol => Object}] the {CaTissue::Migrator#initialize} creation options
-      # @see CaRuby::Command#run
-      def initialize(&factory)
-        super(SPECS) { |opts| migrate(opts, &factory) }
+      # @param (see CaRuby::CLI::Command#initialize)
+      # @yield (see #migrate)
+      # @yieldparam (see #migrate)
+      def initialize(specs=[], &block)
+        super(specs.concat(SPECS)) { |opts| migrate(opts, &block) }
       end
   
       private
       
-      # Starts a Migrator with the command-line options.
+      # Starts a Migrator with the command-line options. Each input record is migrated to
+      # the caTissue database. In addition, if the +:extract+ option is set, then each
+      # migrated target caTissue domain object is appended to the +:extract+ value using
+      # the +<<+ operator. 
       #
-      # @yield [target] operation on the migration target
-      # @yieldparam [CaRuby::Resource] the migrated domain object 
-      # @see CaRuby::Command#run
+      # @param opts (see CaTissue::Migrator#initialize)
+      # @yield (see CaTissue::Migrator#migrate_to_database)
+      # @yieldparam (see CaTissue::Migrator#migrate_to_database)
       def migrate(opts)
         validate(opts)
-        migrator = block_given? ? yield(opts) : CaTissue::Migrator.new(opts)
-        migrator.migrate_to_database
+        # The extractor which writes a extract from each migrated record.
+        @extractor = opts[:extract]
+        # Migrate the input.
+        CaTissue::Migrator.new(opts).migrate_to_database do |tgt|
+          yield tgt if block_given?
+          @extractor << tgt if @extractor
+        end
       end
       
       def validate(opts)
