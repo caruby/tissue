@@ -1,5 +1,4 @@
 require 'catissue/helpers/collectible_event_parameters'
-require 'caruby/helpers/validation'
 
 module CaTissue
   # import the Java class
@@ -12,6 +11,5 @@ module CaTissue
     
     # An auto-generated CEP must fetch the user.
     qualify_attribute(:user, :saved_fetch)
-
   end
 end
