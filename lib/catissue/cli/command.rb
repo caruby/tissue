@@ -10,14 +10,12 @@ module CaTissue
   module CLI
     # Augments {CaRuby::CLI::Command} with caTissue-specific command line option handlers.
     class Command < CaRuby::CLI::Command
-      # 
       # Built-in options include those specified in +CaRuby::CLI::Command.initialize+
       # as well as the following:
-      # * --version : print the version of caRuby Tissue as well as the supported caTissue releases and exit
+      # * +--version+ : print the version of caRuby Tissue as well as the supported
+      #   caTissue releases and exit
       #
-      # @param [(<Symbol>, <String, Class>)] specs the arguments and options
-      #   described in +CaRuby::CLI::Command.initialize+
-      # @see {CaRuby::CLI::Command#initialize}
+      # @param (see CaRuby::CLI::Command#initialize)
       def initialize(specs=[])
         specs << VERSION_OPT
         super
