@@ -467,6 +467,7 @@ module CaTissue
     
     # @return [CaTissue::ReceivedEventParameters] the default REP
     def create_default_received_event_parameters
+      return if specimen_collection_group.nil?
       user = specimen_collection_group.receiver || default_scg_coordinator || return
       rep = CaTissue::ReceivedEventParameters.new(:specimen => self, :user => user)
       logger.debug { "Created default #{qp} received event #{rep.qp}." }
