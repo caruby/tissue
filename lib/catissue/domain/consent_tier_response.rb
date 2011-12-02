@@ -8,6 +8,5 @@ module CaTissue
     add_attribute_defaults(:response => 'Not Specified')
     
     qualify_attribute(:consent_tier, :fetched)
-
   end
 end
