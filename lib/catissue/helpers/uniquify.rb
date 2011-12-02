@@ -1,6 +1,10 @@
 require 'caruby/domain/uniquify'
 
 module CaTissue
+  shims CollectionProtocol, CollectionProtocolEvent, Container, ContainerType, StorageType,
+    ParticipantMedicalIdentifier, CollectionProtocolRegistration, SpecimenCollectionGroup,
+    ExternalIdentifier, User
+  
   class CollectionProtocol
     include CaRuby::Resource::Unique
     
@@ -22,6 +26,17 @@ module CaTissue
     def uniquify
       super
       subcontainers.each { |ctr| ctr.uniquify }
+    end
+  end
+
+  class ContainerType
+    include CaRuby::Resource::Unique
+  end
+
+  class StorageType
+    def uniquify
+      super
+      child_container_types.each { |type| type.uniquify } 
     end
   end
 
