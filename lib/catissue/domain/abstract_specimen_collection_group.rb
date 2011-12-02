@@ -16,6 +16,5 @@ module CaTissue
     def each_dependent
       super { |dep| yield dep unless AbstractSpecimen === dep and dep.parent }
     end
-
   end
 end
