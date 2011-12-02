@@ -39,22 +39,16 @@ module Galena
       #
       # @see {CaTissue::MigrationTestCase#create_migrator}
       def create_migrator(fixture, opts={})
+        # The fixture config directory.
+        dir = File.join(CONFIGS, fixture.to_s)
         opts[:target] ||= CaTissue::TissueSpecimen
-        opts[:mapping] ||= File.join(CONFIGS, "#{fixture}_fields.yaml")
-        unless opts.has_key?(:defaults) then
-          f = File.join(CONFIGS, "#{fixture}_defaults.yaml")
-          if File.exists?(f) then opts[:defaults] = f end
-        end
-        unless opts.has_key?(:filters) then
-          f = File.join(CONFIGS, "#{fixture}_values.yaml")
-          if File.exists?(f) then opts[:filters] = f end
-        end
-        unless opts.has_key?(:shims) then
-          f = File.join(SHIMS, "#{fixture}.rb")
-          if File.exists?(f) then
-            opts[:shims] = [f]
-          end    
-        end
+        opts[:mapping] ||= File.expand_path('fields.yaml', dir)
+        f = File.expand_path('defaults.yaml', dir)
+        opts[:defaults] ||= f if File.exists?(f)
+        f = File.expand_path('values.yaml', dir)
+        opts[:filters] ||= f if File.exists?(f)
+        f = File.expand_path("#{fixture}.rb", SHIMS)
+        opts[:shims] ||= [f] if File.exists?(f)
         mgtr = super
         if opts[:unique] then
           defaults.protocols.each do |pcl|
