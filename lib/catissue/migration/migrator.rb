@@ -7,8 +7,8 @@ require 'catissue/database/controlled_value_finder'
 module CaTissue
   # Migrates a CSV extract to caTissue. See the {#initialize} documentation for usage options.
   #
-  # See the Galena Cancer Center Tissue Bank Migration Example for further information
-  # about how the options tailor migration, esp. the use of the field mappings and shims.
+  # See the Galena migration example for further information about to tailor the migration,
+  # esp. the use of the field mappings and shims.
   class Migrator < CaRuby::Migrator
     # Creates a new Migrator with the given options.
     #
