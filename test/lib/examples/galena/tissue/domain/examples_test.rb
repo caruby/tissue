@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../helpers/test_case'
 
 # Verifies the Galena caTissue usage examples.
 class ExamplesTest < Test::Unit::TestCase

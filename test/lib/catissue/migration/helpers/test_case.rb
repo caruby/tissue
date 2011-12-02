@@ -39,10 +39,9 @@ module CaTissue
     # @param [{Symbol => Object}] opts (see CaTissue::Migrator#initialize)
     # @option (see CaTissue::Migrator#initialize)
     # @return [CaTissue::Migrator]
-    # @yield [opts] the optional Migrator factory
-    def create_migrator(fixture, opts={}, &factory)
+    def create_migrator(fixture, opts={})
       opts[:input] ||= File.join(@fixtures, fixture.to_s + '.csv')
-      block_given? ? yield(opts) : CaTissue::Migrator.new(opts)
+      CaTissue::Migrator.new(opts)
     end
 
     # Verifies that the given test fixture is successfully migrated.
@@ -68,6 +67,7 @@ module CaTissue
     # Verifies the given fixture migration.
     # Each migrated target object is validated using {#validate_target}.
     # The target is migrated but not stored.
+    # The +:unique+ option is set to false by default.
     #
     # @param [Symbol] fixture the test fixture to verify
     # @param [<Symbol>] opts the migration options
