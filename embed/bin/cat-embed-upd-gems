@@ -1,4 +1,5 @@
 inst_dir=`gem environment | grep 'INSTALLATION DIRECTORY' | grep -oE '[^ ]*$'`
+# TODO - determine gems from bundler
 gems=`cat gems.txt | tr '\n' ' '`
 tgt_dir='target/gem_home'
 sub_dirs='cache gems specifications'
