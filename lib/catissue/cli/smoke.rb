@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/command'
-require 'catissue/database'
 
 module CaTissue
   module CLI
@@ -29,7 +28,7 @@ module CaTissue
         rescue Exception => e
           logger.error("caTissue database access was unsuccessful - #{e}:\n#{e.backtrace.qp}")
           puts "caTissue database access was unsuccessful - #{e}."
-          puts "See the log at #{DEF_LOG_FILE} for more information."
+          puts "See the log for more information."
         end
         
         if site then
