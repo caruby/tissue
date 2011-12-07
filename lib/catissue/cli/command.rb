@@ -1,10 +1,9 @@
 require 'rubygems'
 require 'bundler/setup'
-Bundler.require
 
+require 'catissue'
 require 'caruby/cli/command'
 require 'caruby/database'
-require 'catissue/version'
 
 module CaTissue
   module CLI
