@@ -92,13 +92,13 @@ module PSBIN
     
     private
   
-    # The default migration input data directory.
+    # The migration input data directory.
     FIXTURES = File.dirname(__FILE__) + '/../../../../examples/psbin/data'
   
-    # The default migration shims directory.
-    SHIMS = File.dirname(__FILE__) + '/../../../../examples/psbin/lib/psbin/migration/helpers/shims'
+    # The migration shims directory.
+    SHIMS = File.dirname(__FILE__) + '/../../../../examples/psbin/lib/psbin/'
     
-    # The dfault migration configuration directory.
+    # The migration configuration directory.
     CONFIGS = File.dirname(__FILE__) + '/../../../../examples/psbin/conf'
     
     PATIENT_OPTS = {

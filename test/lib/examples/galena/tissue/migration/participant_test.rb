@@ -29,7 +29,7 @@ module Galena
       
       private
       
-      ALT_ID_SHIM = File.expand_path('alt_key.rb', File.dirname(__FILE__) + '/helpers/shims')
+      ALT_ID_SHIM = File.expand_path('alt_key.rb', File.dirname(__FILE__) + '/helpers')
       
       def clear
         # push aside the existing test participant

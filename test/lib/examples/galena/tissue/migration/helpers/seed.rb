@@ -1,6 +1,6 @@
 require 'caruby/helpers/inflector'
 require 'caruby/migration/migratable'
-require 'galena/tissue/migration/helpers/migrator'
+require 'galena/tissue/migration/migrator'
 
 module CaTissue
   # Augment the classes below with sufficient content to pass the create mandatory attribute validation.

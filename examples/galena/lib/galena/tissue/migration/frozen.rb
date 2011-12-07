@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../migrator'
+require File.expand_path('migrator', File.dirname(__FILE__))
 
 module CaTissue
   # Declares the classes modified for migration.

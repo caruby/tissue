@@ -40,7 +40,7 @@ module CaTissue
     # @option (see CaTissue::Migrator#initialize)
     # @return [CaTissue::Migrator]
     def create_migrator(fixture, opts={})
-      opts[:input] ||= File.join(@fixtures, fixture.to_s + '.csv')
+      opts[:input] ||= File.expand_path("#{fixture}.csv", @fixtures)
       CaTissue::Migrator.new(opts)
     end
 

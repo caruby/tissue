@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/helpers/test_case'
 module Galena
   module Tissue
     class GeneralMigrationTest < Test::Unit::TestCase
-      include Galena::Tissue::MigrationTestCase
+      include MigrationTestCase
     
       def test_target
         verify_target(:general) do |spc|

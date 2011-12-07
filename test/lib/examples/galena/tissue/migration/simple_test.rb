@@ -4,7 +4,7 @@ module Galena
   module Tissue
     class SimpleTest < Test::Unit::TestCase
       include MigrationTestCase
-    
+      
       def test_target
         verify_target(:simple) do |spc|
           assert_not_nil(spc.initial_quantity, "Missing quantity")

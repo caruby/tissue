@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/helpers/test_case'
 module Galena
   module Tissue
     class FilterMigrationTest < Test::Unit::TestCase
-      include Galena::Tissue::MigrationTestCase
+      include MigrationTestCase
     
       def test_filter
         verify_target(:filter, :bad => BAD_FILE) do |spc|
