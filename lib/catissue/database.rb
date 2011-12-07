@@ -410,13 +410,13 @@ module CaTissue
     # Overrides {CaRuby::Database::Writer#save_with_template} to work around the following
     # caTissue bugs:
     #
-    # @quirk caTissue  Bug #63: a SpecimenCollectionGroup update requires the referenced
+    # @quirk caTissue  Bug #63: A SpecimenCollectionGroup update requires the referenced
     #   CollectionProtocolRegistration with an identifier to hold extraneous
     #   CollectionProtocolRegistration content, including the CPR collection protocol and PPI.
     #
-    # @quirk caTissue Bug: CollectionProtocolRegistration must cascade throughCP, but the
-    #   CP events cannot cascade to SpecimenRequirement without raising an Exception.
-    #   Work-around is to clear the template CP events.
+    # @quirk caTissue Bug: CollectionProtocolRegistration must cascade through the
+    #   CollectionProtocol, but the CP events cannot cascade to SpecimenRequirement without
+    #   raising an Exception. Work-around is to clear the template CP events.
     #
     # @quirk caTissue Create Specimen with nil label does not auto-generate the label.
     #   Work-around is to set the label to a unique value.
@@ -525,13 +525,17 @@ module CaTissue
     end
 
     # Augment {CaRuby::Database::Writer#create_object} to work around caTissue bugs.
+    #
     # @quirk caTissue Bug #124: SCG SpecimenEventParameters save fails validation.
     #   Work-around is to create the SEP by updating the SCG.
-    # @quirk If obj is a CaTissue::Specimen with the is_available flag set to false, then work around the bug
-    #   described in {#create_unavailable_specimen}.
-    # @quirk caTissue Bug #161: Specimen API disposal not reflected in result activity status.
+    #
+    # @quirk If the save argument domain object is a CaTissue::Specimen with the +is_available+
+    # flag set to false, then work around the bug described in {#create_unavailable_specimen}.
+    #
+    # @quirk caTissue Bug #161: Specimen API disposal is not reflected in the saved result activity status.
     #   DisposalEventParameters create sets the owner Specimen activity_status to +Closed+ as a side-effect.
     #   Reflect this side-effect in the submitted DisposalEventParameters owner Specimen object.
+    #
     # Pass through an {Annotation::Proxy} to the referenced annotations.
     #
     # @param [Resource] obj the dependent domain object to save
