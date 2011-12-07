@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/lib/catissue/version'
 Gem::Specification.new do |s|
   s.name          = "caruby-tissue"
   s.summary       = "Ruby facade for the caTissue application" 
-  s.description   = s.summary
+  s.description   = s.summary + '. See caruby.rubyforge.org for more information.'
   s.version       = CaTissue::VERSION
   s.date          = Date.today
   s.author        = "OHSU"
@@ -15,8 +15,8 @@ Gem::Specification.new do |s|
   s.bindir        = 'bin'
   s.executables   = `git ls-files -- bin/*`.split("\n").map{|f| File.basename(f)}
   s.test_files    = Dir['test/lib/**/*.rb']
-  s.add_dependency 'caruby-core', '>= 1.5.5'
-  s.add_development_dependency 'bundler'
+  s.add_dependency 'bundler'
+  s.add_dependency 'caruby-core', '>= 2.1.1'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'rake'
   s.has_rdoc      = 'yard'
