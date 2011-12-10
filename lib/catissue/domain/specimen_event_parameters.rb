@@ -33,6 +33,10 @@ module CaTissue
     #
     # The optional params argument are attribute => value associations, e.g.
     #   SpecimenEventParameters.create_parameters(:collection, scg, :user => collector, :timestamp => DateTime.now)
+    #
+    # @param [String, Symbol] type the event type
+    # @param [SpecimenCollectionGroup, Specimen] scg_or_specimen the event owner
+    # @param [{Symbol => Object}, nil] params the attribute => value associations
     def self.create_parameters(type, scg_or_specimen, params=Hash::EMPTY_HASH)
       # make the class name by joining the camel-cased type prefix to the subclass suffix.
       # classify converts a lower_case, underscore type to a valid class name, e.g. :check_in_check_out
