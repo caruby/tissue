@@ -212,7 +212,7 @@ class SpecimenTest < Test::Unit::TestCase
     assert_equal(changed, chr.tissue_site, "#{@spc} #{chr} tissue site not updated")
   end
   
-  def test_event_save
+  def test_nondisposal_event_save
     # add an event
     ev = CaTissue::SpunEventParameters.new(:specimen => @spc, :duration_in_minutes => 2, :gravity_force => 5)
     verify_save(@spc)
