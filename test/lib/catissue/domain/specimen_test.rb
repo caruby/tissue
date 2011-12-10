@@ -212,14 +212,24 @@ class SpecimenTest < Test::Unit::TestCase
     assert_equal(changed, chr.tissue_site, "#{@spc} #{chr} tissue site not updated")
   end
   
-  def test_nondisposal_event_save
+  def test_nondisposal_specimen_event_save
     # add an event
     ev = CaTissue::SpunEventParameters.new(:specimen => @spc, :duration_in_minutes => 2, :gravity_force => 5)
     verify_save(@spc)
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
+    # make a nonanticipatory specimen
+    spc2 = CaTissue::Specimen.create_specimen(
+      :requirement => defaults.specimen_requirement,
+      :specimen_collection_group => defaults.specimen_collection_group,
+      :initial_quantity => 2.0)
+    # add an event to the nonanticipatory specimen
+    ev2 = CaTissue::SpunEventParameters.new(:specimen => spc2, :duration_in_minutes => 1, :gravity_force => 3)
+    # Save the new specimen
+    verify_save(spc2)
+    assert_not_nil(ev.identifier, "#{spc2} event #{ev2} not saved")
   end
   
-  # Verifies the caRuby Bug #9 and #10 fix.
+  # Verifies the caRuby Bug #9, #10 and #11 fixes.
   def test_disposal_event_save
     # add an event to the anticipatory specimen
     ev = CaTissue::DisposalEventParameters.new(:specimen => @spc)
@@ -227,7 +237,10 @@ class SpecimenTest < Test::Unit::TestCase
     verify_save(@spc)
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
     # make a nonanticipatory specimen
-    spc2 = CaTissue::Specimen.create_specimen(:requirement => @specimen_requirement, :initial_quantity => 2.0)
+    spc2 = CaTissue::Specimen.create_specimen(
+      :requirement => defaults.specimen_requirement,
+      :specimen_collection_group => defaults.specimen_collection_group,
+      :initial_quantity => 2.0)
     # add an event to the nonanticipatory specimen
     ev2 = CaTissue::DisposalEventParameters.new(:specimen => spc2)
     # Save the new specimen
@@ -269,12 +282,6 @@ class SpecimenTest < Test::Unit::TestCase
     # update the specimen to exercise Bug #164 fixed in 1.2
     logger.debug { "#{self} updating second EID specimen #{spc2}..." }
     verify_save(spc2)
-  end
-   
-  def test_events_save
-    # add an event
-    CaTissue::FrozenEventParameters.new(:specimen => @spc, :freeze_method => 'Cryostat')
-    verify_save(@spc)
   end
 
   def test_position_save
