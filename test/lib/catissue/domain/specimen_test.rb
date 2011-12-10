@@ -220,7 +220,7 @@ class SpecimenTest < Test::Unit::TestCase
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
   end
   
-  # Verified bug #9
+  # Verifies the caRuby Bug #9 fix.
   def test_disposal_event_save
     # add an event
     ev = CaTissue::DisposalEventParameters.new(:specimen => @spc)
@@ -228,14 +228,14 @@ class SpecimenTest < Test::Unit::TestCase
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
   end
   
-  # Tests the work-around for caTissue Bug #159: Update pending Specimen ignores availableQuantity.
+  # Verifies the work-around for caTissue Bug #159: Update pending Specimen ignores availableQuantity.
   def test_quantity_save
     # reset the available quantity
     @spc.available_quantity = @spc.initial_quantity / 2
     verify_save(@spc)
   end
 
-  # Exercises the CaTissue::Specimen external_identifiers logical dependency work-around.
+  # Verifies the CaTissue::Specimen external_identifiers logical dependency work-around.
   def test_eid_save
     verify_save(@spc)
     # add an EID
