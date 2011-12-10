@@ -340,23 +340,23 @@ module CaTissue
     # @param (see CaRuby::Writer#save_dependents)
     def save_changed_dependents(obj)
       if CaTissue::Specimen === obj then
-        dsp = specimen.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
+        dsp = obj.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
       end
       if dsp then
-        logger.debug { "Work around caTissue #{specimen.qp} event parameters save order dependency by deferring #{dsp.qp} save..." }
-        specimen.specimen_events.delete(dsp)
+        logger.debug { "Work around caTissue #{obj.qp} event parameters save order dependency by deferring #{dsp.qp} save..." }
+        obj.specimen_events.delete(dsp)
       end
       
       # Delegate to the standard save_changed_dependents.
       begin
         super
       ensure
-        specimen.specimen_events << dsp if dsp
+        obj.specimen_events << dsp if dsp
       end
       
       # Save the deferred disposal, if any.
       if dsp then
-        logger.debug { "Creating deferred #{specimen.qp} dependent #{dsp.qp}..." }
+        logger.debug { "Creating deferred #{obj.qp} dependent #{dsp.qp}..." }
         save_dependent_if_changed(obj, :specimen_events, dsp)
       end
     end
