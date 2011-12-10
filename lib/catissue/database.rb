@@ -339,7 +339,7 @@ module CaTissue
     #
     # @param (see CaRuby::Writer#save_dependents)
     def save_changed_dependents(obj)
-      if Catissue::Specimen === obj then
+      if CaTissue::Specimen === obj then
         dsp = specimen.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
       end
       if dsp then
