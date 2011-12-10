@@ -10,6 +10,6 @@ module CaTissue
     add_attribute_defaults(:collection_procedure => 'Not Specified', :container => 'Not Specified')
     
     # An auto-generated CEP must fetch the user.
-    qualify_attribute(:user, :saved_fetch)
+    qualify_attribute(:user, :fetch_saved)
   end
 end
