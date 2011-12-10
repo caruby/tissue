@@ -234,15 +234,6 @@ class SpecimenTest < Test::Unit::TestCase
     verify_save(spc2)
     assert_not_nil(ev.identifier, "#{spc2} event #{ev2} not saved")
   end
-  
-  # Verifies the caRuby Bug #9 fix.
-  def test_nonanticipatory_specimen_disposal_event_save
-    # add an event
-    ev = CaTissue::DisposalEventParameters.new(:specimen => @spc)
-    # Save the specimen, which will update the anticipatory specimen
-    verify_save(@spc)
-    assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
-  end
  
   # Verifies the work-around for caTissue Bug #159: Update pending Specimen ignores availableQuantity.
   def test_quantity_save
