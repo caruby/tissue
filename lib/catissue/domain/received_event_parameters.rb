@@ -14,7 +14,7 @@ module CaTissue
     add_mandatory_attributes(:received_quality)
     
     # An auto-generated REP must fetch the user.
-    qualify_attribute(:user, :saved_fetch)
+    qualify_attribute(:user, :fetch_saved)
 
     private
 

@@ -4,8 +4,6 @@ require 'fileutils'
 module Wustl
   # Logger configures the +edu.wustl+ logger.
   module Logger
-    include FileUtils
-
     # @quirk caTissue caTissue requires that a +log+ directory exist in the working directory.
     #   Messages are logged to +client.log+ and +catissuecore.log+ in this directory. Although
     #   these logs are large and the content is effectively worthless, nevertheless the directory
@@ -32,7 +30,7 @@ module Wustl
     #   directory contains a log subdirectory.
     def self.configure
       dir = File.expand_path('log')
-      mkdir(dir) unless File.exists?(dir)
+      FileUtils.mkdir(dir) unless File.exists?(dir)
       
       # Set the configured flag. Configure only once.
       if @configured then return else @configured = true end

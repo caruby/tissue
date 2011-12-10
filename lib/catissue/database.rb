@@ -154,8 +154,8 @@ module CaTissue
     # @param (see CaRuby::Database#update_object)
     # @return (see CaRuby::Database#update_object)
     def update_object(obj)
-      if collectible_event_parameters?(obj) then
-        save_collectible_event_parameters(obj)
+      if collectible_scg_event_parameters?(obj) then
+        save_collectible_scg_event_parameters(obj)
       elsif CaTissue::ConsentTierResponse === obj then
         update_consent_tier_response(obj)
       elsif Annotation === obj then
@@ -208,7 +208,7 @@ module CaTissue
       return false unless CaTissue::SpecimenCollectionGroup === obj and operation == :update
       last = @operations.last
       # Is the nesting operation on an SEP?
-      return false unless last and collectible_event_parameters?(last.subject)
+      return false unless last and collectible_scg_event_parameters?(last.subject)
       ev = last.subject
       # Is the SEP SCG the same as the target SCG?
       return false unless ev.specimen_collection_group == obj
@@ -287,8 +287,9 @@ module CaTissue
       logger.debug { "Work around #{specimen} update anomaly by copying position #{template.position.qp} to update template #{template.qp} as #{template.position.qp} with values #{vh.qp}..." }
     end
     
-    # @return [Boolean] whether obj is a CollectibleEventParameters with a SCG owner
-    def collectible_event_parameters?(obj)
+    # @param [Resource] obj the object to save
+    # @return [Boolean] whether the object is a CollectibleEventParameters with a SCG owner
+    def collectible_scg_event_parameters?(obj)
       CollectibleEventParameters === obj and obj.specimen_collection_group
     end
 
@@ -296,7 +297,7 @@ module CaTissue
     # @return (see CaRuby::Database#update_object)
     # @see #create_object
     # @see #update_object
-    def save_collectible_event_parameters(ep)
+    def save_collectible_scg_event_parameters(ep)
       scg = ep.specimen_collection_group
       logger.debug { "Work around #{ep.qp} caTissue SCG SpecimenEventParameters update bug by updating the owner #{scg.qp} instead..." }
       ensure_exists(scg)
@@ -316,57 +317,47 @@ module CaTissue
         logger.debug { "caTissue #{ctr} update work-around completed." }
     end
 
-    # Overrides {CaRuby::Database::Writer#save_changed_dependents} to handle the following anomalies:
-    # * create Specimen disposal event last, as described in {#save_changed_specimen_dependents}
+    # Overrides {CaRuby::Database::Writer#save_changed_dependents} to handle the following anomaly:
+    #
+    # @quirk caTissue DisposalEventParameters must be created after all other Specimen SEPs. This
+    #   use case arises when migrating a source biorepository discarded specimen for archival.
+    #   
+    #   The process for creating a discarded Specimen is as follows:
+    #   * Create the Specimen with status Active.
+    #   * Create the non-disposal events.
+    #   * Create the DisposalEventParameters.
+    #   
+    #   {#save_changed_dependents} delegates to this method to handle the latter two steps.
+    #   
+    #   A DisposalEventParameters cannot be created for a closed Specimen. Conversely, caTissue closes
+    #   the Specimen as a side-effect of creating a DisposalEventParameters. Therefore, even if the
+    #   client submits a closed Specimen for create, this CaTissue::Database must first create the
+    #   Specimen with status Active, then submit the DisposalEventParameters.
+    #   
+    #   This is a work-around on top of the {#create_unavailable_specimen} work-around. See that method 
+    #   for the subtle interaction required between these two work-arounds.
     #
     # @param (see CaRuby::Writer#save_dependents)
     def save_changed_dependents(obj)
-      case obj
-        when Specimen then save_changed_specimen_dependents(obj) { super }
-        else super
-      end   
-    end
-    
-    # Overrides {CaRuby::Database::Writer#save_changed_dependents} on a Specimen to correct the
-    # following problem:
-    #
-    # @quirk caTissue DisposalEventParameters must be created after all other Specimen SEPs.
-    #
-    # The process for migrating a discarded Specimen is as follows:
-    # * Create the Specimen with status Active.
-    # * Create the non-disposal events.
-    # * Create the DisposalEventParameters.
-    #
-    # {#save_changed_dependents} delegates to this method to handle the latter two steps.
-    #
-    # A DisposalEventParameters cannot be created for a closed Specimen. Conversely, caTissue closes
-    # the Specimen as a side-effect of creating a DisposalEventParameters. Therefore, even if the
-    # client submits a closed Specimen for create, this CaTissue::Database must first create the
-    # Specimen with status Active, then submit the DisposalEventParameters.
-    #
-    # This is a work-around on top of the {#create_unavailable_specimen} work-around. See that method 
-    # for the subtle interaction required between these two work-arounds.
-    #
-    # @param [CaTissue::Specimen] the specimen whose dependents are to be saved
-    # @yield [dependent] calls the base {CaRuby::Writer#save_changed_dependents} 
-    # @yieldparam [Resource] specimen the specimen to save
-    def save_changed_specimen_dependents(specimen)
-      dsp = specimen.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
+      if CaTissue::Specimen === obj then
+        dsp = obj.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
+      end
       if dsp then
-        logger.debug { "Work around caTissue #{specimen.qp} event parameters save order dependency by deferring #{dsp.qp} save..." }
-        specimen.specimen_events.delete(dsp)
+        logger.debug { "Work around caTissue #{obj.qp} event parameters save order dependency by deferring #{dsp.qp} save..." }
+        obj.specimen_events.delete(dsp)
       end
       
+      # Delegate to the standard save_changed_dependents.
       begin
-        yield specimen
+        super
       ensure
-        specimen.specimen_events << dsp if dsp
+        obj.specimen_events << dsp if dsp
       end
       
-      # save the deferred disposal if any
+      # Save the deferred disposal, if any.
       if dsp then
-        logger.debug { "Creating deferred #{specimen.qp} dependent #{dsp.qp}..." }
-        save_changed_dependents(dsp)
+        logger.debug { "Creating deferred #{obj.qp} dependent #{dsp.qp}..." }
+        save_dependent_if_changed(obj, :specimen_events, dsp)
       end
     end
     
@@ -529,7 +520,7 @@ module CaTissue
     # @quirk caTissue Bug #124: SCG SpecimenEventParameters save fails validation.
     #   Work-around is to create the SEP by updating the SCG.
     #
-    # @quirk If the save argument domain object is a CaTissue::Specimen with the +is_available+
+    # @quirk caTissue If the save argument domain object is a CaTissue::Specimen with the +is_available+
     # flag set to false, then work around the bug described in {#create_unavailable_specimen}.
     #
     # @quirk caTissue Bug #161: Specimen API disposal is not reflected in the saved result activity status.
@@ -540,14 +531,15 @@ module CaTissue
     #
     # @param [Resource] obj the dependent domain object to save
     def create_object(obj)
-     if collectible_event_parameters?(obj) then
-        save_collectible_event_parameters(obj)
+     if collectible_scg_event_parameters?(obj) then
+        save_collectible_scg_event_parameters(obj)
       elsif CaTissue::Specimen === obj then
         obj.add_defaults
+        # Special case for an unavailable specimen.
+        # The obj.is_available == false test is required as opposed to obj.is_available?,
+        # since a nil is_available flag does not imply an unavailable specimen.
         if obj.is_available == false or obj.available_quantity.zero? then
-          # Note that the obj.is_available == false test is required as opposed to obj.is_available?,
-          # since a nil is_available flag does not imply an unavailable specimen.
-          return create_unavailable_specimen(obj) { super }
+          return create_unavailable_specimen(obj)
         end
       end
       
@@ -589,46 +581,46 @@ module CaTissue
     # Creates the given specimen by working around the following bug:
     #
     # @quirk caTissue Bug #160: Missing Is Available? validation.
-    # Cannot create a Specimen with any of the following conditions:
-    # * zero available_quantity
-    # * is_available flag set to false
-    # * activity_status is +Closed+
-    #
-    # The work-around is to set the flags to true and +Active+, resp., set the quantities
-    # to a non-zero value, create the Specimen and then update the created Specimen with
-    # the original values.
-    #
-    # If the specimen has a disposal event, then this work-around interacts with the
-    # {#save_changed_dependents} work-around as follows:
-    # * Delete that event from the Specimen.
-    # * Create the Specimen as described above.
-    # * Update the Specimen as described above, but do not set the activity_status to +Closed+.
-    # * Create the pending disposal event.
+    #   Cannot create a Specimen with any of the following conditions:
+    #   * zero available_quantity
+    #   * is_available flag set to false
+    #   * activity_status is +Closed+
+    #   
+    #   The work-around is to set the flags to true and +Active+, resp., set the quantities
+    #   to a non-zero value, create the Specimen and then update the created Specimen with
+    #   the original values.
+    #   
+    #   If the specimen has a disposal event, then this work-around interacts with the
+    #   {#save_changed_dependents} work-around as follows:
+    #   * Delete that event from the Specimen.
+    #   * Create the Specimen as described above.
+    #   * Update the Specimen as described above, but do not set the activity_status to +Closed+.
+    #   * Create the pending disposal event.
     #
     # @param [CaTissue::Specimen] specimen the specimen to create
     def create_unavailable_specimen(specimen)
       logger.debug { "Resetting #{specimen} quantities and available flag temporarily to work around caTissue Bug #160..." }
       specimen.is_available = true
+      # Capture the intended quantity and status.
       oiqty = specimen.initial_quantity
-      oaqty = specimen.available_quantity
       ostatus = specimen.activity_status
+      # Reset the quantities and status to values which caTissue will accept.
       specimen.initial_quantity = 1.0
       specimen.available_quantity = 1.0
       specimen.activity_status = 'Active'
       # Cannot reset a disposed Specimen quantity, so postpone disposal until
       # quantities are reset. 
       dsp = specimen.specimen_events.detect { |sep| CaTissue::DisposalEventParameters === sep }
-      if dsp then
-        specimen.specimen_events.delete(dsp)
-      end
+      if dsp then specimen.specimen_events.delete(dsp) end
 
-      # delegate to standard create
-      yield
+      # Delegate to the standard create.
+      self.class.superclass.instance_method(:create_object).bind(self).call(specimen)
 
       logger.debug { "Reupdating created #{specimen} with initial quantity and available flag set back to original values to complete caTissue Bug #160 work-around..." }
+      # Restore the available flag and initial quantity.
       specimen.is_available = false
       specimen.initial_quantity = oiqty
-      # the available quantity is always zero, since the available flag is set to false
+      # The available quantity is always zero, since the available flag is set to false.
       specimen.available_quantity = 0.0
       # Leave status Active if there is a disposal event, since quantities cannot be reset
       # on a closed Specimen and creating the disposal event below will close the Specimen.
