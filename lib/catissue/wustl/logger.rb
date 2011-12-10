@@ -1,7 +1,16 @@
+require 'fileutils'
+
 # Wustl wraps the +edu.wustl+ package.
 module Wustl
   # Logger configures the +edu.wustl+ logger.
   module Logger
+    # @quirk caTissue caTissue requires that a +log+ directory exist in the working directory.
+    #   Messages are logged to +client.log+ and +catissuecore.log+ in this directory. Although
+    #   these logs are large and the content is effectively worthless, nevertheless the directory
+    #   must exist or caTissue raises a FileNotFound exception.
+    #
+    #   The work-around is to create the log directory before the logger is used.
+    #
     # @quirk caTissue the caTissue logger must be initialized before caTissue objects are created.
     #   The logger at issue is the caTissue client logger, not the caTissue server logger nor
     #   the caRuby logger. The caTissue logger facade class is edu.wustl.common.util.logger.Logger.
@@ -20,6 +29,9 @@ module Wustl
     #   client message if the directory does not exist. The work-around is to ensure that the working
     #   directory contains a log subdirectory.
     def self.configure
+      dir = File.expand_path('log')
+      mkdir(dir) unless File.exists?(dir)
+      
       # Set the configured flag. Configure only once.
       if @configured then return else @configured = true end
       log_cls = Java::edu.wustl.common.util.logger.Logger
