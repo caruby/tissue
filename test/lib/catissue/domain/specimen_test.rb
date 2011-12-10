@@ -219,18 +219,27 @@ class SpecimenTest < Test::Unit::TestCase
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
   end
   
-  # Verifies the caRuby Bug #9 fix.
+  # Verifies the caRuby Bug #9 and #10 fix.
   def test_disposal_event_save
-    # add an event
+    # add an event to the anticipatory specimen
     ev = CaTissue::DisposalEventParameters.new(:specimen => @spc)
+    # Save the specimen, which will update the anticipatory specimen
     verify_save(@spc)
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
+    # make a nonanticipatory specimen
+    spc2 = CaTissue::Specimen.create_specimen(:requirement => @specimen_requirement, :initial_quantity => 2.0)
+    # add an event to the nonanticipatory specimen
+    ev2 = CaTissue::DisposalEventParameters.new(:specimen => spc2)
+    # Save the new specimen
+    verify_save(spc2)
+    assert_not_nil(ev.identifier, "#{spc2} event #{ev2} not saved")
   end
   
-  # Verifies the caRuby Bug #10 fix.
-  def test_anticipatory_specimen_disposal_event_save
+  # Verifies the caRuby Bug #9 fix.
+  def test_nonanticipatory_specimen_disposal_event_save
     # add an event
     ev = CaTissue::DisposalEventParameters.new(:specimen => @spc)
+    # Save the specimen, which will update the anticipatory specimen
     verify_save(@spc)
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
   end
