@@ -12,7 +12,7 @@ module Galena
       end
 
       def test_target
-        verify_target(:frozen) do |spc|
+        verify_target(:frozen, :target => CaTissue::TissueSpecimen) do |spc|
           assert_equal('Frozen Tissue', spc.specimen_type, "#{spc} type incorrect")
           pos = spc.position
           assert_not_nil(pos, "#{spc} missing position")
@@ -28,7 +28,7 @@ module Galena
           box.name = box.name.uniquify
           box.save
         end
-        verify_save(:frozen)
+        verify_save(:frozen, :target => CaTissue::TissueSpecimen)
       end
     end
   end

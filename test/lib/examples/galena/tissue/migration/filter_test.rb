@@ -6,7 +6,7 @@ module Galena
       include MigrationTestCase
     
       def test_filter
-        verify_target(:filter, :bad => BAD_FILE) do |spc|
+        verify_target(:filter, :target => CaTissue::TissueSpecimen, :bad => BAD_FILE) do |spc|
           assert_not_nil(spc.initial_quantity, "Missing quantity")
           scg = spc.specimen_collection_group
           assert_not_nil(scg, "Missing SCG")
@@ -18,7 +18,7 @@ module Galena
       end
     
       def test_save
-        verify_save(:filter, :bad => BAD_FILE)
+        verify_save(:filter, :target => CaTissue::TissueSpecimen, :bad => BAD_FILE)
       end
       
       private

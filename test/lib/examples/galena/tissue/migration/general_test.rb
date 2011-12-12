@@ -6,7 +6,7 @@ module Galena
       include MigrationTestCase
     
       def test_target
-        verify_target(:general) do |spc|
+        verify_target(:general, :target => CaTissue::TissueSpecimen) do |spc|
           assert_not_nil(spc.initial_quantity, "Missing quantity")
           scg = spc.specimen_collection_group
           assert_not_nil(scg, "Missing SCG")
@@ -40,7 +40,7 @@ module Galena
         srg.find(:create)
     
         # migrate the Specimen input record
-        verify_save(:general) do |spc|
+        verify_save(:general, :target => CaTissue::TissueSpecimen) do |spc|
           logger.debug { "Verifying saved #{spc}..." }
           assert_equal('Frozen Tissue', spc.specimen_type, "#{spc} specimen type incorrect")
           scg = spc.specimen_collection_group
