@@ -148,7 +148,8 @@ module CaTissue
 
     # @quirk caTissue Bug #135: Update SCG SpecimenEventParameters raises AuditException.
     #   Work around is to update the SCG instead.
-    # @quirk caTissue CPR consent tier response update results in Access denied error.
+    #
+    # @quirk caTissue CPR consent tier response update results in 'Access denied' error.
     #   Work-around is to update the response using a direct SQL call.
     #
     # @param (see CaRuby::Database#update_object)
@@ -308,12 +309,12 @@ module CaTissue
     end
     
     
-    # @param [CaTissue::Consent_TierResponse] ctr the response to update
+    # @param [CaTissue::ConsentTierResponse] ctr the response to update
     # @see #update_object
     def update_consent_tier_response(ctr)
         # Call the SQL
         logger.debug { "Work around caTissue #{ctr} update bug by submitting direct SQL call..." }
-        @executor.execute { |dbh| dbh.do(UPD_CTR_SQL, ctr.response, ctr.identifier) }
+        executor.execute { |dbh| dbh.do(UPD_CTR_SQL, ctr.response, ctr.identifier) }
         logger.debug { "caTissue #{ctr} update work-around completed." }
     end
 
