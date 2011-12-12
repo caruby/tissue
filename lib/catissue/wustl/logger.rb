@@ -1,15 +1,21 @@
 require 'fileutils'
+require 'caruby/helpers/os'
 
 # Wustl wraps the +edu.wustl+ package.
 module Wustl
   # Logger configures the +edu.wustl+ logger.
   module Logger
     # @quirk caTissue caTissue requires that a +log+ directory exist in the working directory.
-    #   Messages are logged to +client.log+ and +catissuecore.log+ in this directory. Although
-    #   these logs are large and the content is effectively worthless, nevertheless the directory
-    #   must exist or caTissue raises a FileNotFound exception.
+    #   Messages are logged to +client.log+ and +catissuecore.log+ in this directory. If the
+    #   directory does not exist, then caTissue raises a FileNotFound exception. The exception
+    #   message indicates the log file rather than the log directory. This message is misleading,
+    #   since the problem is not that the log file is not found but that the log directory does
+    #   not exist.
     #
-    #   The work-around is to create the log directory before the logger is used.
+    # @quirk caTissue caTissue ignores the +client.log+ and +catissuecore.log+ log level set in
+    #   the client jar +log4j.properties+. caTissue spews forth copious cryptic worthless comments,
+    #   regardless of the log level. The 1.2 work-around is to redirect log messages to +/dev/null+
+    #   in non-Windows systems, +NUL+ in Windows.
     #
     # @quirk caTissue the caTissue logger must be initialized before caTissue objects are created.
     #   The logger at issue is the caTissue client logger, not the caTissue server logger nor
@@ -29,9 +35,6 @@ module Wustl
     #   client message if the directory does not exist. The work-around is to ensure that the working
     #   directory contains a log subdirectory.
     def self.configure
-      dir = File.expand_path('log')
-      FileUtils.mkdir(dir) unless File.exists?(dir)
-      
       # Set the configured flag. Configure only once.
       if @configured then return else @configured = true end
       log_cls = Java::edu.wustl.common.util.logger.Logger
@@ -41,9 +44,14 @@ module Wustl
       else
         # the caTissue 1.2 mechanism
         cfg_cls = Java::edu.wustl.common.util.logger.LoggerConfig
-        dir = File.join(File.dirname(__FILE__) + '/../../../conf/wustl')
+        subdir = CaRuby::OS.os_type == :windows ? 'windows' : 'linux'
+        dir = File.expand_path(subdir, CONF_DIR)
         cfg_cls.configureLogger(dir)
       end
     end
+    
+    private
+    
+    CONF_DIR = File.dirname(__FILE__) + '/../../../conf/wustl'
   end
 end
