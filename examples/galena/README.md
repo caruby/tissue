@@ -37,7 +37,7 @@ Each CSV input file holds one row for each specimen.
 
 Each example has a field mapping configuration in the `conf/migration` directory.
 For example, the `simple.csv` input file is migrated into caTissue using the
-`simple_migration.yaml` configuration file.
+`simple/migration.yaml` configuration file.
 
 Migrate the Galena `simple` example as follows:
 
@@ -52,10 +52,10 @@ Migrate the Galena `simple` example as follows:
 
 3. Run the following:
 
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv`
+   `crtmigrate --target TissueSpecimen --mapping conf/migration/simple/fields.yaml data/simple.csv`
 
    This command migrates the CSV record in the `simple.csv` input file into a caTissue
-   `TissueSpecimen` based on the `simple_fields.yaml` mapping file.
+   `TissueSpecimen` based on the `simple/fields.yaml` mapping file.
    Peruse the configuration and data files to see which data are migrated and
    where this data ends up in caTissue.
    
@@ -67,27 +67,27 @@ features of the caRuby Migration utility as follows:
 
 * <tt>simple</tt> - a good starting point with limited input fields
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/simple_fields.yaml data/simple.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/simple/fields.yaml data/simple.csv`
 
 * <tt>general</tt> - lots of input fields, no custom Ruby code
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/general_fields.yaml data/general.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/general/fields.yaml data/general.csv`
 
 * <tt>filter</tt> - custom default, value filter, and shim code to convert input values to caTissue values and reject an incomplete migration
 
-  `crtmigrate --target TissueSpecimen --mapping conf/shims/migration/filter_fields.yaml --defaults conf/migration/filter_defaults.yaml --filters conf/migration/filter_values.yaml --shims lib/galena/tissue/migration/filter.rb --bad bad.csv data/filter.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/filter/fields.yaml --defaults conf/migration/filter/defaults.yaml --filters conf/migration/filter/values.yaml --shims lib/galena/filter.rb --bad bad.csv data/filter.csv`
 
 * <tt>frozen</tt> - storage locations
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen_fields.yaml --defaults conf/migration/frozen_defaults.yaml --shims lib/galena/tissue/migration/shims/frozen.rb data/frozen.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen/fields.yaml --defaults conf/migration/frozen/defaults.yaml --shims lib/galena/frozen.rb data/frozen.csv`
 
 * <tt>annotation</tt> - Dynamic Extension annotations
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/annotation_fields.yaml --defaults conf/migration/annotation_defaults.yaml data/annotation.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/migration/annotation/fields.yaml --defaults conf/migration/annotation/defaults.yaml data/annotation.csv`
 
 * <tt>registration</tt> - register participants in a Collection Protocol without specimens
 
-  `crtmigrate --target SpecimenCollectionGroup --mapping conf/migration/registration_fields.yaml data/registration.csv`
+  `crtmigrate --target SpecimenCollectionGroup --mapping conf/migration/registration/fields.yaml data/registration.csv`
 
 Try running an example with the `--debug` flag and look at the `log/migration.log` file to see
 what caRuby is up to behind the scenes (hint: a lot!).
