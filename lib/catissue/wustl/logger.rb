@@ -12,11 +12,6 @@ module Wustl
     #   since the problem is not that the log file is not found but that the log directory does
     #   not exist.
     #
-    # @quirk caTissue caTissue ignores the +client.log+ and +catissuecore.log+ log level set in
-    #   the client jar +log4j.properties+. caTissue spews forth copious cryptic worthless comments,
-    #   regardless of the log level. The 1.2 work-around is to redirect log messages to +/dev/null+
-    #   in non-Windows systems, +NUL+ in Windows.
-    #
     # @quirk caTissue the caTissue logger must be initialized before caTissue objects are created.
     #   The logger at issue is the caTissue client logger, not the caTissue server logger nor
     #   the caRuby logger. The caTissue logger facade class is edu.wustl.common.util.logger.Logger.
@@ -25,10 +20,15 @@ module Wustl
     #
     # @quirk catTissue 1.2 +LoggerConfig.configureLogger+ expects file +log4j.properties+ in the class
     #   path. However, in 1.2 the client property file is +client_log4j.properties+. Work-around is
-    #   as follows:
-    #   * copy this file into the caRuby Tissue distribution as +conf/wustl/log4.properties+
-    #   * add +conf/wustl+ to the classpath.
+    #   to do the following:
+    #   * copy this file into the caRuby Tissue distribution +conf/wustl+ directory.
     #   * call +LoggerConfig.configureLogger+ with the config directory as an argument
+    #
+    # @quirk caTissue caTissue ignores the +client.log+ and +catissuecore.log+ log level set in
+    #   the client jar +log4j.properties+. caTissue spews forth copious cryptic comments,
+    #   regardless of the log level. Given the numerous logging problems to produce a worthless
+    #   client log, caRuby for caTissue 1.2 and above redirects log messages to +/dev/null+
+    #   in non-Windows systems, +NUL+ in Windows.
     #
     # @quirk caTissue 1.1.1 The caTissue client log location is unfortunately hard-coded in a caTissue
     #   configuration file, does not create the parent directory on demand, and issues an obscure error
