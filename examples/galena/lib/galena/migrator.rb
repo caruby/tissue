@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../seed'
+require File.expand_path('seed', File.dirname(__FILE__))
 
 module Galena
   module Migrator
