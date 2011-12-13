@@ -15,7 +15,7 @@ module CaTissue
   #
   #   This conceptual model is implemented in caTissue as follows:
   #   * The specimen collection container type, e.g. +Citrate Vacutainer+, is captured
-  #     as a {CaTissue::CollectionEventParameters#container} String. There is no separate
+  #     as a {CaTissue::CollectionEventParameters} +container+ String. There is no separate
   #     collection container instance or container type instance.
   #   * A tissue specimen storage box is captured as a {CaTissue::StorageContainer}
   #     instance constrained to a {CaTissue::StorageType} instance. Boxes with different
@@ -75,7 +75,7 @@ module CaTissue
     #   ContainerType is created.
     add_dependent_attribute(:capacity)
     
-    # Override default {CaRuby::Resource#merge_attributes} to support the Capacity :rows and :columns
+    # Override default +CaRuby::Resource.merge_attributes+ to support the Capacity :rows and +:columns+
     # pseudo-attributes.
     #
     # @quirk JRuby Subclasses do not pick up this class's Resource method overrides.

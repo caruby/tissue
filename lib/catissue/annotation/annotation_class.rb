@@ -39,7 +39,7 @@ module CaTissue
       not ref.nil?
     end
     
-    # @return [Boolean] whether this annotation is neither a {#primary?} nor a #{secondary} annotation
+    # @return [Boolean] whether this annotation is neither a {#primary?} nor a {#secondary?} annotation
     def tertiary?
       not (primary? or secondary?)
     end
@@ -72,7 +72,7 @@ module CaTissue
       @ann_attrs ||= domain_attributes.compose { |attr_md| attr_md.type < Annotation }
     end
 
-    # Filters {CaRuby::Domain::Attributes#loadable_attributes} to exclude all references,
+    # Filters +CaRuby::Domain::Attributes.loadable_attributes+ to exclude all references,
     # since annotation lazy-loading is not supported.
     #
     # @return [Array] an empty array

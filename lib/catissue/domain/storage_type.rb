@@ -58,7 +58,7 @@ module CaTissue
     #
     # @param other the object to compare
     # @return [Boolean] whether this StorageType has a non-nil name equal to the other name or
-    #   is {#equal?} to this StorageType
+    #   is +equal?+ to this StorageType
      def ==(other)
       equal?(other) or (StorageType === other and name and name == other.name)
     end

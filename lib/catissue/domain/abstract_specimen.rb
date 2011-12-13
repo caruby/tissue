@@ -7,7 +7,7 @@ module CaTissue
   
   class AbstractSpecimen
     # Sets the specimen type to the specified value. The value can be a permissible caTissue String value or
-    # the shortcut symbols :fresh, :fixed and :frozen.
+    # the shortcut symbols :fresh, :fixed and +:frozen+.
     #
     # @param [String, Symbol, nil] value the value to set
     def specimen_type=(value)
@@ -128,8 +128,8 @@ module CaTissue
     # {Specimen.create_specimen}, with one addition:
     # * +:count+(+Integer+) - the optional number of specimens to derive
     #
-    # If the :count parameter is greater than one and the :specimen_class,
-    # :specimen_type and :specimen_characteristics parameters are not set to values
+    # If the +:count+ parameter is greater than one and the +:specimen_class+,
+    # +:specimen_type+ and +:specimen_characteristics+ parameters are not set to values
     # which differ from the respective values for this Specimen, then the specimen is
     # aliquoted, otherwise the derived specimens are created independently, e.g.:
     #   spc = Specimen.create_specimen(:specimen_class => :tissue, :specimen_type => :frozen)
@@ -186,7 +186,7 @@ module CaTissue
     end
 
     # Returns whether this AbstractSpecimen is minimally consistent with the other specimen.
-    # This method augments the {CaRuby::Resource#minimal_match?} with an additional restriction
+    # This method augments the +CaRuby::Resource.minimal_match?+ with an additional restriction
     # that the other specimen is the same type as this specimen and
     # is a tolerant match on specimen class, specimen type and pathological status.
     # A _tolerant_ match condition holds if the other attribute value is equal to this
@@ -212,7 +212,7 @@ module CaTissue
     # @param [Integer] count the number of aliquots
     def set_aliquot_parameters(params, count); end
 
-    # Overrides {CaRuby::Resource#each_defaultable_reference} to visit the {CaTissue::SpecimenCharacteristics}.
+    # Overrides +CaRuby::Resource.each_defaultable_reference} to visit the {CaTissue::SpecimenCharacteristics+.
     # The characteristics are not dependent since they can be shared among aliquots.
     # However, the defaults should be added to them. Do so here.
     #
@@ -234,11 +234,11 @@ module CaTissue
       self.characteristics ||= default_characteristics
     end
 
-    # Returns the Class from the given params hash.If the :specimen_class parameter
+    # Returns the Class from the given params hash.If the +:specimen_class+ parameter
     # is set to a Class, then this method returns that Class. Otherwise, if the parameter is a
     # String or Symbol, then the Class is formed from the parameter as a prefix and 'Specimen' or
     # 'SpecimenRequirement' depending on this AbstractSpecimen's subclass. If the
-    # :specimen_class parameter is missing and there is a :specimen_requirement parameter,
+    # :specimen_class parameter is missing and there is a +:specimen_requirement+ parameter,
     # then the specimen requirement specimen_class attribute value is used.
     #
     # @param [{Symbol => Object}] params the specimen attribute => value hash

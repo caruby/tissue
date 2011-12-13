@@ -20,7 +20,7 @@ module CaTissue
       Options.validate(params, INIT_OPTS)
       @container = Options.get(:in, params)
       coord = Options.get(:at, params, Coordinate.new)
-      # turn an :at Array value into a Coordinate
+      # turn an +:at+ Array value into a Coordinate
       if Array === coord and not Coordinate === coord then
         coord = Coordinate.new(*coord) 
       end

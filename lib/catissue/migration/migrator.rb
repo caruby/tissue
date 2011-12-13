@@ -19,7 +19,7 @@ module CaTissue
     # @option (see CaRuby::Migrator#initialize)
     # @option opts [String] :tissue_sites the tissue site mapping file
     # @option opts [String] :diagnoses the diagnosis mapping file
-    # @option opts [String] :database target application {CaRuby::Database}
+    # @option opts [String] :database target application +CaRuby::Database+
     # @option opts [String] :target required target domain class
     # @option opts [String] :input required source file to migrate
     # @option opts [String] :shims optional array of shim files to load
@@ -91,8 +91,9 @@ module CaTissue
     # The context module is determined as follows:
     # * For an {Annotation} target class, the context module is the annotated class's domain_module.
     # * Otherwise, delegate to +CaRuby::Migrator+.
-    # * For an {Annotation} target class, the context module is the annotated class's {ResourceClass#domain_module}.
-    # * Otherwise, delegate to {CaRuby::Migrator}.
+    # * For an {Annotation} target class, the context module is the annotated class's
+    #   +CaRuby::Metadata.domain_module+.
+    # * Otherwise, delegate to +CaRuby::Migrator+.
     #
     # @return (see CaRuby::Migrator#context_module)
     def context_module

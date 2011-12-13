@@ -56,7 +56,7 @@ module CaTissue
     # The clinicial annotation.
     add_annotation('Clinical', :package => 'clinical_annotation', :service => 'CA')
     
-    # Overrides {CaRuby::Mergable#merge_attribute} to work around the caTissue
+    # Overrides +CaRuby::Mergable.merge_attribute+ to work around the caTissue
     #  bugs described in {CaTissue::Participant.remove_phantom_medical_identifier}.
     def merge_attribute(attribute, newval, matches=nil)
       if attribute == :participant_medical_identifiers and newval then

@@ -147,7 +147,7 @@ module CaTissue
     end
 
     # Merges the other object into this SpecimenCollectionGroup. This method augments
-    # {CaRuby::Resource#merge_attributes} as follows:
+    # +CaRuby::Resource.merge_attributes+ as follows:
     # * Adds the transitive closure of each non-derived Specimen in other.
     #
     # @param (see CaRuby::Resource#merge_attributes)
@@ -179,7 +179,7 @@ module CaTissue
       super and event_point == other.event_point
     end
 
-    # Overrides {CaRuby::Resource#direct_dependents} in the case of the _specimens_ attribute to select
+    # Overrides +CaRuby::Resource.direct_dependents+ in the case of the _specimens_ attribute to select
     # only top-level Specimens not derived from another Specimen.
     def direct_dependents(attribute)
       if attribute == :specimens then
@@ -200,7 +200,7 @@ module CaTissue
       end
     end
 
-    # Relaxes the {CaRuby::Persistable#saved_attributes_to_fetch} condition for a SCG as follows:
+    # Relaxes the +CaRuby::Persistable.saved_attributes_to_fetch+ condition for a SCG as follows:
     # * If the SCG status was updated from +Pending+ to +Collected+, then fetch the saved SCG event parameters.
     # 
     # @param (see CaRuby::Persistable#saved_attributes_to_fetch)
@@ -209,7 +209,7 @@ module CaTissue
       operation == :update && status_changed_to_complete? ? EVENT_PARAM_ATTRS : super
     end
     
-    # Relaxes the {CaRuby::Persistable#saved_attributes_to_fetch} condition for a SCG as follows:
+    # Relaxes the +CaRuby::Persistable.saved_attributes_to_fetch+ condition for a SCG as follows:
     # * If the SCG status was updated from +Pending+ to +Collected+, then fetch the saved SCG event parameters.
     # 
     # @param (see CaRuby::Persistable#saved_attributes_to_fetch)

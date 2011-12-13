@@ -15,7 +15,8 @@ module CaTissue
       self.class === other and occupant == other.occupant and location == other.location
     end
 
-    # @return [Coordinate] the read-only coordinate with this AbstractPosition's #row and {#column}.
+    # @return [Coordinate] the read-only coordinate with this AbstractPosition's {Location#row}
+    #   and {Location#column}.
     def coordinate
       location.coordinate
     end
@@ -43,7 +44,8 @@ module CaTissue
       column.nil? or row.nil?
     end
 
-    # @return [(Integer, Integer)] this Position's zero-based ({#column}, {#row}) tuple.
+    # @return [(Integer, Integer)] this Position's zero-based ({Location#column}, {Location#row})
+    #   tuple
     def to_a
       [column, row]
     end

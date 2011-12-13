@@ -9,7 +9,7 @@ require 'catissue/helpers/controlled_value'
 
 module CaTissue
   # This ControlledValues class loads caTissue permissible values from the database.
-  # Use of this class requires the +dbi+ gem. See {CaRuby::SQLExecutor#initialize}
+  # Use of this class requires the +dbi+ gem. See +CaRuby::SQLExecutor.initialize+
   # for a description of the database access properties.
   class ControlledValues
     include Singleton

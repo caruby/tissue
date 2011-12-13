@@ -124,7 +124,7 @@ module CaTissue
     #
     # @param [Storable] (see #add)
     # @return [Boolean] whether this container is not full and can hold the given item's
-    #   {CaTissue::StorableType}
+    #   {CaTissue::StorageType}
     def can_hold_child?(storable)
       st = storable.storable_type
       not full? and child_types.any? { |ct| CaRuby::Resource.value_equal?(ct, st) }

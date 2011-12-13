@@ -32,7 +32,7 @@ module CaTissue
     # If a factory block is provided, then that factory is called to make a new
     # Migrator instance. Otherwise, {CaTissue::Migrator#initialize} makes the instance.
     #
-    # If there is no :input option, then the migration input is set to the
+    # If there is no +:input+ option, then the migration input is set to the
     # _fixture_.+csv+ file in the {#initialize} fixtures directory.
     #
     # @param [Symbol] fixture the migration test fixture
@@ -48,7 +48,7 @@ module CaTissue
     # Each migrated target object is validated using {CaTissue::TestCase#verify_saved}.
     # In addition, if a verifier block is given to this method, then that block is
     # called on the target migration object, or nil if no target was migrated.
-    # Supported options are described in {CaTissue::Migrator#migrate}.
+    # Supported options are described in +CaRuby::Migrator.migrate+.
     #
     # @param (see #verify_target)
     # @option (see #verify_target)

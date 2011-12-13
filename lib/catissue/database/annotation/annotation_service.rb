@@ -19,16 +19,14 @@ module CaTissue
         @intgtr = integrator
       end
 
-      # Augments the {CaRuby::PersistenceService} create method to handle caTissue annotation
+      # Augments the +CaRuby::PersistenceService+ create method to handle caTissue annotation
       # service peculiarities, e.g.:
-      # * assigns the identifier, since assignment is not done automatically as is the case with the
-      #   default application service
+      # * assigns the identifier, since assignment is not done automatically as is the case with
+      #   the default application service
       # * associate the annotation to the hook object
       # * Save all referenced annotation objects
       #
-      # This method can only be called on primary annotation objects. A _primary_ annotation
-      # is a top-level annotation which has a reference to the {Annotation#hook} which is
-      # being annotated.
+      # This method is only called on {AnnotationClass#primary?} annotation objects.
       # 
       # @param [Annotation] annotation the annotation object to create
       # @return [Annotation] the annotation

@@ -83,7 +83,7 @@ module CaTissue
     # Adds specimens to this protocol. The following parameter options are supported:
     # * :participant - the Participant from whom the specimen is collected
     # * :biospecimens - the collected top-level underived specimens
-    # * additional SCG parameters as described in {SpecimenCollectionGroup#merge}.
+    # * additional SCG parameters as described in {CaTissue::SpecimenCollectionGroup#merge_attributes}.
     #
     # If the options does not include a +:collection_protocol_event+, then the SCG is assigned
     # to the first collection event in this protocol.
@@ -98,7 +98,7 @@ module CaTissue
     #
     # @param [(<Specimen>, {Symbol => Object})] specimens_and_params the specimens to add followed
     #   by the required parameter hash
-    # @return [SpecimenCollectionGroup] a new SCG for the given participant containing the specimens
+    # @return [CaTissue::SpecimenCollectionGroup] a new SCG for the given participant containing the specimens
     # @raise [ArgumentError] if the {SpecimenCollectionGroup} does not include all required attributes
     def add_specimens(*specimens_and_params)
       params = specimens_and_params.pop

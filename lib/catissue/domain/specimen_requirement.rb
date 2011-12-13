@@ -16,7 +16,11 @@ module CaTissue
 
     add_attribute_aliases(:collection_event => :collection_protocol_event)
 
-    add_attribute_defaults(:initial_quantity => 0.0, :pathological_status => 'Not Specified', :specimen_type => 'Not Specified', :storage_type => 'Not Specified')
+    add_attribute_defaults(
+      :initial_quantity => 0.0,
+      :pathological_status => 'Not Specified',
+      :specimen_type => 'Not Specified',
+      :storage_type => 'Not Specified')
 
     add_mandatory_attributes(:collection_protocol_event, :storage_type)
 
@@ -39,9 +43,11 @@ module CaTissue
     # The preferred owner attribute evaluation order is the parent specimen, then the CPE.
     order_owner_attributes(:parent_specimen, :collection_protocol_event)
     
-    # Returns the SpecimenRequirement in others which matches this SpecimenRequirement in the scope of an owner CollectionProtocolEvent.
-    # This method relaxes {CaRuby::Resource#match_in_owner_scope} for a SpecimenRequirement that matches any SpecimenRequirement
-    # in others with the same class, specimen type, pathological_status and characteristics.
+    # Returns the SpecimenRequirement in others which matches this SpecimenRequirement in the
+    # scope of an owner CollectionProtocolEvent. This method relaxes
+    # +CaRuby::Resource.match_in_owner_scope+ for a SpecimenRequirement that matches any
+    # SpecimenRequirement in others with the same class, specimen type, pathological_status
+    # and characteristics.
     def match_in_owner_scope(others)
       others.detect do |other|
         self.class == other.class and specimen_type == other.specimen_type and pathological_status == other.pathological_status and
@@ -93,14 +99,15 @@ module CaTissue
       klass.new(params.merge(:collection_protocol_event => event))
     end
 
-    # Returns the {#collection_event} protocol, if any.
+    # @return [CaTissue::CollectionProtocol] the collection event protocol, if any
     def collection_protocol
       collection_event.protocol if collection_event
     end
 
     protected
 
-    # @quirk caTissue Overrides the CaRuby::Resource method to handle caTissue Bug #67 - SpecimenRequirement activityStatus cannot be set.
+    # @quirk caTissue Overrides the CaRuby::Resource method to handle caTissue Bug #67 -
+    #   SpecimenRequirement activityStatus cannot be set.
     #
     # @return [<Symbol>] the required attributes which are nil for this domain object
     def missing_mandatory_attributes
@@ -119,8 +126,8 @@ module CaTissue
       children.size > 1 and children.any? { |drv| not drv.aliquot? }
     end
 
-    # Augments {CaRuby::Resource#validate} to verify that this SpecimenRequirement does not have multiple non-aliquot
-    # derivatives, which is disallowed by caTissue.
+    # Augments +CaRuby::Resource.validate+ to verify that this SpecimenRequirement does not have multiple
+    # non-aliquot derivatives, which is disallowed by caTissue.
     #
     # @quirk caTissue multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
     #   in obscure downstream errors (cf. Bug #151).

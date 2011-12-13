@@ -51,7 +51,7 @@ module CaTissue
       protocol.events.delete(self) if protocol
     end
 
-    # Overrides {CaRuby::Resource#references} in the case of the _specimen_requirements_ attribute to select
+    # Overrides +CaRuby::Resource.references+ in the case of the _specimen_requirements_ attribute to select
     # only top-level SpecimenRequirements not derived from another SpecimenRequirement.
     def direct_dependents(attribute)
       if attribute == :specimen_requirements then

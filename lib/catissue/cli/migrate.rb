@@ -6,7 +6,7 @@ module CaTissue
     class Migrate < Command
       # The migration option specifications.
       #
-      # The :unique option ensures that the migrated objects do not conflict with existing or future
+      # The +:unique+ option ensures that the migrated objects do not conflict with existing or future
       # objects. This is used for testing a migration dry run. It is recommended that the trial run
       # protocol is set to a test protocol as well.
       SPECS = [
