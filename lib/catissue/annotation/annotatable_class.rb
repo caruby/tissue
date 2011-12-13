@@ -39,7 +39,7 @@ module CaTissue
       annotation_defined?(symbol)
     end
 
-    # Refines the {CaRuby::Domain::Attributes#toxic_attributes} to exclude annotation attributes.
+    # Refines the +CaRuby::Domain::Attributes.toxic_attributes+ to exclude annotation attributes.
     #
     # @return [<Symbol>] the non-annotation unfetched attributes
     def toxic_attributes
@@ -68,7 +68,7 @@ module CaTissue
       end
     end
 
-    # Filters {CaRuby::Domain::Attributes#loadable_attributes} to exclude the {#annotation_attributes}
+    # Filters +CaRuby::Domain::Attributes#loadable_attributes} to exclude the {.annotation_attributes+
     # since annotation lazy-loading is not supported.
     #
     # @return (see CaRuby::Domain::Attributes#loadable_attributes)

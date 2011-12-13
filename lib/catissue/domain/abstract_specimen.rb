@@ -186,7 +186,7 @@ module CaTissue
     end
 
     # Returns whether this AbstractSpecimen is minimally consistent with the other specimen.
-    # This method augments the {CaRuby::Resource#minimal_match?} with an additional restriction
+    # This method augments the +CaRuby::Resource.minimal_match?+ with an additional restriction
     # that the other specimen is the same type as this specimen and
     # is a tolerant match on specimen class, specimen type and pathological status.
     # A _tolerant_ match condition holds if the other attribute value is equal to this
@@ -212,7 +212,7 @@ module CaTissue
     # @param [Integer] count the number of aliquots
     def set_aliquot_parameters(params, count); end
 
-    # Overrides {CaRuby::Resource#each_defaultable_reference} to visit the {CaTissue::SpecimenCharacteristics}.
+    # Overrides +CaRuby::Resource.each_defaultable_reference} to visit the {CaTissue::SpecimenCharacteristics+.
     # The characteristics are not dependent since they can be shared among aliquots.
     # However, the defaults should be added to them. Do so here.
     #

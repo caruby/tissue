@@ -8,9 +8,9 @@ module CaTissue
   shims CollectionProtocol, CollectionProtocolEvent, Site, StorageContainer, User
   
   class CollectionProtocol
-    # Augments {CaRuby::Migratable#migrate} for the Galena example by adding the following defaults:
-    # * the CP principal_investigator defaults to the {Galena::Seed::Defaults#protocol} PI
-    # * if the sites is empty, then the {Galena::Seed::Defaults#tissue_bank} is added
+    # Augments +CaRuby::Migratable.migrate+ for the Galena example by adding the following defaults:
+    # * the CP principal_investigator defaults to the {Galena::Seed#protocol} PI
+    # * if the sites is empty, then the {Galena::Seed#tissue_bank} is added
     #   to the CP sites
     #
     # @param (see CaRuby::Migratable#migrate)
@@ -25,7 +25,7 @@ module CaTissue
     private
     
     # @param (see #migrate)
-    # @return [String, nil] the short title of the {Galena::Seed::Defaults} protocol which
+    # @return [String, nil] the short title of the {Galena::Seed} protocol which
     #   matches this protocol's event, or nil if no match 
     def migration_default_title(migrated)
       cpe = migrated.detect { |obj| CaTissue::CollectionProtocolEvent === obj } || return
@@ -35,9 +35,9 @@ module CaTissue
   end
   
   class CollectionProtocolEvent
-    # Augments {CaRuby::Migratable#migrate} for the example by adding the following defaults:
+    # Augments +CaRuby::Migratable.migrate+ for the example by adding the following defaults:
     # * create a {CaTissue::TissueSpecimenRequirement}
-    # * copy the event point from the matching {Galena::Seed::Defaults} CPE, if any
+    # * copy the event point from the matching {Galena::Seed} CPE, if any
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
@@ -57,8 +57,8 @@ module CaTissue
   end
 
   class Site
-    # Augments {CaRuby::Migratable#migrate} for the example by merging the content of the
-    # {Galena::Seed::Defaults} site which matches on this Site's name, if any.
+    # Augments +CaRuby::Migratable.migrate+ for the example by merging the content of the
+    # {Galena::Seed} site which matches on this Site's name, if any.
     #
     # @param (see CaRuby::Migratable#migrate)
     def migrate(row, migrated)
@@ -76,8 +76,8 @@ module CaTissue
   end
 
   class StorageContainer
-    # Augments {CaRuby::Migratable#migrate} for the example by setting the
-    # the container site and type to the {Galena::Seed::Defaults}
+    # Augments +CaRuby::Migratable.migrate+ for the example by setting the
+    # the container site and type to the {Galena::Seed}
     # box site and type, resp.
     #
     # @param (see CaRuby::Migratable#migrate)
@@ -89,7 +89,7 @@ module CaTissue
   end
   
   class User
-    # Augments {CaRuby::Migratable#migrate} for the example as follows:
+    # Augments +CaRuby::Migratable.migrate+ for the example as follows:
     # * infer the first and last name from the email address
     # * copy the address and organizations from the tissue bank coordinator 
     #

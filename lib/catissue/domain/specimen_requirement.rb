@@ -45,7 +45,7 @@ module CaTissue
     
     # Returns the SpecimenRequirement in others which matches this SpecimenRequirement in the
     # scope of an owner CollectionProtocolEvent. This method relaxes
-    # {CaRuby::Resource#match_in_owner_scope} for a SpecimenRequirement that matches any
+    # +CaRuby::Resource.match_in_owner_scope+ for a SpecimenRequirement that matches any
     # SpecimenRequirement in others with the same class, specimen type, pathological_status
     # and characteristics.
     def match_in_owner_scope(others)
@@ -126,7 +126,7 @@ module CaTissue
       children.size > 1 and children.any? { |drv| not drv.aliquot? }
     end
 
-    # Augments {CaRuby::Resource#validate} to verify that this SpecimenRequirement does not have multiple
+    # Augments +CaRuby::Resource.validate+ to verify that this SpecimenRequirement does not have multiple
     # non-aliquot derivatives, which is disallowed by caTissue.
     #
     # @quirk caTissue multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results

@@ -15,8 +15,8 @@ module CaTissue
     
     private
 
-    # Creates a new box of type {Galena::Seed::Defaults#box_type} in a freezer of type
-    # {Galena::Seed::Defaults#freezer_type}.
+    # Creates a new box of type {Galena::Seed#box_type} in a freezer of type
+    # {Galena::Seed#freezer_type}.
     # 
     # @return [StorageContainer] the new box
     def create_galena_box

@@ -48,7 +48,7 @@ module CaTissue
       klass < Annotation ? klass.annotation_module.persistence_service : super
     end
     
-    # Augments {CaRuby::Database#ensure_exists} to ensure that an {Annotation::Proxy} reference identifier
+    # Augments +CaRuby::Database.ensure_exists} to ensure that an {Annotation::Proxy+ reference identifier
     # reflects the hook identifier.
     #
     # @param (see CaRuby::Database::Writer#ensure_exists)
@@ -84,7 +84,7 @@ module CaTissue
       CaRuby::SQLExecutor.new(props)
     end
 
-    # Overrides #{CaRuby::Database::Writer#recursive_save?} to support the update work-around
+    # Overrides #+CaRuby::Database::Writer.recursive_save?+ to support the update work-around
     # described in {#update_object}. A recursive SCG update is allowed if the nested
     # transaction sequence is:
     # * Update SCG
@@ -218,7 +218,7 @@ module CaTissue
       penultimate and penultimate.subject == obj
     end
       
-    # Augments {CaRuby::Database#save_with_template} to work around the following caTissue anomalies:
+    # Augments +CaRuby::Database.save_with_template+ to work around the following caTissue anomalies:
     #
     # @quirk caTissue Bug #149: API update TissueSpecimen position validation incorrect.
     #   The Specimen update argument must reference the old position, even though the position is not
@@ -232,18 +232,18 @@ module CaTissue
     #   done automatically by {CaRuby::Database} as part of the save proxy mechanism. The Specimen update
     #   template must include a reference to the former position but not the changed position.
     #
-    #   However, the Specimen {CaRuby::Writer#update} argument will include the changed position, not the
-    #   former position. The template built {CaRuby::Writer#update} for submission to the caTissue app
+    #   However, the Specimen +CaRuby::Writer.update+ argument will include the changed position, not the
+    #   former position. The template built +CaRuby::Writer.update+ for submission to the caTissue app
     #   does not include a position reference, since the position has a save proxy which handles position
     #   change as part of the {CaRuby::Writer} update dependent propagation.
     #
     #   Thus, updating a Specimen which includes a position change is performed as follows:
     #   * reconstitute the former position from the Position snapshot taken as part of the
     #      {CaRuby::Persistable} change tracker.
-    #   * add the former position to the template (which will now differ from the {CaRuby::Writer#update}
+    #   * add the former position to the template (which will now differ from the +CaRuby::Writer.update+
     #     argument).
     #   * submit the adjusted Specimen template to the caTissue app updateObject.
-    #   * {CaRuby::Writer#update} will propagate the Specimen update to the changed position dependent,
+    #   * +CaRuby::Writer.update+ will propagate the Specimen update to the changed position dependent,
     #     which in turn saves via the {CaTissue::TransferEventParameters} proxy.
     #   * The proxy save will in turn refetch the proxied Specimen position to obtain the identifier
     #     and merge this into the Specimen position.
@@ -318,7 +318,7 @@ module CaTissue
         logger.debug { "caTissue #{ctr} update work-around completed." }
     end
 
-    # Overrides {CaRuby::Database::Writer#save_changed_dependents} to handle the following anomaly:
+    # Overrides +CaRuby::Database::Writer.save_changed_dependents+ to handle the following anomaly:
     #
     # @quirk caTissue DisposalEventParameters must be created after all other Specimen SEPs. This
     #   use case arises when migrating a source biorepository discarded specimen for archival.
@@ -362,7 +362,7 @@ module CaTissue
       end
     end
     
-    # Overrides {CaRuby::Database#build_save_template} to return obj itself if
+    # Overrides +CaRuby::Database.build_save_template+ to return obj itself if
     # obj is an {Annotation}, since annotations do not employ a separate template.
     #
     # @param (see CaRuby::Database#build_save_template)
@@ -399,7 +399,7 @@ module CaTissue
       end
     end
 
-    # Overrides {CaRuby::Database::Writer#save_with_template} to work around the following
+    # Overrides +CaRuby::Database::Writer.save_with_template+ to work around the following
     # caTissue bugs:
     #
     # @quirk caTissue  Bug #63: A SpecimenCollectionGroup update requires the referenced
@@ -516,7 +516,7 @@ module CaTissue
       template.send(wtr, pxy)
     end
 
-    # Augment {CaRuby::Database::Writer#create_object} to work around caTissue bugs.
+    # Augment +CaRuby::Database::Writer.create_object+ to work around caTissue bugs.
     #
     # @quirk caTissue Bug #124: SCG SpecimenEventParameters save fails validation.
     #   Work-around is to create the SEP by updating the SCG.
@@ -556,7 +556,7 @@ module CaTissue
       obj
     end
     
-    # Overrides {CaRuby::Database#create_from_template} as follows:
+    # Overrides +CaRuby::Database.create_from_template+ as follows:
     # * Surrogate {Annotation::Proxy} is "created" by setting the identifier to its hook owner.
     #   The create operation then creates referenced uncreated dependents.
     #
@@ -638,7 +638,7 @@ module CaTissue
       specimen
     end
     
-    # Overrides {CaRuby::Database::Persistifier#detoxify} to work around the
+    # Overrides +CaRuby::Database::Persistifier.detoxify+ to work around the
     # caTissue bugs described in {CaTissue::Specimen.remove_phantom_external_identifier}
     # and {CaTissue::Participant.remove_phantom_medical_identifier}.
     def detoxify(toxic)
@@ -653,7 +653,7 @@ module CaTissue
       super
     end
 
-    # Overrides {CaRuby::Database::Reader#fetch_object} to circumvent {Annotation} fetch, since an annotation
+    # Overrides +CaRuby::Database::Reader.fetch_object} to circumvent {Annotation+ fetch, since an annotation
     # does not have a key.
     def fetch_object(obj)
       super or fetch_alternative(obj)
@@ -762,7 +762,7 @@ module CaTissue
       annotator.integrator.find(proxy)
     end
     
-    # @quirk caCORE Override {CaRuby::Database::Reader#invertible_query?} to enable the Bug #147 work
+    # @quirk caCORE Override +CaRuby::Database::Reader.invertible_query?+ to enable the Bug #147 work
     #   around in {#query_object}. Invertible queries are performed to work around Bug #79. However, this
     #   work-around induces Bug #147, so we disable the Bug #79 work-around here for the special case of
     #   a CPE in order to enable the Bug #147 work-around. And so it goes....

@@ -76,7 +76,7 @@ module CaTissue
       @ann_svc ||= Database.instance.annotator.create_annotation_service(self, @svc_nm)
     end
     
-    # This method implements the {CaRuby::MetadataLoader#add_metadata} callback to ensure
+    # This method implements the +CaRuby::MetadataLoader.add_metadata+ callback to ensure
     # that the metadata load is complete.
     #
     # Annotation classes are introspected, but the annotation constant is not set properly

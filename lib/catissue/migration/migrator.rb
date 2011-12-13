@@ -92,7 +92,7 @@ module CaTissue
     # * For an {Annotation} target class, the context module is the annotated class's domain_module.
     # * Otherwise, delegate to +CaRuby::Migrator+.
     # * For an {Annotation} target class, the context module is the annotated class's
-    #   {CaRuby::Metadata#domain_module}.
+    #   +CaRuby::Metadata.domain_module+.
     # * Otherwise, delegate to {CaRuby::Migrator}.
     #
     # @return (see CaRuby::Migrator#context_module)

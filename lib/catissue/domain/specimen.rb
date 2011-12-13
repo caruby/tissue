@@ -135,7 +135,7 @@ module CaTissue
       collection_status == 'Collected'
     end
 
-    # Relaxes the {CaRuby::Persistable#fetch_saved?} condition for a Specimen as follows:
+    # Relaxes the +CaRuby::Persistable.fetch_saved?+ condition for a Specimen as follows:
     # * If the Specimen available_quantity was updated, then fetch the saved Specimen.
     # 
     # @return (see CaRuby::Persistable#fetch_saved)
@@ -153,7 +153,7 @@ module CaTissue
       CaTissue::CheckInCheckOutEventParameter.new(:specimen => self, :storage_status => Status.CHECKED_IN)
     end
     
-    # Overrides {CaRuby::Mergable#merge_attribute} to work around the caTissue
+    # Overrides +CaRuby::Mergable.merge_attribute+ to work around the caTissue
     #  bugs described in {CaTissue::Specimen.remove_phantom_external_identifier}.
     def merge_attribute(attribute, newval, matches=nil)
       if attribute == :external_identifiers and newval then
@@ -174,7 +174,7 @@ module CaTissue
 #      update
 #    end
 
-    # Override default {CaRuby::Resource#merge_attributes} to ignore a source SpecimenRequirement parent_specimen.
+    # Override default +CaRuby::Resource.merge_attributes+ to ignore a source SpecimenRequirement parent_specimen.
     def merge_attributes(other, attributes=nil)
       case other
         when SpecimenRequirement then
@@ -197,7 +197,7 @@ module CaTissue
     end
 
     # Returns the Specimen in others which matches this Specimen in the scope of an owner SCG.
-    # This method relaxes {CaRuby::Resource#match_in_owner_scope} to include a match on at least
+    # This method relaxes +CaRuby::Resource.match_in_owner_scope+ to include a match on at least
     # one external identifier.
     def match_in_owner_scope(others)
       super or others.detect do |other|

@@ -71,7 +71,7 @@ module CaTissue
     
     private
    
-    #  Overrides {CaRuby::Resource#each_defaultable_reference} to visit the {CaTissue::ReceivedEventParameters}.
+    #  Overrides +CaRuby::Resource.each_defaultable_reference} to visit the {CaTissue::ReceivedEventParameters+.
     #
     # @yield (see CaRuby::Resource#each_defaultable_reference)
     def each_defaultable_reference
