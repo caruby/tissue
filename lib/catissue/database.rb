@@ -38,7 +38,7 @@ module CaTissue
       @annotator ||= Annotator.new(self)
     end
 
-    # If the given domain object is an {Annotation}, then this method returns the {CaRuby::AnnotationService}
+    # If the given domain object is an {Annotation}, then this method returns the +CaRuby::AnnotationService+
     # for the object {AnnotationModule}, otherwise this method returns the standard {CaTissue::Database}
     # service.
     #
@@ -229,17 +229,17 @@ module CaTissue
     #   position in the caTissue service update argument. A Specimen position is altered as a side-effect
     #   by creating a proxy save {CaTissue::TransferEventParameters}. The changed position is not reflected
     #   in the Specimen position, which must be refetched to reflect the database state. This fetch is
-    #   done automatically by {CaRuby::Database} as part of the save proxy mechanism. The Specimen update
+    #   done automatically by +CaRuby::Database+ as part of the save proxy mechanism. The Specimen update
     #   template must include a reference to the former position but not the changed position.
     #
     #   However, the Specimen +CaRuby::Writer.update+ argument will include the changed position, not the
     #   former position. The template built +CaRuby::Writer.update+ for submission to the caTissue app
     #   does not include a position reference, since the position has a save proxy which handles position
-    #   change as part of the {CaRuby::Writer} update dependent propagation.
+    #   change as part of the +CaRuby::Writer+ update dependent propagation.
     #
     #   Thus, updating a Specimen which includes a position change is performed as follows:
     #   * reconstitute the former position from the Position snapshot taken as part of the
-    #      {CaRuby::Persistable} change tracker.
+    #      +CaRuby::Persistable+ change tracker.
     #   * add the former position to the template (which will now differ from the +CaRuby::Writer.update+
     #     argument).
     #   * submit the adjusted Specimen template to the caTissue app updateObject.

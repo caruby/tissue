@@ -19,7 +19,7 @@ module CaTissue
         @intgtr = integrator
       end
 
-      # Augments the {CaRuby::PersistenceService} create method to handle caTissue annotation
+      # Augments the +CaRuby::PersistenceService+ create method to handle caTissue annotation
       # service peculiarities, e.g.:
       # * assigns the identifier, since assignment is not done automatically as is the case with
       #   the default application service

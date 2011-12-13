@@ -7,7 +7,7 @@ require 'caruby/database'
 
 module CaTissue
   module CLI
-    # Augments {CaRuby::CLI::Command} with caTissue-specific command line option handlers.
+    # Augments +CaRuby::CLI::Command+ with caTissue-specific command line option handlers.
     class Command < CaRuby::CLI::Command
       # Built-in options include those specified in +CaRuby::CLI::Command.initialize+
       # as well as the following:
