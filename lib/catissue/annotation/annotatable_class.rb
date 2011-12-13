@@ -10,7 +10,7 @@ module CaTissue
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
       
-    # @return [Class] the {DEIntegration} proxy class (nil for 1.1 caTissue)
+    # @return [Class] the {Annotation::DEIntegration} proxy class (nil for 1.1 caTissue)
     def de_integration_proxy_class
       @de_integration_proxy_class or (superclass.de_integration_proxy_class if superclass < Annotatable)
     end

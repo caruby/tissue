@@ -19,7 +19,7 @@ module CaTissue
     # @return [Class] the hook-annotation association class, or nil for 1.1.x caTissue
     attr_reader :record_entry_class
       
-    # @return [Symbol] the {#de_integration_proxy_class} hook writer method, or nil for 1.1.x caTissue
+    # @return [Symbol] the {#record_entry_class} hook writer method, or nil for 1.1.x caTissue
     attr_reader :record_entry_hook_writer
 
     # @param [AnnotationModule] mod the annotation module to build
@@ -29,20 +29,21 @@ module CaTissue
     # @option opts [String] :service the DE service name
     # @option opts [String] :group the DE group short name
     # @option opts [String] :record_entry the record entry name class for post-1.1.x caTissue
-    # @yield (see #initialize_annotation)
-    # @yieldparam (see #initialize_annotation)
+    # @yield [proxy] makes the hook => proxy reference attribute
+    # @yieldparam [ProxyClass] proxy the proxy class
+    # @yield [proxy] makes the hook => proxy reference attribute
+    # @yieldparam [ProxyClass] proxy the proxy class
     def self.extend_module(mod, hook, opts, &proxy_builder)
       mod.extend(self)
       mod.initialize_annotation(hook, opts, &proxy_builder)
     end
+    
     # Builds the annotation module.
     # This method intended to be called only by {AnnotationModule.extend_module}.
     #
     # @param (see AnnotationModule.extend_module)
-    # @yield [proxy] makes the hook => proxy reference attribute
-    # @yieldparam [ProxyClass] proxy the proxy class
-    # @yield [proxy] makes the hook => proxy reference attribute
-    # @yieldparam [ProxyClass] proxy the proxy class
+    # @yield (see AnnotationModule.extend_module)
+    # @yieldparam (see AnnotationModule.extend_module)
     def initialize_annotation(hook, opts)
       logger.debug { "Building #{hook.qp} annotation #{qp}..." }
       # Make this module a CaRuby Domain
@@ -75,7 +76,7 @@ module CaTissue
       @ann_svc ||= Database.instance.annotator.create_annotation_service(self, @svc_nm)
     end
     
-    # This method implements the {CaRuby::MetdataLoader#add_metadata} callback to ensure
+    # This method implements the {CaRuby::MetadataLoader#add_metadata} callback to ensure
     # that the metadata load is complete.
     #
     # Annotation classes are introspected, but the annotation constant is not set properly

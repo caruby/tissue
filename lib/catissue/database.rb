@@ -38,7 +38,7 @@ module CaTissue
       @annotator ||= Annotator.new(self)
     end
 
-    # If the given domain object is an {Annotation}, then this method returns the {AnnotationService}
+    # If the given domain object is an {Annotation}, then this method returns the {CaRuby::AnnotationService}
     # for the object {AnnotationModule}, otherwise this method returns the standard {CaTissue::Database}
     # service.
     #

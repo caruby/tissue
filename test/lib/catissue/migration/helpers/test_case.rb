@@ -48,7 +48,7 @@ module CaTissue
     # Each migrated target object is validated using {CaTissue::TestCase#verify_saved}.
     # In addition, if a verifier block is given to this method, then that block is
     # called on the target migration object, or nil if no target was migrated.
-    # Supported options are described in {CaTissue::Migrator#migrate}.
+    # Supported options are described in {CaRuby::Migrator#migrate}.
     #
     # @param (see #verify_target)
     # @option (see #verify_target)

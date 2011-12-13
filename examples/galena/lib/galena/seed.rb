@@ -1,5 +1,5 @@
 module Galena
-  # Creates the {Galena::Seed::Defaults} administrative objects as necessary.
+  # Creates the {Seed} administrative objects as necessary.
   def self.seed
     Seed.new.ensure_exists
   end

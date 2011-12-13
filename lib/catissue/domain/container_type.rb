@@ -15,7 +15,7 @@ module CaTissue
   #
   #   This conceptual model is implemented in caTissue as follows:
   #   * The specimen collection container type, e.g. +Citrate Vacutainer+, is captured
-  #     as a {CaTissue::CollectionEventParameters#container} String. There is no separate
+  #     as a {CaTissue::CollectionEventParameters} +container+ String. There is no separate
   #     collection container instance or container type instance.
   #   * A tissue specimen storage box is captured as a {CaTissue::StorageContainer}
   #     instance constrained to a {CaTissue::StorageType} instance. Boxes with different

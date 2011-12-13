@@ -39,7 +39,7 @@ module CaTissue
       not ref.nil?
     end
     
-    # @return [Boolean] whether this annotation is neither a {#primary?} nor a #{secondary} annotation
+    # @return [Boolean] whether this annotation is neither a {#primary?} nor a {#secondary?} annotation
     def tertiary?
       not (primary? or secondary?)
     end
