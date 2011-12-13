@@ -21,4 +21,4 @@ end
 # Add galena/lib to the Ruby path.
 $:.unshift(Galena::ROOT_DIR + '/lib')
 
-require 'galena/tissue/seed'
+require 'galena/seed'

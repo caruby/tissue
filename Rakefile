@@ -1,8 +1,6 @@
 require 'fileutils'
 require File.expand_path('version', File.dirname(__FILE__) + '/lib/catissue')
 
-include FileUtils
-
 # the gem name
 GEM = 'caruby-tissue'
 GEM_VERSION = CaTissue::VERSION
@@ -16,7 +14,7 @@ TAR_FILES = Dir.glob("{bin,examples,lib,sql,*.gemspec,doc/website,test/{bin,fixt
 
 desc "Makes the example documentation"
 task :doc do
-  rm_rf 'examples/galena/doc'
+  FileUtils.rm_rf 'examples/galena/doc'
   sh "yardoc -o examples/galena/doc --readme examples/galena/README.md examples/galena/lib"
 end
 

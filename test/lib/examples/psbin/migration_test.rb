@@ -1,10 +1,12 @@
+require File.dirname(__FILE__) + '/../../catissue/migration/helpers/test_case'
 # Borrow the Galena test apparatus.
-require File.dirname(__FILE__) + '/../galena/tissue/migration/helpers/test_case'
+require File.dirname(__FILE__) + '/../../examples/galena/tissue/helpers/test_case'
+require File.dirname(__FILE__) + '/../../examples/galena/tissue/migration/helpers/seed'
 
 # Tests the PSBIN example migration.
 module PSBIN
   class MigrationTest < Test::Unit::TestCase
-    include Galena::Tissue::MigrationTestCase
+    include CaTissue::MigrationTestCase, Galena::TestCase
     
     def setup
       super(FIXTURES)
@@ -13,11 +15,11 @@ module PSBIN
     def test_patient_target
       verify_target(:patient, PATIENT_OPTS)
     end
-
+    
     def test_biopsy_target
       verify_target(:biopsy, BIOPSY_OPTS)
     end
-
+    
     def test_surgery_target
       verify_target(:surgery, SURGERY_OPTS)
     end
