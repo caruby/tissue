@@ -32,7 +32,7 @@ module CaTissue
     # If a factory block is provided, then that factory is called to make a new
     # Migrator instance. Otherwise, {CaTissue::Migrator#initialize} makes the instance.
     #
-    # If there is no :input option, then the migration input is set to the
+    # If there is no +:input+ option, then the migration input is set to the
     # _fixture_.+csv+ file in the {#initialize} fixtures directory.
     #
     # @param [Symbol] fixture the migration test fixture

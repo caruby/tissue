@@ -39,8 +39,8 @@ module CaTissue
     # @param [{Symbol => Object}, nil] params the attribute => value associations
     def self.create_parameters(type, scg_or_specimen, params=Hash::EMPTY_HASH)
       # make the class name by joining the camel-cased type prefix to the subclass suffix.
-      # classify converts a lower_case, underscore type to a valid class name, e.g. :check_in_check_out
-      # becomes CheckInCheckOut.
+      # classify converts a lower_case, underscore type to a valid class name,
+      # e.g. +:check_in_check_out+ becomes +CheckInCheckOut+.
       class_name = type.to_s.classify + SUBCLASS_SUFFIX
       begin
         klass = CaTissue.const_get(class_name.to_sym)

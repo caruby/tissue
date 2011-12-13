@@ -75,7 +75,7 @@ module CaTissue
     #   ContainerType is created.
     add_dependent_attribute(:capacity)
     
-    # Override default +CaRuby::Resource.merge_attributes+ to support the Capacity :rows and :columns
+    # Override default +CaRuby::Resource.merge_attributes+ to support the Capacity :rows and +:columns+
     # pseudo-attributes.
     #
     # @quirk JRuby Subclasses do not pick up this class's Resource method overrides.

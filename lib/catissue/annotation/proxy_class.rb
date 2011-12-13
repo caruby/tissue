@@ -42,7 +42,7 @@ module CaTissue
       # Recursively adds dependents of all referenced annotations.
       #
       # This method defines a proxy attribute in each primary annotation class
-      # for each #{non_proxy_annotation_classes} class hierarchy.
+      # for each {#non_proxy_annotation_classes} class hierarchy.
       def build_annotation_dependency_hierarchy
         logger.debug { "Building annotation dependency hierarchy..." }
         non_proxy_annotation_classes.each do |klass|

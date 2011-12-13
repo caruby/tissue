@@ -230,17 +230,17 @@ module CaTissue
     #
     # The default class is inferred from the _class_ parameter, if given, or inherited
     # from this parent specimen otherwise. The inferred class is the camel-case parameter value
-    # with +Specimen+ appended, e.g. :tissue => +TissueSpecimen+. This class name is resolved to
+    # with +Specimen+ appended, e.g. +:tissue+ => +TissueSpecimen+. This class name is resolved to
     # a class in the CaTissue module context.
     #
-    # The supported :type parameter value includes the permissible caTissue specimen type String
-    # values as well as the shortcut tissue type symbols :fresh, :fixed and :frozen.
+    # The supported +:type+ parameter value includes the permissible caTissue specimen type String
+    # values as well as the shortcut tissue type symbols :fresh, :fixed and +:frozen+.
     #
     # If a SpecimenRequirement parameter is provided, then that SpecimenRequirement's attribute
     # values are merged into the new Specimen after the other parameters are merged. Thus, params
     # takes precedence over the SpecimenRequirement.
     #
-    # If the :count parameter is set to a number greater than one, then the specimen is aliquoted
+    # If the +:count+ parameter is set to a number greater than one, then the specimen is aliquoted
     # into the specified number of samples.
     #
     # This method is a convenience method to create either a Specimen or CaTissue::SpecimenRequirement.
@@ -495,7 +495,7 @@ module CaTissue
       cp.coordinators.first
     end
 
-    # Sets the :specimen_class parameter to a permissible caTissue value.
+    # Sets the +:specimen_class+ parameter to a permissible caTissue value.
     def self.standardize_class_parameter(params)
       opt = params[:specimen_class]
       if opt.nil? then
