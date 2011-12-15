@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.test_files    = Dir['test/lib/**/*.rb']
   s.add_dependency 'bundler'
   s.add_dependency 'caruby-core', '>= 2.1.1'
+  s.add_dependency 'uom', '>= 1.2.2'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'rake'
   s.has_rdoc      = 'yard'
