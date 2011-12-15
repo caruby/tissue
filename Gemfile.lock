@@ -4,6 +4,7 @@ PATH
     caruby-tissue (2.1.1)
       bundler
       caruby-core (>= 2.1.1)
+      uom (>= 1.2.2)
 
 PATH
   remote: /Users/loneyf/workspace/caruby/core
@@ -16,7 +17,6 @@ PATH
       fastercsv
       json_pure
       rack
-      uom
 
 GEM
   remote: http://rubygems.org/
@@ -35,7 +35,7 @@ GEM
       columnize (>= 0.1)
       ruby-debug-base (~> 0.10.4.0)
     ruby-debug-base (0.10.4-java)
-    uom (1.2.1)
+    uom (1.2.2)
       extensional
     yard (0.7.3)
 
