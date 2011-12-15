@@ -1,5 +1,4 @@
 require 'singleton'
-require 'caruby/helpers/log'
 require 'caruby/helpers/collection'
 require 'caruby/helpers/options'
 require 'caruby/helpers/visitor'
