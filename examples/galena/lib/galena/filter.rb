@@ -1,5 +1,3 @@
-require 'uom'
-
 module CaTissue
   # Declares the classes modified for migration.
   shims Participant, TissueSpecimen, SpecimenCollectionGroup
