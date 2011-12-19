@@ -89,6 +89,7 @@ module CaTissue
 
     private
     
+    # @private
     INIT_OPTS = [:in, :at].to_set
     
     # @param [CaRuby::Coordinate] coord the coordinate to validate
