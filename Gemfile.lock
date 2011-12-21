@@ -15,8 +15,15 @@ PATH
       dbi
       dbi
       fastercsv
+      jinx (~> 2.1.1)
       json_pure
       rack
+
+PATH
+  remote: /Users/loneyf/workspace/jinx/core
+  specs:
+    jinx (2.1.1)
+      bundler
 
 GEM
   remote: http://rubygems.org/
@@ -45,6 +52,7 @@ PLATFORMS
 DEPENDENCIES
   caruby-core!
   caruby-tissue!
+  jinx!
   rake
   ruby-debug
   yard
