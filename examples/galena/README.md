@@ -35,7 +35,7 @@ Migration
 The example migration input data resides in the `data` directory.
 Each CSV input file holds one row for each specimen.
 
-Each example has a field mapping configuration in the `conf/migration` directory.
+Each example has a field mapping configuration in the `conf/` directory.
 For example, the `simple.csv` input file is migrated into caTissue using the
 `simple/migration.yaml` configuration file.
 
@@ -52,7 +52,7 @@ Migrate the Galena `simple` example as follows:
 
 3. Run the following:
 
-   `crtmigrate --target TissueSpecimen --mapping conf/migration/simple/fields.yaml data/simple.csv`
+   `crtmigrate --target TissueSpecimen --mapping conf/simple/fields.yaml data/simple.csv`
 
    This command migrates the CSV record in the `simple.csv` input file into a caTissue
    `TissueSpecimen` based on the `simple/fields.yaml` mapping file.
@@ -65,29 +65,29 @@ Migrate the Galena `simple` example as follows:
 The other examples are run in a similar manner. Each example demonstrates different
 features of the caRuby Migration utility as follows:
 
-* <tt>simple</tt> - a good starting point with limited input fields
+* <tt>registration</tt> - registers participants in a collection protocol
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/simple/fields.yaml data/simple.csv`
+  `crtmigrate --target CollectionProtocolRegistration --mapping conf/registration/fields.yaml --defaults conf/defaults.yaml data/registration.csv`
 
-* <tt>general</tt> - lots of input fields, no custom Ruby code
+* <tt>simple</tt> - migrates one specimen with limited input fields
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/general/fields.yaml data/general.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/simple/fields.yaml --defaults conf/defaults.yaml data/simple.csv`
 
-* <tt>filter</tt> - custom default, value filter, and shim code to convert input values to caTissue values and reject an incomplete migration
+* <tt>general</tt> - migrates specimens with lots of input fields and a minimal configuration
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/filter/fields.yaml --defaults conf/migration/filter/defaults.yaml --filters conf/migration/filter/values.yaml --shims lib/galena/filter.rb --bad bad.csv data/filter.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/general/fields.yaml data/general.csv`
 
-* <tt>frozen</tt> - storage locations
+* <tt>filter</tt> - applies a value filter and shim code to convert input values to caTissue values and reject an incomplete migration
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/frozen/fields.yaml --defaults conf/migration/frozen/defaults.yaml --shims lib/galena/frozen.rb data/frozen.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/filter/fields.yaml  --defaults conf/defaults.yaml --filters conf/filter/values.yaml --shims lib/galena/filter.rb --bad bad.csv data/filter.csv`
 
-* <tt>annotation</tt> - Dynamic Extension annotations
+* <tt>frozen</tt> - adds a custom default and places specimens in storage locations
 
-  `crtmigrate --target TissueSpecimen --mapping conf/migration/annotation/fields.yaml --defaults conf/migration/annotation/defaults.yaml data/annotation.csv`
+  `crtmigrate --target TissueSpecimen --mapping conf/frozen/fields.yaml --defaults conf/defaults.yaml,conf/frozen/defaults.yaml --shims lib/galena/frozen.rb data/frozen.csv`
 
-* <tt>registration</tt> - register participants in a Collection Protocol without specimens
+* <tt>annotation</tt> - annotates the specimens with Dynamic Extensions
 
-  `crtmigrate --target SpecimenCollectionGroup --mapping conf/migration/registration/fields.yaml data/registration.csv`
+  `crtmigrate --target SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation --mapping conf/annotation/fields.yaml --defaults conf/defaults.yaml,conf/annotation/defaults.yaml data/annotation.csv`
 
 Try running an example with the `--debug` flag and look at the `log/migration.log` file to see
 what caRuby is up to behind the scenes (hint: a lot!).

@@ -1,4 +1,0 @@
-MRN: specimen_collection_group.registration.participant_identifier
-SPN: specimen_collection_group.surgical_pathology_number
-Collection Date: specimen_collection_group.collection_event_parameters.timestamp
-Quantity: initial_quantity

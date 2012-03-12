@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../../../helpers/test_case'
 
 # Declare the ROOT_DIR constant before adding galena/lib to the Ruby path.
 

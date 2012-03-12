@@ -1,4 +1,0 @@
-SSN: Participant.social_security_number
-First: Participant.first_name
-Middle: Participant.middle_name
-Last: Participant.last_name

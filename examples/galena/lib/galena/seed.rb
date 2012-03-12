@@ -11,17 +11,16 @@ module Galena
   #
   # In a real-world use case, the administrative objects are typically built in the UI before-hand.
   # In that case, it is only necessary to define the object secondary key rather than content, e.g.:
-  #   pcl = CaTissue::CollectionProtocol.new(:title => 'Galena CP')
+  #   pcl = CaTissue::CollectionProtocol.new(:title => 'Galena Migration')
   # The complete definitions are included in this method for convenience in order to seed the
   # example in a test database. A real-world migration might find it useful to create a similar
   # defaults file in order to rapidly seed an empty test or staging database.
   class Seed
-    attr_reader :protocols, :hospital, :tissue_bank, :freezer_type, :box_type
+    attr_reader :protocol, :hospital, :tissue_bank, :freezer_type, :box_type
 
     # Creates the Galena example Defaults singleton and populates the attributes.
     def initialize
       super
-      @protocols = []
       populate
     end
     
@@ -29,7 +28,7 @@ module Galena
     #
     # @return [Seed] this fixture
     def ensure_exists
-      @protocols.each { |pcl| pcl.find(:create) }
+      @protocol.find(:create)
       @hospital.find(:create)
       @surgeon.find(:create)
       unless @box.find then
@@ -47,16 +46,9 @@ module Galena
     def uniquify
       # make the CP and MRN unique; these values will ripple through the SCG, CPR, et al.
       # to make them unique as well
-      protocols.each do |pcl|
-        pcl.title = pcl.title.uniquify
-        pcl.events.each  { |cpe| cpe.label = cpe.label.uniquify }
-      end
+      @protocol.title = @protocol.title.uniquify
+      @protocol.events.each  { |cpe| cpe.label = cpe.label.uniquify }
       self
-    end
-        
-    # @return [CaTissue::CollectionProtocol] the primary example protocol
-    def protocol
-      @protocols.first
     end
 
     private
@@ -96,28 +88,26 @@ module Galena
         :first_name => 'Serge', :last_name => 'On', :address => addr.copy,
         :institution => galena, :department => dept, :cancer_research_group => crg)
 
-      @protocols << pcl = CaTissue::CollectionProtocol.new(:title => 'Galena Migration', 
+      @protocol = CaTissue::CollectionProtocol.new(:title => 'Galena Migration', 
         :principal_investigator => pi, :sites => [@tissue_bank])
 
       # CPE has default 1.0 event point and label
-      cpe = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl, :event_point => 1.0, :label => 'Galena Migration_1')
+      cpe = CaTissue::CollectionProtocolEvent.new(
+        :collection_protocol => @protocol,
+        :event_point => 1.0,
+        :label => 'Galena Migration_1'
+      )
       
       # The sole specimen requirement. Setting the requirement collection_event attribute to a CPE automatically
       # sets the CPE requirement inverse attribute in caRuby.
       CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe, :specimen_type => 'Fixed Tissue')
 
-      @protocols << pcl2 = CaTissue::CollectionProtocol.new(:title => 'Galena Migration 2', 
-        :principal_investigator => pi, :sites => [@tissue_bank])
-      cpe2 = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl2, :event_point => 2.0, :label => 'Galena Migration_2')
-      CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe2, :specimen_type => 'Frozen Tissue')
-
-      @protocols << pcl3 = CaTissue::CollectionProtocol.new(:title => 'Galena Migration 3', 
-        :principal_investigator => pi, :sites => [@tissue_bank])
-      cpe3 = CaTissue::CollectionProtocolEvent.new(:collection_protocol => pcl3, :event_point => 3.0, :label => 'Galena Migration_3')
-      CaTissue::TissueSpecimenRequirement.new(:collection_event => cpe3, :specimen_type => 'Frozen Tissue')
-
       # the storage container type hierarchy
-      @freezer_type = CaTissue::StorageType.new(:name => 'Galena Freezer', :columns => 10, :rows => 1, :column_label => 'Rack')
+      @freezer_type = CaTissue::StorageType.new(
+        :name => 'Galena Freezer',
+        :columns => 10, :rows => 1,
+        :column_label => 'Rack'
+      )
       rack_type = CaTissue::StorageType.new(:name => 'Galena Rack', :columns => 10, :rows => 10)
       @box_type = CaTissue::StorageType.new(:name => 'Galena Box', :columns => 10, :rows => 10)
       @freezer_type << rack_type

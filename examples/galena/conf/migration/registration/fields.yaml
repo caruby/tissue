@@ -1,5 +1,0 @@
-Protocol: CollectionProtocol.title
-Patient: ParticipantMedicalIdentifier.medical_record_number
-Collection Point: CollectionProtocolEvent.collection_point_label
-Received: ReceivedEventParameters.timestamp
-SCG Name: SpecimenCollectionGroup.name

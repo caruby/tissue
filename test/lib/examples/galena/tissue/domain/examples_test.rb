@@ -9,7 +9,7 @@ class ExamplesTest < Test::Unit::TestCase
     @pcl = defaults.protocol
     @pcl.title = @pcl.title = 'Galena CP'.uniquify
     @pnt = CaTissue::Participant.new(:name => 'Test Participant'.uniquify)
-    @pnt.add_mrn(defaults.hospital, CaRuby::Uniquifier.qualifier)
+    @pnt.add_mrn(defaults.hospital, Jinx::Uniquifier.qualifier)
     solid = CaTissue::Specimen.create_specimen(:class => :tissue, :type => 'Frozen Tissue', :quantity => 1.0)
     blood = CaTissue::Specimen.create_specimen(:class => :fluid, :type => 'Whole Blood', :quantity => 10)
     rcvr = defaults.tissue_bank.coordinator

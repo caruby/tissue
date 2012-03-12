@@ -7,7 +7,7 @@ module CaTissue
   class StorageContainer
     # Creates the migrated box in the database, if necessary.
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
       find or create_galena_box

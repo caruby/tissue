@@ -1,6 +1,7 @@
 source :rubygems
 gemspec
 
-gem 'caruby-tissue', :require => 'catissue'
-gem 'galena', :path => File.dirname(__FILE__)
-
+group :development do
+  # The Galena example gem
+  gem 'galena', :path => File.dirname(__FILE__)
+end
