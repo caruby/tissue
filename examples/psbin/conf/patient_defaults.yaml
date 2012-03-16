@@ -1,3 +1,0 @@
-Participant::Clinical::LabAnnotation.lab_test_name: 2857-1 ~ Prostate specific Ag - Serum/Plasma - Quantitative - Mass Concentration - Point in time
-Participant::Clinical::LabAnnotation.other_lab_test_name: Pre-Treatment PSA
-Participant::Clinical::LabAnnotation.result_units: ng/ml

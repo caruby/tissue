@@ -1,4 +1,0 @@
-Participant::Clinical::TreatmentAnnotation.agent: NOT SPECIFIED
-Participant::Clinical::TreatmentAnnotation.other_agent: Radical Prostatectomy
-SpecimenCollectionGroup.clinical_status: Operative
-SpecimenCollectionGroup.collection_status: Complete

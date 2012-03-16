@@ -1,5 +1,0 @@
-Protocol: CollectionProtocol.title
-Patient: CollectionProtocolRegistration.protocol_participant_identifier
-Agent: Participant::Clinical::TreatmentAnnotation.agent
-Dose: Participant::Clinical::TreatmentAnnotation.dose
-Units: Participant::Clinical::TreatmentAnnotation.dose_units

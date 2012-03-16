@@ -1,4 +1,0 @@
-Protocol: CollectionProtocol.title
-Patient: CollectionProtocolRegistration.protocol_participant_identifier
-Clinical Staging System: Participant::Clinical::LabAnnotation.other_lab_test_name
-Clinical T Stage: Participant::Clinical::LabAnnotation.result
