@@ -1,7 +1,12 @@
 module Galena
-  # Creates the {Seed} administrative objects as necessary.
+  # @return [Seed] the pre-defined Galena example administrative objects
+  def self.administrative_objects
+    @seed ||= Galena::Seed.new
+  end
+  
+  # Creates the {Seed} administrative objects in the database if necessary.
   def self.seed
-    Seed.new.ensure_exists
+    administrative_objects.ensure_exists
   end
   
   # Pre-defined Galena example administrative objects. If the Galena example is already set up

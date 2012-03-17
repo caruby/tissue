@@ -21,11 +21,11 @@ module CaTissue
     # @return [StorageContainer] the new box
     def create_galena_box
       # the box container type
-      self.container_type = Galena::Migrator.administrative_objects.box_type
+      self.container_type = Galena.administrative_objects.box_type
       # the required box site
-      self.site = Galena::Migrator.administrative_objects.tissue_bank
+      self.site = Galena.administrative_objects.tissue_bank
       # A freezer with a slot for the box.
-      frz = Galena::Migrator.administrative_objects.freezer_type.find_available(site, :create)
+      frz = Galena.administrative_objects.freezer_type.find_available(site, :create)
       # Add the box to the first open slot in the first unfilled rack in the freezer.
       frz << self
       logger.debug { "Placed the tissue box #{self} in freezer #{frz}." }
