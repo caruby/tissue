@@ -1,4 +1,4 @@
-require 'caruby/helpers/inflector'
+require 'jinx/helpers/inflector'
 require 'caruby/database/sql_executor'
 require 'caruby/database/persistence_service'
 require 'catissue/annotation/annotatable'

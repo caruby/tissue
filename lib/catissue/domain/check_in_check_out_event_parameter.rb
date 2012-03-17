@@ -1,7 +1,4 @@
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.CheckInCheckOutEventParameter
-
   class CheckInCheckOutEventParameter
     # The check-in/check-out status permissible values.
     module Status

@@ -1,4 +1,4 @@
-require 'caruby/migration/migrator'
+require 'jinx/migration/migrator'
 
 module CaTissue
   shims SpecimenCollectionGroup, CollectionProtocolRegistration, SpecimenCharacteristics,

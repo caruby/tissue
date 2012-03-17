@@ -1,9 +1,6 @@
 require 'catissue/helpers/collectible_event_parameters'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.CollectionEventParameters
-
   class CollectionEventParameters
     include CollectibleEventParameters
     

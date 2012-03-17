@@ -1,9 +1,6 @@
 require 'catissue/helpers/position'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenArrayContent
-
   # @quirk caTissue #{CaTissue::SpecimenArrayContent} should be derived from
   #   {CaTissue::AbstractPosition} but isn't (cf. {CaTissue::ContainerType}).
   #   Partially rectify this by including the {Position} mix-in in common with

@@ -1,12 +1,14 @@
 require 'singleton'
-require 'caruby/import/java'
+require 'jinx/import/java'
 require 'caruby/database/sql_executor'
 require 'catissue/database/annotation/id_generator'
 
 module CaTissue
   module Annotation
-    # EntityFacade is the caRuby substitue for the broken caTissue EntityManager. EntityManager is
-    # the caTissue singleton Winnebago object for doing lots of things with dynamic extensions.
+    # EntityFacade is the caRuby substitute for the broken caTissue EntityManager.
+    # EntityManager is the caTissue singleton Winnebago object for doing lots of
+    # things with dynamic extensions. The EntityManager defects are listed in the
+    # various Rubydoc quirks.
     class EntityFacade
       include Singleton
       
@@ -38,7 +40,7 @@ module CaTissue
         @idgen.next_identifier(table)
       end
       
-      # @quirk caTissue unlike the hook entity id lookup, the annotation entity id lookup strips the leading
+      # @quirk caTissue Unlike the hook entity id lookup, the annotation entity id lookup strips the leading
       #   package prefix from the annotation class name. caTissue DE API requires this undocumented inconsistency.
       #
       # @quirk caTissue call into caTissue to get entity id doesn't work. caRuby uses direct SQL instead.
@@ -56,23 +58,23 @@ module CaTissue
       # @param [Integer] eid the entity id to check
       # @return [Boolean] whether the entity is primary
       def primary?(eid)
-        result = @executor.execute { |dbh| dbh.select_one(IS_PRIMARY_SQL, eid) }
+        result = @executor.query(IS_PRIMARY_SQL, eid).first
         not result.nil?
       end
       
       # @param [Class] klass the {Annotatable} class
       # @return [Integer] the class entity id
       def hook_entity_id(klass)
-        result = @executor.execute { |dbh| dbh.select_one(HOOK_ENTITY_ID_SQL, klass.java_class.name) }
+        result = @executor.query(HOOK_ENTITY_ID_SQL, klass.java_class.name).first
         if result.nil? then raise AnnotationError.new("Entity id not found for static hook class #{klass.qp}") end
         eid = result[0].to_i
         logger.debug { "Static hook class #{klass.qp} has entity id #{eid}." }
         eid
       end
       
-      # @quirk caTissue call into caTissue to get entity id doesn't work for non-primary object.
-      #   Furthermore, the SQL used for the #{#annotation_entity_id} doesn't work for associated annotation
-      #   classes. Use alternative SQL instead.
+      # @quirk caTissue The call into caTissue to get entity id doesn't work for a non-primary object.
+      #   Furthermore, the SQL used for the #{#annotation_entity_id} doesn't work for associated
+      #   annotation classes. Use the {ASSN_ENTITY_ID_SQL} alternative SQL instead.
       #
       # @param [Integer] eid the referencing entity id
       # @param [String] name the association property name
@@ -91,16 +93,16 @@ module CaTissue
 
       # @quirk caTissue Annotation classes are incorrectly mapped to entity ids, which in turn are
       #   incorrectly mapped to a table name. A candidate work-around is to bypass the caTissue DE
-      #   mechanism and hit the DE Hibernate config files directly. However, the DE Hibernate mappings
-      #   are incorrect and possibly no longer used. Therefore, the table must be obtained by SQL
-      #   work-arounds.
+      #   mechanism and hit the DE Hibernate config files directly. However, the 1.1.2 DE Hibernate
+      #   mappings are incorrect and possibly no longer used. Therefore, the table must be obtained
+      #   by SQL work-arounds.
       #
       # @param [Annotation] obj the annotation object
       # @return [String] the entity table name
       # @param [Integer] the annotation entity identifier
       # @return [String] the entity table name
       def annotation_table_for_entity_id(eid)
-        result = @executor.execute { |dbh| dbh.select_one(TABLE_NAME_SQL, eid) }
+        result = @executor.query(TABLE_NAME_SQL, eid).first
         if result.nil? then raise AnnotationError.new("Table not found for annotation entity id #{eid}") end
         tbl = result[0]
         logger.debug { "Annotation entity with id #{eid} has table #{tbl}." }
@@ -110,14 +112,14 @@ module CaTissue
       # @param (see #associated_entity_id)
       # @return [Integer, nil] the parent entity id, if any
       def parent_entity_id(eid)
-        result = @executor.execute { |dbh| dbh.select_one(PARENT_ENTITY_ID_SQL, eid) }
+        result = @executor.query(PARENT_ENTITY_ID_SQL, eid).first
         result[0].to_i if result and result[0]
       end
       
       # Obtains the undocumented caTisue container id for the given primary entity id.
       #
-      # @quirk caTissue 1.1.2 EntityManager.getContainerIdForEntitycontainer uses incorrect table
-      #   (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=421&sid=5252d951301e598eebf3e90036da43cb).
+      # @quirk caTissue 1.1.2 EntityManager.getContainerIdForEntitycontainer uses an
+      #   incorrect table (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=421&sid=5252d951301e598eebf3e90036da43cb).
       #   The standard DE API call submits the query:
       #     SELECT IDENTIFIER FROM dyextn_container WHERE ENTITY_ID = ?
       #   This results in the error:
@@ -126,14 +128,15 @@ module CaTissue
       #     SELECT IDENTIFIER FROM dyextn_container WHERE ABSTRACT_ENTITY_ID = ?
       #   The work-around is to call this SQL directly.
       #
-      # @quirk caTissue 1.2 there are deprecated primary annotations with an entity id but no container id.
+      # @quirk caTissue 1.2 There are deprecated primary annotations with an entity id
+      #   but no container id.
       # 
       # @return [Integer] eid the primary entity id
       def container_id(eid)
         # The following call is broken in caTissue 1.1.2 (see method doc).
         # EntityManager.instance.get_container_id_for_entity(eid)
         # Work-around this caTissue bug with a direct query.
-        result = @executor.execute { |dbh| dbh.select_one(CTR_ID_SQL, eid) }
+        result = @executor.query(CTR_ID_SQL, eid).first
         if result.nil? then
           logger.debug("Dynamic extension container id not found for annotation with entity id #{eid}")
           return
@@ -163,7 +166,7 @@ module CaTissue
         # The entity group and name.
         grp, name = split_annotation_entity_class_name(klass)
         # Dive into some obscure SQL.
-        result = @executor.execute { |dbh| dbh.select_one(ANN_ENTITY_ID_SQL, grp, name) }
+        result = @executor.query(ANN_ENTITY_ID_SQL, grp, name).first
         result[0].to_i if result
       end
       
@@ -211,7 +214,7 @@ module CaTissue
       # @return [Integer, nil] the directly associated entity id, if any
       def nonrecursive_associated_entity_id(eid, role)
         logger.debug { "Finding entity id #{eid} #{role} associated entity id..." }
-        result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, role) }
+        result = @executor.query(ASSN_ENTITY_ID_SQL, eid, role).first
         # The role role can be a mutation of the property name with spaces inserted in the
         # camel-case components, e.g. 'Additional Finding' instead of 'AdditionalFinding'.
         # TODO - fix this kludge by finding out how the role relates to the property in the
@@ -219,12 +222,12 @@ module CaTissue
         if result.nil? and role =~ /.+[A-Z]/ then
           alt = role.gsub(/(.)([A-Z])/, '\1 \2')
           logger.debug { "Attempting to find  entity id #{eid} #{role} associated entity id using variant #{alt}..." }
-          result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, alt) }
+          result = @executor.query(ASSN_ENTITY_ID_SQL, eid, alt).first
         end
         if result.nil? and role =~ /[pP]athologic[^a]/ then
           alt = role.sub(/([pP])athologic/, '\1athological')
           logger.debug { "Attempting to find  entity id #{eid} #{role} associated entity id using variant #{alt}..." }
-          result = @executor.execute { |dbh| dbh.select_one(ASSN_ENTITY_ID_SQL, eid, alt) }
+          result = @executor.query(ASSN_ENTITY_ID_SQL, eid, alt).first
         end
         if result.nil? then logger.debug { "Entity id #{eid} is not directly associated with #{role}." } end
         result[0].to_i if result
@@ -250,9 +253,9 @@ EOS
       # The SQL to find an entity id for an annotation reference.
       ASSN_ENTITY_ID_SQL = <<EOS
       select assn.TARGET_ENTITY_ID
-      from DYEXTN_ATTRIBUTE attr, DYEXTN_ABSTRACT_ENTITY ae, DYEXTN_ASSOCIATION assn, DYEXTN_ROLE role
-      where assn.IDENTIFIER = attr.IDENTIFIER
-      and attr.ENTIY_ID = ae.id
+      from DYEXTN_ATTRIBUTE pa, DYEXTN_ABSTRACT_ENTITY ae, DYEXTN_ASSOCIATION assn, DYEXTN_ROLE role
+      where assn.IDENTIFIER = pa.IDENTIFIER
+      and pa.ENTIY_ID = ae.id
       and assn.TARGET_ROLE_ID = role.IDENTIFIER
       and ae.id = ?
       and role.name = ?

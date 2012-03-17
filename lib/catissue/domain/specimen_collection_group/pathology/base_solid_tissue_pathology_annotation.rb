@@ -1,9 +1,7 @@
 module CaTissue
   class SpecimenCollectionGroup
-    class Pathology
-      resource_import Java::pathology_scg.BaseSolidTissuePathologyAnnotation
-      
-      class BaseSolidTissuePathologyAnnotation
+    module Pathology
+          class BaseSolidTissuePathologyAnnotation
         # @quirk caTissue The BaseSolidTissuePathologyAnnotation => HistologicGrade collection
         #   property is misnamed as histologicGrade rather than histologicGradeCollection. This misnaming
         #   prevents caRuby from inferring the attribute domain type and inverse. Work-around is to set

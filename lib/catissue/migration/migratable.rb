@@ -1,4 +1,4 @@
-require 'caruby/migration/migrator'
+require 'jinx/migration/migrator'
 require 'catissue/annotation/proxy'
 
 module CaTissue
@@ -33,11 +33,11 @@ module CaTissue
   end
 
   class SpecimenCharacteristics
-    @@tissue_site_cv_finder = nil
+    @@site_finder = nil
 
     # Sets this SpecimenCharacteristics tissue site ControlledValueFinder.
     def self.tissue_site_cv_finder=(finder)
-      @@tissue_site_cv_finder = finder
+      @@site_finder = finder
     end
 
     # Returns the tissue site controlled value as follows:
@@ -49,7 +49,7 @@ module CaTissue
     #
     # @return [String] the caTissue tissue site permissible value
     def self.tissue_site_controlled_value(value)
-      @@tissue_site_cv_finder.nil? ? value : @@tissue_site_cv_finder.controlled_value(value)
+      @@site_finder.nil? ? value : @@site_finder.controlled_value(value)
     end
 
     # @return [String] the {tissue_site_controlled_value}
@@ -61,20 +61,21 @@ module CaTissue
 
     # Returns the {tissue_site_controlled_value}.
     #
-    # @return the caTissue tissue site permissible value
+    # @return [String, nil] the caTissue tissue site permissible value, or nil if not found
     def standard_cv_tissue_site(value)
-      SpecimenCharacteristics.tissue_site_controlled_value(value)
+      SpecimenCharacteristics.tissue_site_controlled_value(value) rescue nil
     end
 
     # Returns the {tissue_site_controlled_value} which adds the 'NOS' suffix to a value
     # without one or removes 'NOS' from a value with the suffix.
     #
-    # @return the caTissue tissue site permissible value
+    # @return [String] a supported variant of the input value
+    # @raise (see ControlledValueFinder#controlled_value)
     def variant_cv_tissue_site(value)
       # try an NOS suffix variation
       variation = value =~ /, NOS$/ ? value[0...-', NOS'.length] : value + ', NOS'
-      cv = SpecimenCharacteristics.tissue_site_controlled_value(variation)
-      logger.warn("Migrator substituted tissue site #{cv} for #{value}.") if cv
+      cv = SpecimenCharacteristics.tissue_site_controlled_value(value)
+      logger.warn("Migrator substituted tissue site #{cv} for #{value}.")
       cv
     end
   end
@@ -103,7 +104,7 @@ module CaTissue
     # A CollectibleEventParameters is preferentially set to a migrated SCG rather than a migrated
     # Specimen.
     #
-    # Overrides +CaRuby::Migratable.migratable__target_value+ to confer precedence to
+    # Overrides +Jinx::Migratable.migratable__target_value+ to confer precedence to
     # a SCG over a Specimen when setting this event parameters' owner. If the migrated
     # collection includes both a Specimen and a SCG, then this event parameters
     # +specimen+ reference is ambiguous, but the +specimen_collection_group+ reference

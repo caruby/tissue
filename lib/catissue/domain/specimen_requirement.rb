@@ -1,11 +1,8 @@
-require 'caruby/helpers/validation'
+require 'jinx/helpers/validation'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenRequirement
-
   # The SpecimenRequirement domain class.
-  class SpecimenRequirement < CaTissue::AbstractSpecimen
+  class SpecimenRequirement
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
     #   Initialize specimens if necessary. 
     #
@@ -45,13 +42,13 @@ module CaTissue
     
     # Returns the SpecimenRequirement in others which matches this SpecimenRequirement in the
     # scope of an owner CollectionProtocolEvent. This method relaxes
-    # +CaRuby::Resource.match_in_owner_scope+ for a SpecimenRequirement that matches any
+    # +Jinx::Resource.match_in_owner_scope+ for a SpecimenRequirement that matches any
     # SpecimenRequirement in others with the same class, specimen type, pathological_status
     # and characteristics.
     def match_in_owner_scope(others)
       others.detect do |other|
         self.class == other.class and specimen_type == other.specimen_type and pathological_status == other.pathological_status and
-         characteristics and characteristics.match?(other.characteristics)
+         characteristics and characteristics.matches?(other.characteristics)
       end
     end
 
@@ -106,7 +103,7 @@ module CaTissue
 
     protected
 
-    # @quirk caTissue Overrides the CaRuby::Resource method to handle caTissue Bug #67 -
+    # @quirk caTissue Overrides the Jinx::Resource method to handle caTissue Bug #67 -
     #   SpecimenRequirement activityStatus cannot be set.
     #
     # @return [<Symbol>] the required attributes which are nil for this domain object
@@ -126,16 +123,16 @@ module CaTissue
       children.size > 1 and children.any? { |drv| not drv.aliquot? }
     end
 
-    # Augments +CaRuby::Resource.validate+ to verify that this SpecimenRequirement does not have multiple
+    # Augments +Jinx::Resource.validate+ to verify that this SpecimenRequirement does not have multiple
     # non-aliquot derivatives, which is disallowed by caTissue.
     #
     # @quirk caTissue multiple SpecimenRequirement non-aliquot derivatives is accepted by caTissue but results
     #   in obscure downstream errors (cf. Bug #151).
     #
-    # @raise [CaRuby::ValidationError] if this SpecimenRequirement has multiple non-aliquot derivatives
+    # @raise [Jinx::ValidationError] if this SpecimenRequirement has multiple non-aliquot derivatives
     def validate_local
       super
-      if multiple_derivatives? then raise CaRuby::ValidationError.new("Multiple derivatives not supported by caTissue") end
+      if multiple_derivatives? then raise Jinx::ValidationError.new("Multiple derivatives not supported by caTissue") end
     end
 
     # Adds the following default values, if necessary:

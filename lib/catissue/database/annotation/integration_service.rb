@@ -35,6 +35,17 @@ module CaTissue
       # Creates an entity map record with content (annotation entity id, annotation id, form context id).
       # This record associates the static hook record to the annotation record qualified by the context.
       #
+      # @quirk caTissue 1.1.2 The caTissue 1.1.2 ClientDemo*.java examples do not set the entity map record
+      #   createdDate. This results in a caTissue 1.1.2 -> 1.2 migration error.
+      #   The entity map record in question is +edu.common.dynamicextensions.domain.integration.EntityMapRecord+.
+      #   However, that class is not referenced in the examples. Rather, the
+      #   referenced class is +deintegration.EntityMapRecord+, which does not have a createdDate property.
+      #   Therefore, there is no caRuby work-around for this caTissue bug. The only recourse is to set
+      #   the created_date SQL column directly to today() prior to performing a 1.1.2-to-1.2 migration.
+      #   1.2 uses a different mechanism, so this bug is specific to 1.1.2, although, of course, this does
+      #   not preclude the possibility of other obscure 1.2-to-2.0 caTissue migration bugs in a similar
+      #   vein.
+      #
       # @param (see #associate)
       # @return [EntityMapRecord] the new entity map record
       def create_entity_map_record(hook, annotation)
@@ -42,14 +53,12 @@ module CaTissue
         emr = EntityMapRecord.new
         emr.static_entity_record_id = hook.identifier
         emr.dynamic_entity_record_id = annotation.identifier
-        
         # the form context
         ctxt = form_context(hook, annotation)
         if ctxt then
           emr.form_context = ctxt
           emr.form_context_id = ctxt.id
         end
-        
         emr
       end
 
@@ -57,7 +66,6 @@ module CaTissue
       # @return [FormContent] an undocumented bit of caTissue presentation flotsam polluting the data layer
       def form_context(hook, annotation)
         map = entity_map(hook, annotation)
-        
         # the fetched form context
         ctxts = map.form_context_collection
         if ctxts.empty? then
@@ -69,7 +77,6 @@ module CaTissue
           ctxt = ctxts.first
           logger.debug { "#{hook} has form context id #{ctxt.id}." }
         end
-        
         ctxt
       end
       

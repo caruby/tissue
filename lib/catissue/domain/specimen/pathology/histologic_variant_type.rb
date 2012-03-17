@@ -1,6 +1,6 @@
 module CaTissue
   class Specimen
-    class Pathology
+    module Pathology
       # @quirk caTissue The 1.1.2 class HistologicVariantType is renamed to SpecimenHistologicVariantType in 1.2.
       #   Alias the HistologicVariantType Ruby class to SpecimenHistologicVariantType for forward compatibility.
       class HistologicVariantType

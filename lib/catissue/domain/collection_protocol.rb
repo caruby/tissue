@@ -2,14 +2,11 @@ require 'date'
 require 'catissue/helpers/hash_code'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocol
-
   # The CollectionProtocol domain class.
   #
   # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
   #   Create CollectionProtocol in API ignores startDate.
-  class CollectionProtocol < CaTissue::SpecimenProtocol
+  class CollectionProtocol
     include HashCode
     
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
@@ -67,9 +64,9 @@ module CaTissue
       registrations.detect { |registration| registration.participant == participant }
     end
 
-    # Returns the event in this protocol with the earliest study calendar event point.
-    def first_event
-      events.sort_by { |event| event.event_point or CollectionProtocolEvent::DEFAULT_EVENT_POINT }.first
+    # Returns this protocol's events sorted by study calendar event point.
+    def sorted_events
+      events.sort_by { |ev| ev.event_point || CollectionProtocolEvent::DEFAULT_EVENT_POINT }
     end
 
     # Returns the specimens collected from the given participant for this CollectionProtocol,
@@ -164,10 +161,8 @@ module CaTissue
     def add_default_site
       if coordinators.size == 1 then
         site = coordinators.first.sites.first
-      else
-        site = CaTissue::Site.default_site
-        site.find unless site.identifier
       end
+      site ||= CaTissue::Site.default_site
       sites << site
     end
 

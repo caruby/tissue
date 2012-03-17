@@ -1,9 +1,7 @@
 module CaTissue
   class Participant
-    class Clinical
+    module Clinical
       begin
-        resource_import Java::clinical_annotation.Chemotherapy
-      
         # @quirk caTissue The Chemotherapy DE class is not a primary entity with an entity id.
         #   ChemoRXAnnotation is used instead. The purpose of the caTissue Chemotherapy class is unknown,
         #   since it adds nothing to ChemoRXAnnotation.

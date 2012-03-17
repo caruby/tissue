@@ -1,9 +1,4 @@
-require 'catissue/resource'
-
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.NewSpecimenArrayOrderItem
-
   # The NewSpecimenArrayOrderItem domain class.
   class NewSpecimenArrayOrderItem
     # @quirk caTissue Bug #64: order items collection property is not initialized to an empty set

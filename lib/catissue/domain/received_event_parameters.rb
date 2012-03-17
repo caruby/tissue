@@ -1,10 +1,7 @@
 require 'catissue/helpers/collectible_event_parameters'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.ReceivedEventParameters
-
-  class ReceivedEventParameters < CaTissue::SpecimenEventParameters
+  class ReceivedEventParameters
     include CollectibleEventParameters
 
     add_attribute_aliases(:receiver => :user)

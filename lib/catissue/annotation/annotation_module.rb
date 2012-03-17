@@ -1,6 +1,6 @@
-require 'caruby/domain'
 require 'catissue/annotation/annotation'
 require 'catissue/annotation/annotation_class'
+require 'catissue/annotation/importer'
 require 'catissue/annotation/proxy'
 require 'catissue/annotation/proxy_class'
 require 'catissue/annotation/de_integration'
@@ -16,13 +16,15 @@ module CaTissue
     # @return [String] the group short name
     attr_reader :group
       
-    # @return [Class] the hook-annotation association class, or nil for 1.1.x caTissue
+    # @return [ProxyClass] the hook-annotation association class, or nil for 1.1.x caTissue
     attr_reader :record_entry_class
       
     # @return [Symbol] the {#record_entry_class} hook writer method, or nil for 1.1.x caTissue
     attr_reader :record_entry_hook_writer
-
-    # @param [AnnotationModule] mod the annotation module to build
+    
+    # Builds this annotation module.
+    # This method intended to be called only by {AnnotatableClass}.
+    #
     # @param [Class] hook the static hook class
     # @param [{Symbol => Object}] the options
     # @option opts [String] :package the DE package name
@@ -33,17 +35,6 @@ module CaTissue
     # @yieldparam [ProxyClass] proxy the proxy class
     # @yield [proxy] makes the hook => proxy reference attribute
     # @yieldparam [ProxyClass] proxy the proxy class
-    def self.extend_module(mod, hook, opts, &proxy_builder)
-      mod.extend(self)
-      mod.initialize_annotation(hook, opts, &proxy_builder)
-    end
-    
-    # Builds the annotation module.
-    # This method intended to be called only by {AnnotationModule.extend_module}.
-    #
-    # @param (see AnnotationModule.extend_module)
-    # @yield (see AnnotationModule.extend_module)
-    # @yieldparam (see AnnotationModule.extend_module)
     def initialize_annotation(hook, opts)
       logger.debug { "Building #{hook.qp} annotation #{qp}..." }
       # Make this module a CaRuby Domain
@@ -76,26 +67,6 @@ module CaTissue
       @ann_svc ||= Database.instance.annotator.create_annotation_service(self, @svc_nm)
     end
     
-    # This method implements the +CaRuby::MetadataLoader.add_metadata+ callback to ensure
-    # that the metadata load is complete.
-    #
-    # Annotation classes are introspected, but the annotation constant is not set properly
-    # in the annotation module. This occurs sporadically, e.g. in the PSBIN migration_test
-    # test_biopsy_target test case the NewDiagnosisHealthAnnotation class is introspected
-    # but when subsequently referenced by the migrator, the NewDiagnosisHealthAnnotation
-    # class is not introspected and the class object id differs from the original class
-    # object id. The cause of this bug is a complete mystery. The work-around is for this
-    # callback to call const_get on the given class. This is a seemingly unnecessary
-    # action to take, but was the most reasonable remedy discovered after two days of
-    # futile investigation. The const_get can only be done with annotation classes,
-    # and breaks non-annotation classes.
-    #
-    # TODO - refactor the doman class introspector yet again to simplify and unravel this bug.
-    #
-    def metadata_added(klass)
-      const_get(klass.name.demodulize)
-    end
-        
     private
     
     # The location of the domain class definitions.
@@ -103,12 +74,17 @@ module CaTissue
     
     # @param (see #initialize_annotation)
     def enable_metadata(hook, opts)
+      # Add introspection and annotation capability.
+      include Jinx::JSON::Serializer, Annotation, Jinx::Resource
+      # Mix in the annotation importer.
+      extend Annotation::Importer
+      # The annotation parent module is the hook domain module.
+      @parent_module = hook.domain_module
+      # the package name
+      package(opts[:package])
       # the annotation Ruby source files
       dir = File.join(DOMAIN_DIR, hook.name.demodulize.underscore, name.demodulize.underscore)
-      opts[:directory] = dir if File.directory?(dir)
-      opts[:mixin] = Annotation
-      opts[:metadata] = Proc.new { |klass| AnnotationClass.extend_class(klass, self) }
-      CaRuby::Domain.extend_module(self, opts)
+      definitions(dir) if File.directory?(dir)
     end
     
     # Sets the record entry instance variables for the given class name, if it exists
@@ -127,15 +103,15 @@ module CaTissue
     #   (default is the demodulized hook class name)
     def import_proxy(hook, name=nil)
       name ||= hook.name.demodulize
-      logger.debug { "Importing #{qp} #{hook.qp} annotation proxy..." }
+      logger.debug { "Importing the #{qp} #{hook.qp} annotation proxy..." }
       begin
         klass = const_get(name.to_sym)
       rescue NameError => e
-        CaRuby.fail(AnnotationError, "#{hook.qp} annotation #{qp} does not have a hook proxy class", e)
+        Jinx.fail(AnnotationError, "#{hook.qp} annotation #{qp} does not have a hook proxy class", e)
       end
       klass.extend(Annotation::ProxyClass)
       klass.hook = hook
-      logger.debug { "Built #{name} #{hook.qp} annotation proxy #{klass}." }
+      logger.debug { "Built the #{name} #{hook.qp} annotation proxy #{klass}." }
       klass
     end
   end

@@ -1,31 +1,26 @@
-require 'caruby/helpers/validation'
-require 'catissue/resource'
+require 'jinx/helpers/validation'
 require 'catissue/helpers/person'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.User
-
   # The User domain class.
   #
   # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
-  #   +UnsupportedOperationException+ if they are called.
+  #   UnsupportedOperationException if it's accessor method is called.
+  #
   # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
-  # @quirk caTissue obscure GUI artifact User page_of attribute pollutes the data layer as a
-  #   required attribute. Work-around is to simulate the GUI with a default value.
-  # @quirk caTissue User address can be created but not updated in 1.2.
-  # @quirk caTissue User address is not fetched on create in 1.2.
   class User
     include Person
 
     # @quirk caTissue work-around for caTissue Bug #66 - Client missing CSException class et al.
     #   caTissue User class initializes roleId to "", which triggers a client exception on subsequent
     #   getRoleId call. Use a private variable instead and bypass getRoleId.
+    #
+    # @quirk caTissue 1.2 Call to getRoleId results in the following error:
+    #     NoClassDefFoundError: gov/nih/nci/security/dao/SearchCriteria
+    #   This bug is probably a result of caTissue "fixing" Bug #66.
+    #   The work-around to the caTissue bug fix bug is to return nil unless the role id has been set
+    #   by a call to the {#role_id=} setter method.
     def role_id
-      # TODO - uncomment following and get rid of @role_id i.v. when bug is fixed.
-      #value = send(old_method)
-      #return if value == ''
-      #value.to_i
       @role_id
     end
 
@@ -45,18 +40,15 @@ module CaTissue
       setRoleId(value_s)
     end
 
-    # @quirk caTissue caTissue 1.2 User has an adminuser Java property, but caTissue throws an
-    #   UnsupportedOperationException if they are called.
-    if attribute_defined?(:adminuser) then remove_attribute(:adminuser) end
+    if property_defined?(:adminuser) then remove_attribute(:adminuser) end
 
-    # make the convenience {, CaRuby::Person::Name} name a first-class attribute
+    # Make the convenience {CaRuby::Person::Name} name a first-class attribute.
     add_attribute(:name, CaRuby::Person::Name)
 
-    # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
-    if attribute_defined?(:clinical_studies) then remove_attribute(:clinical_studies) end
+    if property_defined?(:clinical_studies) then remove_attribute(:clinical_studies) end
 
-    # clarify that collection_protocols is a coordinator -> protocol association.
-    # make assigned protocol and site attribute names consistent.
+    # Clarify that collection_protocols is a coordinator -> protocol association.
+    # Make assigned protocol and site attribute names consistent.
     add_attribute_aliases(:coordinated_protocols => :collection_protocols, :protocols => :assigned_protocols, :assigned_sites => :sites)
 
     # login_name is a database unique key.
@@ -76,8 +68,11 @@ module CaTissue
     add_mandatory_attributes(:activity_status, :address, :cancer_research_group, :department,
       :email_address, :first_name, :institution, :last_name, :page_of, :role_id)
 
-    # @quirk caTissue 1.2 User address can be updated in 1.1.2, but not 1.2.
-    # @quirk caTissue 1.2 User address is fetched on create in 1.1.2, but not 1.2.
+    # @quirk caTissue 1.2 User address can be updated in 1.1.2, but not 1.2. This difference is handled
+    #   by the caRuby {CaTissue::Database} update case logic.
+    #
+    # @quirk caTissue 1.2 User address is fetched on create in 1.1.2, but not 1.2. This difference is
+    #   handled by the caRuby {CaTissue::Database} create case logic.
     add_dependent_attribute(:address)
 
     # Password is removed as a visible caRuby attribute, since it is immutable in 1.2 and there
@@ -106,7 +101,7 @@ module CaTissue
 
     private
 
-    # By default, the emailAddress is the same as the loginName.
+    # By default, the email address is the same as the login name.
     def add_defaults_local
       super
       self.login_name ||= email_address

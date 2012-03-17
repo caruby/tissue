@@ -1,5 +1,4 @@
-require 'caruby/helpers/inflector'
-require 'caruby/domain/metadata'
+require 'jinx/helpers/inflector'
 require 'catissue/annotation/annotation_module'
 require 'catissue/annotation/de_integration'
 
@@ -39,11 +38,11 @@ module CaTissue
       annotation_defined?(symbol)
     end
 
-    # Refines the +CaRuby::Domain::Attributes.toxic_attributes+ to exclude annotation attributes.
+    # Refines the +Jinx::Properties.toxic_attributes+ to exclude annotation attributes.
     #
     # @return [<Symbol>] the non-annotation unfetched attributes
     def toxic_attributes
-      @anntbl_toxic_attrs ||= unfetched_attributes.compose { |attr_md| not attr_md.type < Annotation } 
+      @anbl_toxic_attrs ||= unfetched_attributes.compose { |prop| not prop.type < Annotation } 
     end
 
     # @param [AnnotationModule] mod the annotation module
@@ -68,32 +67,20 @@ module CaTissue
       end
     end
 
-    # Filters +CaRuby::Domain::Attributes#loadable_attributes} to exclude the {.annotation_attributes+
+    # Filters +Jinx::Properties#loadable_attributes} to exclude the {.annotation_attributes+
     # since annotation lazy-loading is not supported.
     #
-    # @return (see CaRuby::Domain::Attributes#loadable_attributes)
+    # @return (see Jinx::Properties#loadable_attributes)
     def loadable_attributes
-      @antbl_ld_attrs ||= super.compose { |attr_md| not attr_md.type < Annotation }
+      @antbl_ld_attrs ||= unfetched_attributes.compose do |prop|
+        # JRuby bug - Copied super body to avoid infinite loop. See const_missing.
+        prop.java_property? and not prop.type.abstract? and not prop.type < Annotation
+      end
     end
     
     def printable_attributes
-      @prbl_attrs ||= super.union(annotation_attributes)
-    end
-    
-    def attribute_metadata(attribute)
-      begin
-        super
-      rescue Exception => e
-        # Test whether the attribute references an annotation.
-        # This test will load the annotation on demand. If the test
-        # succeeds, then it is safe to call the base implementation
-        # again.
-        if annotation_attribute?(attribute) then
-          super
-        else
-          raise e
-        end
-      end
+      # JRuby bug - Copied super body to avoid infinite loop. See const_missing.
+      @prbl_attrs ||= java_attributes.union(annotation_attributes)
     end
     
     def annotation_attributes
@@ -112,15 +99,20 @@ module CaTissue
     
     private
     
+    # @return [Boolean] whenter this class's annotations are loaded
+    def annotations_loaded?
+      !!@ann_mods
+    end
+    
     # @param [String] name the proxy record entry class name
     def annotation_proxy_class_name=(name)
       @de_integration_proxy_class = Annotation::DEIntegration.proxy(name)
       if @de_integration_proxy_class then
         # hide the internal caTissue proxy collection attribute
-        attr = detect_attribute_with_type(@de_integration_proxy_class)
-        if attr then
-          remove_attribute(attr)
-          logger.debug { "Hid the internal caTissue #{qp} annotation record-keeping attribute #{attr}." }
+        pa = detect_attribute_with_type(@de_integration_proxy_class)
+        if pa then
+          remove_attribute(pa)
+          logger.debug { "Hid the internal caTissue #{qp} annotation record-keeping attribute #{pa}." }
         end
       else
         logger.debug { "Ignored the missing caTissue #{qp} proxy class name #{name}, presumably unsupported in this caTissue release." }
@@ -190,7 +182,7 @@ module CaTissue
     # @param [Symbol] attribute the annotation accessor
     # @return [Module] the annotation module which implements the attribute
     def annotation_attribute_module(attribute)
-      annotation_modules.detect { |mod| mod.proxy.attribute_defined?(attribute) }
+      annotation_modules.detect { |mod| mod.proxy.property_defined?(attribute) }
     end
 
     # Builds a new annotation module for the given module name and options.
@@ -202,11 +194,13 @@ module CaTissue
     def import_annotation(name, opts)
       logger.debug { "Importing #{qp} annotation #{name}..." }
       # Make the annotation module class scoped by this Annotatable class.
-      class_eval("class #{name}; end")
-      klass = const_get(name)
+      class_eval("module #{name}; end")
+      mod = const_get(name)
       # Append the AnnotationModule methods.
-      AnnotationModule.extend_module(klass, self, opts) { |pxy| create_proxy_attribute(klass, pxy) }
-      klass
+      mod.extend(AnnotationModule)
+      # Build the annnotation module.
+      mod.initialize_annotation(self, opts) { |pxy| create_proxy_attribute(mod, pxy) }
+      mod
     end
 
     # Returns whether this class has an annotation whose proxy accessor is the
@@ -216,29 +210,29 @@ module CaTissue
     # @return (see #annotation?)
     # @see #annotation?
     def annotation_defined?(symbol)
-      attribute_defined?(symbol) and attribute_metadata(symbol).type < Annotation
+      property_defined?(symbol) and property(symbol).type < Annotation
     end
     
     # Makes an attribute whose name is the demodulized underscored given module name.
     # The attribute reader creates an {Annotation::Proxy} instance of the method
     # receiver {Annotatable} instance on demand.
     # 
-    # @param [AnnotationModule] klass the subject annotation
+    # @param [AnnotationModule] mod the subject annotation
     # @return [ProxyClass] proxy the proxy class
-    def create_proxy_attribute(klass, proxy)
+    def create_proxy_attribute(mod, proxy)
       # the proxy attribute symbol
-      attr = klass.name.demodulize.underscore.to_sym
+      pa = mod.name.demodulize.underscore.to_sym
       # Define the proxy attribute.
-      attr_create_on_demand_accessor(attr) { Set.new }
+      attr_create_on_demand_accessor(pa) { Set.new }
       # Register the attribute.
-      add_attribute(attr, proxy, :collection, :saved)
+      add_attribute(pa, proxy, :collection, :saved)
       # the annotation module => proxy attribute association
       @ann_mod_pxy_hash ||= {}
-      @ann_mod_pxy_hash[klass] = attr
+      @ann_mod_pxy_hash[mod] = pa
       # The proxy is a logical dependent.
-      add_dependent_attribute(attr, :logical)
-      logger.debug { "Created #{qp} #{klass.qp} annotation proxy logical dependent reference attribute #{attr} to #{proxy}." }
-      attr
+      add_dependent_attribute(pa, :logical)
+      logger.debug { "Created #{qp} #{mod.qp} annotation proxy logical dependent reference attribute #{pa} to #{proxy}." }
+      pa
     end
   end
 end

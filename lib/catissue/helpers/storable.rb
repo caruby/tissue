@@ -1,4 +1,5 @@
-require 'caruby/helpers/collection'
+require 'jinx/helpers/collections'
+
 
 module CaTissue
   # The Storable mix-in adds methods for a domain class which can be stored and implements

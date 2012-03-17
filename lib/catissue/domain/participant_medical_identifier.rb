@@ -1,10 +1,6 @@
 
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.ParticipantMedicalIdentifier
-
-
   # The ParticipantMedicalIdentifier domain class.
   class ParticipantMedicalIdentifier
     # Sets this ParticipantMedicalIdentifier's medical record number to the given value.

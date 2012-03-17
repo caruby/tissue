@@ -1,9 +1,6 @@
 require 'date'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenProtocol
-  
   # The SpecimenProtocol domain class.
   class SpecimenProtocol
     set_secondary_key_attributes(:title)
@@ -15,7 +12,7 @@ module CaTissue
     add_mandatory_attributes(:principal_investigator, :activity_status, :start_date, :short_title)
 
     # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
+    #   Create CollectionProtocol in the caTissue API ignores +startDate+.
     qualify_attribute(:start_date, :update_only)
 
     private

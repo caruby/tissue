@@ -1,5 +1,5 @@
-require 'caruby/helpers/properties'
-require 'caruby/migration/migrator'
+require 'jinx/helpers/log'
+require 'jinx/migration/migrator'
 require 'catissue/database/controlled_values'
 require 'catissue/database/controlled_value_finder'
 
@@ -8,7 +8,7 @@ module CaTissue
   #
   # See the Galena migration example for further information about to tailor the migration,
   # esp. the use of the field mappings and shims.
-  class Migrator < CaRuby::Migrator
+  class Migrator < Jinx::Migrator
     # Creates a new Migrator with the given options.
     #
     # This migrator must include sufficient information to build a well-formed migration target object.
@@ -16,9 +16,8 @@ module CaTissue
     # able to build that SCG's CollectionProtocolRegistration. The CPR in turn must either exist in the
     # database or the migration must build a Participant and a CollectionProtocol.
     # 
-    # @option (see CaRuby::Migrator#initialize)
-    # @option opts [String] :tissue_sites the tissue site mapping file
-    # @option opts [String] :diagnoses the diagnosis mapping file
+    # @option (see Jinx::Migrator#initialize)
+    # @option opts [String] :controlled_values enable controlled value lookup
     # @option opts [String] :database target application +CaRuby::Database+
     # @option opts [String] :target required target domain class
     # @option opts [String] :input required source file to migrate
@@ -35,14 +34,9 @@ module CaTissue
         # add config options but don't override the parameter options
         opts.merge!(conf, :deep) { |key, oldval, newval| oldval }
       end
-      # open the log file before building structure
-      log_file = opts[:log]
-      CaRuby::Log.instance.open(log_file, :debug => opts[:debug]) if log_file
-
       # tailor the options
       opts[:name] ||= NAME
       opts[:database] ||= CaTissue::Database.instance
-      
       # the shims file(s)
       opts[:shims] ||= []
       shims = opts[:shims] ||= []
@@ -50,31 +44,22 @@ module CaTissue
       shims = opts[:shims] = [shims] unless shims.collection?
       # prepend this migrator's shims
       shims.unshift(MIGRATABLE_SHIM)
-
-      # If the unique option is set, then append the CaTissue-specific uniquifier shim.
+      # If the unique option is set, then prepend the CaTissue-specific uniquifier shim.
       if opts[:unique] then
-        # add the uniquify shim
-        shims << UNIQUIFY_SHIM
+        shims.unshift(UNIQUIFY_SHIM)
         logger.debug { "Migrator added uniquification shim #{UNIQUIFY_SHIM}." }
       end
 
-      # call the CaRuby::Migrator initializer with the augmented options
+      # call the Jinx::Migrator initializer with the augmented options
       super
 
       # The remaining options are handled by this CaTissue::Migrator subclass.
 
-      # The tissue site CV look-up option.
-      tissue_sites = opts[:tissue_sites]
-      if tissue_sites then
-        CaTissue::SpecimenCharacteristics.tissue_site_cv_finder = ControlledValueFinder.new(:tissue_site, tissue_sites)
-        logger.info("Migrator enabled tissue site controlled value lookup.")
-      end
-
-      # The clinical diagnosis CV look-up option.
-      diagnoses = opts[:diagnoses]
-      if diagnoses then
-        CaTissue::SpecimenCollectionGroup.diagnosis_cv_finder = ControlledValueFinder.new(:clinical_diagnosis, diagnoses)
-        logger.info("Migrator enabled clinical diagnosis controlled value lookup.")
+      # The CV look-up option.
+      if opts[:controlled_values] then
+        CaTissue::SpecimenCharacteristics.tissue_site_cv_finder = ControlledValueFinder.new(:tissue_site)
+        CaTissue::SpecimenCollectionGroup.diagnosis_cv_finder = ControlledValueFinder.new(:clinical_diagnosis)
+        logger.info("Migrator enabled tissue site and clinical diagnosis controlled value lookup.")
       end
     end
 
@@ -84,20 +69,20 @@ module CaTissue
     NAME = 'caTissue Migrator'
 
     # The built-in caTissue migration shims.
-    MIGRATABLE_SHIM = File.join(File.dirname(__FILE__), 'migratable.rb')
+    MIGRATABLE_SHIM = File.expand_path('migratable.rb', File.dirname(__FILE__))
     
-    UNIQUIFY_SHIM = File.join(File.dirname(__FILE__), 'uniquify')
+    UNIQUIFY_SHIM = File.expand_path('uniquify.rb', File.dirname(__FILE__))
         
     # The context module is determined as follows:
-    # * For an {Annotation} target class, the context module is the annotated class's domain_module.
-    # * Otherwise, delegate to +CaRuby::Migrator+.
+    # * For an {Annotation} target class, the context module is the {AnnotationClass#annotation_module}.
+    # * Otherwise, delegate to +Jinx::Migrator+.
     # * For an {Annotation} target class, the context module is the annotated class's
-    #   +CaRuby::Metadata.domain_module+.
-    # * Otherwise, delegate to +CaRuby::Migrator+.
+    #   +CaRuby::Metadata.annotation_module+.
+    # * Otherwise, delegate to +Jinx::Migrator+.
     #
-    # @return (see CaRuby::Migrator#context_module)
+    # @return (see Jinx::Migrator#context_module)
     def context_module
-      @target_class < Annotation ? @target_class.hook.domain_module : super
+      @target_class < Annotation ? @target_class.annotation_module : super
     end
     
     # Clears the migration protocol CPR and SCG references.

@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), 'specimen_histologic_variant_type')
 
 module CaTissue
   class Specimen
-    class Pathology
+    module Pathology
       # @quirk caTissue The 1.1.2 class HistologicType is renamed to SpecimenHistologicType in 1.2.
       #   Alias the SpecimenHistologicType Ruby class to HistologicType for backward compatibility.
       class SpecimenHistologicType

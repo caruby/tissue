@@ -1,10 +1,8 @@
-require 'caruby/helpers/collection'
-require 'caruby/helpers/validation'
+require 'jinx/helpers/collections'
+
+require 'jinx/helpers/validation'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocolRegistration
-
   # The CollectionProtocolRegistration domain class.
   class CollectionProtocolRegistration
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
@@ -36,9 +34,7 @@ module CaTissue
     add_attribute_aliases("consented?".to_sym => :is_consent_available, :protocol => :collection_protocol,
       :participant_identifier => :protocol_participant_identifier, :consent_responses => :consent_tier_responses)
 
-    set_secondary_key_attributes(:collection_protocol, :participant)
-
-    set_alternate_key_attributes(:collection_protocol, :protocol_participant_identifier)
+    set_secondary_key_attributes(:collection_protocol, :protocol_participant_identifier)
 
     add_attribute_defaults(:activity_status => 'Active')
 
@@ -89,7 +85,7 @@ module CaTissue
 
     # @return all specimens collected for this CollectionProtocolRegistration
     def specimens
-      Flattener.new(specimen_collection_groups.map { |scg| scg.specimens })
+      Jinx::Flattener.new(specimen_collection_groups.map { |scg| scg.specimens })
     end
 
     private
@@ -97,7 +93,7 @@ module CaTissue
     def validate_local
       super
       if participant.nil? and protocol_participant_identifier.nil? then
-        raise CaRuby::ValidationError.new("#{qp} requires a participant or a protocol participant identifier.")
+        raise Jinx::ValidationError.new("#{qp} requires a participant or a protocol participant identifier.")
       end
     end
     
@@ -107,7 +103,7 @@ module CaTissue
     def add_defaults_local
       super
       self.registration_date ||= Java.now
-      self.protocol_participant_identifier ||= CaRuby::Uniquifier.qualifier.to_s
+      self.protocol_participant_identifier ||= Jinx::Uniquifier.qualifier.to_s
     end
   end
 end

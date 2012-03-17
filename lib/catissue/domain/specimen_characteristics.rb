@@ -1,9 +1,6 @@
 
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenCharacteristics
-
   class SpecimenCharacteristics
     add_attribute_defaults(:tissue_side => 'Not Specified', :tissue_site => 'Not Specified')
 

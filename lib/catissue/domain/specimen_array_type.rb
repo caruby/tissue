@@ -1,8 +1,5 @@
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenArrayType
-
-  class SpecimenArrayType < CaTissue::ContainerType
+  class SpecimenArrayType
     add_mandatory_attributes(:specimen_class, :specimen_types)
 
     # Returns SpecimenArray.

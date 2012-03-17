@@ -1,21 +1,14 @@
-# This file is the entry point included by applications which reference a CaTissue object.
+require 'jinx/metadata/id_alias'
+require 'jinx/migration/migratable'
+require 'jinx/json/serializer'
+require 'caruby/database/persistable'
+require 'catissue/database'
 
-require 'caruby/resource'
-require 'caruby/domain/id_alias'
-require 'catissue/domain'
-require 'catissue/annotation/annotatable'
-
+# The caTissue-specific Resource mix-in.
 module CaTissue
-  # The module included by all CaTissue domain classes.
-  #
-  # A Resource class is extended to support an attribute -> value hash argument
-  # to the initialize method. Subclasses which override the initialize method
-  # should not include the hash argument, since it is defined by a class
-  # instance new method override rather than initialize to work around a JRuby
-  # bug. 
   module Resource
-    include CaRuby::Resource, CaRuby::IdAlias, Annotatable
-    
+    include Jinx::IdAlias, Jinx::Migratable, CaRuby::Persistable
+
     # Returns whether each of the given attribute values either equals the
     # respective other attribute value or one of the values is nil or 'Not Specified'.
     #
@@ -24,18 +17,18 @@ module CaTissue
     # @return [Boolean} whether this domain object is a tolerant match with the other
     #   domain object on the given attributes
     def tolerant_match?(other, attributes)
-      attributes.all? { |attr| Resource.tolerant_value_match?(send(attr), other.send(attr)) }
+      attributes.all? { |pa| Resource.tolerant_value_match?(send(pa), other.send(pa)) }
     end
 
-    # Returns the CaTissue::Database which stores this object.
+    # @return [Database] the database which stores this object
     def database
-      CaTissue::Database.instance
+      Database.instance
     end
 
     protected
 
     # Returns the required attributes which are nil for this domain object.
-    # Overrides the CaRuby::Resource method to handle the following bug:
+    # Overrides the Jinx::Resource method to handle the following bug:
     #
     # @quirk caTissue Bug #67:  AbstractSpecimen.setActivityStatus
     #   is a no-op. The Specimen activityStatus property is incorrectly pulled
@@ -55,22 +48,20 @@ module CaTissue
     end
 
     private
-    
-    # The unspecified value.
+
+    # The unspecified default value.
+    # @private
     UNSPECIFIED = 'Not Specified'
-    
+
     # @return [Boolean] whether the given value equals the other value or one of the values is nil or 'Not Specified'
     def self.tolerant_value_match?(value, other)
       value == other or unpsecified_value?(value) or unpsecified_value?(other)
     end
-    
+
     # @return [Boolean] whether the given value equals nil or {Resource.UNSPECIFIED}
     def self.unpsecified_value?(value)
       value.nil? or value == UNSPECIFIED
     end
-  
-    # Add meta-data capability to this Resource module.
-    CaTissue.resource_mixin = self
   end
 end
 

@@ -1,12 +1,10 @@
-require 'caruby/helpers/validation'
+require 'jinx/helpers/validation'
 require 'caruby/helpers/coordinate'
+require 'jinx/resource/reference_visitor'
 require 'catissue/helpers/storable'
 require 'catissue/helpers/location'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.Container
-
   # The +caTissue+ +Container+ domain class wrapper.
   # Each Container subclass is required to implement the {#container_type} method.
   class Container
@@ -15,6 +13,8 @@ module CaTissue
     add_attribute_aliases(:position => :located_at_position, :subcontainer_positions => :occupied_positions)
 
     set_secondary_key_attributes(:name)
+
+    set_alternate_key_attributes(:barcode)
 
     add_attribute_defaults(:activity_status => 'Active', :full => false)
 
@@ -172,16 +172,16 @@ module CaTissue
     private
 
     # Subcontainer visitor.
-    SUBCTR_VISITOR = CaRuby::ReferenceVisitor.new { [:subcontainers] }
+    SUBCTR_VISITOR = Jinx::ReferenceVisitor.new { [:subcontainers] }
 
     # @param [Storable] the item to store
     # @raise [TypeError] if this container cannot hold the storable
     def validate_type(storable)
       unless container_type then
-        raise CaRuby::ValidationError.new("Container #{self} is missing a type")
+        raise Jinx::ValidationError.new("Container #{self} is missing a type")
       end
       unless container_type.can_hold_child?(storable) then
-        raise CaRuby::ValidationError.new("Container #{self} cannot hold an item of the #{storable} type #{storable.container_type}")
+        raise Jinx::ValidationError.new("Container #{self} cannot hold an item of the #{storable} type #{storable.container_type}")
       end
     end
 

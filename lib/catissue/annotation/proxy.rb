@@ -4,12 +4,12 @@ module CaTissue
     module Proxy
       # @return [Annotatable] the annotated domain object  
       def hook
-        send(self.class.owner_attribute_metadata.reader)
+        send(self.class.owner_property.reader)
       end
       
       # @param [Annotatable] obj the domain object to annotate  
       def hook=(obj)
-        send(self.class.owner_attribute_metadata.writer, obj)
+        send(self.class.owner_property.writer, obj)
       end
       
       # Ensures that this proxy's hook exists in the database.

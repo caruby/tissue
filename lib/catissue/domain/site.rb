@@ -1,7 +1,4 @@
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.Site
-
   # The Site domain class.
   class Site
     # @quirk caTissue the Site SCG collection is ignored, since it is not fetched with the Site,
@@ -12,7 +9,7 @@ module CaTissue
 
     # @quirk caTissue caTissue 1.2 Site has a facility_id Java property, but caTissue throws an
     #   UnsupportedOperationException if they are called.
-    if attribute_defined?(:facility_id) then remove_attribute(:facility_id) end
+    if property_defined?(:facility_id) then remove_attribute(:facility_id) end
 
     set_secondary_key_attributes(:name)
 

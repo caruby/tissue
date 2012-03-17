@@ -1,6 +1,6 @@
 module CaTissue
   class Specimen
-    class Pathology
+    module Pathology
       # @quirk caTissue The 1.1 class HistologicGrade is renamed to SpecimenHistologicGrade in 1.2.
       #   Alias the SpecimenHistologicGrade Ruby class constant to HistologicGrade backward compatibility.
       class SpecimenHistologicGrade

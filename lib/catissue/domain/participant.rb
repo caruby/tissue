@@ -1,11 +1,7 @@
-require 'caruby/helpers/validation'
-require 'catissue/resource'
+require 'jinx/helpers/validation'
 require 'catissue/helpers/person'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.Participant
-
   # The Participant domain class.
   class Participant
     include Person
@@ -15,7 +11,7 @@ module CaTissue
     add_attribute(:name, CaRuby::Person::Name)
 
     # @quirk caTissue clinical study is unsupported by 1.1.x caTissue, removed in 1.2.
-    if attribute_defined?(:clinical_study_registrations) then remove_attribute(:clinical_study_registrations) end
+    if property_defined?(:clinical_study_registrations) then remove_attribute(:clinical_study_registrations) end
 
     add_attribute_aliases(:collection_registrations => :collection_protocol_registrations,
       :registrations => :collection_protocol_registrations,
@@ -86,7 +82,7 @@ module CaTissue
 
     # @return [<CTissue::Specimen>] all specimens collected from this participant
     def specimens
-      Flattener.new(registrations.specimens.map { |cpr| cpr.specimens })
+      Jinx::Flattener.new(registrations.map { |cpr| cpr.specimens })
     end
 
     # Returns this Participant's CollectionProtocolRegistration protocols.
@@ -116,7 +112,7 @@ module CaTissue
 
     protected
 
-    # @quirk caTissue Specimen auto-generates a phantom PMI.
+    # @quirk caTissue auto-generates a phantom Participant PMI.
     #   cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=436&sid=ef98f502fc0ab242781b7759a0eaff36
     #
     # @param [<CaTissue::ParticipantMedicalIdentifier>] pmis the PMIs to clean up
@@ -138,7 +134,7 @@ module CaTissue
     def alternate_key
       return if medical_identifiers.empty?
       pmi = medical_identifiers.first
-      pmi.key if pmi
+      pmi.secondary_key if pmi
     end
 
     # Adds a default Unknown Race, if necessary. Although Race is not strictly mandatory in the caTissue

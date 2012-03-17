@@ -45,7 +45,7 @@ module CaTissue
         
         logger.debug { "Work around caTissue DE EntityManagerUtil bug by fetching the maximum #{table} identifier directly from the database..." }
         sql = TABLE_MAX_ID_SQL_TMPL % table
-        result = @executor.execute { |dbh| dbh.select_one(sql) }
+        result = @executor.query(sql).first
         max = result ? result[0].to_i : 0
         next_id = max + 1
         # End of work-around

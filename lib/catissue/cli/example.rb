@@ -1,5 +1,6 @@
 require File.dirname(__FILE__) + '/command'
-require 'caruby/helpers/collection'
+require 'jinx/helpers/collections'
+
 
 module CaTissue
   module CLI
@@ -16,7 +17,8 @@ module CaTissue
   
       # Lists the examples.
       def list
-        root = CaTissue.path('examples')
+        root = File.expand_path('examples', File.dirname(__FILE__) + '/../../..')
+        raise RuntimeError.new("Examples directory not found: #{root}") unless File.exists?(root)
         Dir.foreach(root) do |f|
           path = File.expand_path(f, root)
           if File.directory?(path) and f[0, 1] != '.' then

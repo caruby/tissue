@@ -1,5 +1,5 @@
 require 'fileutils'
-require 'caruby/helpers/os'
+require 'jinx/helpers/os'
 
 # Wustl wraps the +edu.wustl+ package.
 module Wustl
@@ -74,7 +74,7 @@ module Wustl
     
     # @return [String] the log4j config to use if one is not found in the classpath
     def self.default_log4j_config_directory
-      subdir = CaRuby::OS.os_type == :windows ? 'windows' : 'linux'
+      subdir = Jinx::OS.os_type == :windows ? 'windows' : 'linux'
       File.expand_path(subdir, CONF_DIR)
     end
   end

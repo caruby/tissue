@@ -1,6 +1,4 @@
 module CaTissue
-  resource_import Java::edu.wustl.catissuecore.domain.Address
-
   class Address
     # Sets this Address's zip_code to value. The value argument can be nil, a String or an Integer.
     def zip_code=(value)

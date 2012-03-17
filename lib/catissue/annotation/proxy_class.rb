@@ -1,6 +1,7 @@
 require 'set'
-require 'caruby/helpers/collection'
-require 'caruby/helpers/partial_order'
+require 'jinx/helpers/collections'
+
+require 'jinx/helpers/partial_order'
 require 'catissue/annotation/annotation'
 require 'catissue/annotation/proxy_1_1'
 require 'catissue/annotation/record_entry_proxy'
@@ -9,8 +10,8 @@ module CaTissue
   module Annotation
     # Annotation hook proxy class mix-in.
     module ProxyClass
-      # @return [CaRuby::Attribute] the hook class attribute meta-data for this proxy
-      attr_reader :hook_attribute_metadata
+      # @return [CaRuby::Property] the hook class attribute meta-data for this proxy
+      attr_reader :hook_property
       
       # @param [Class] klass the proxy class
       def self.extended(klass)
@@ -22,7 +23,7 @@ module CaTissue
       
       # @return [AnnotatableClass] the hook class for this proxy
       def hook
-        hook_attribute_metadata.type
+        hook_property.type
       end
       
       # Sets this proxy's hook to the given class and creates the
@@ -31,11 +32,11 @@ module CaTissue
       # @param [AnnotatableClass] klass the annotated domain object class
       def hook=(klass)
         # Make a new hook reference attribute.
-        attr = klass.name.demodulize.underscore
-        attr_accessor(attr)
+        pa = klass.name.demodulize.underscore
+        attr_accessor(pa)
         # The attribute type is the given hook class.
-        @hook_attribute_metadata = add_attribute(attr, klass)
-        logger.debug { "Added #{klass.qp} annotation proxy => hook attribute #{attr}." }
+        @hook_property = add_attribute(pa, klass)
+        logger.debug { "Added #{klass.qp} annotation proxy => hook attribute #{pa}." }
       end
       
       # Adds each proxy => annotation reference as a dependent attribute.
@@ -71,16 +72,16 @@ module CaTissue
       # @return [Symbol] the new annotation reference attribute
       def create_annotation_attribute(klass)
         # the new attribute symbol
-        attr = klass.name.demodulize.underscore.pluralize.to_sym
-        logger.debug { "Creating annotation proxy #{qp} attribute #{attr} to hold primary annotation #{klass.qp} instances..." }
+        pa = klass.name.demodulize.underscore.pluralize.to_sym
+        logger.debug { "Creating annotation proxy #{qp} attribute #{pa} to hold primary annotation #{klass.qp} instances..." }
         # Define the access methods: the reader creates a new set on demand to hold the annotations.
-        attr_create_on_demand_accessor(attr) { Set.new }
+        attr_create_on_demand_accessor(pa) { Set.new }
         # add the annotation collection attribute
-        add_attribute(attr, klass, :collection)
+        add_attribute(pa, klass, :collection)
         # The annotation is dependent.
-        add_dependent_attribute(attr, :logical)
-        logger.debug { "Created annotation proxy #{qp} dependent attribute #{attr}." }
-        attr
+        add_dependent_attribute(pa, :logical)
+        logger.debug { "Created annotation proxy #{qp} dependent attribute #{pa}." }
+        pa
       end
       
       private
@@ -94,11 +95,11 @@ module CaTissue
         # The inverse is the direct, unwrapped proxy reference named by the annotation module.
         inv = annotation_module.name.demodulize.underscore.to_sym
         # The attributes in class hierarchy general-to-specific order
-        attr_mds = annotation_attributes.enum_metadata.partial_sort_by { |attr_md| attr_md.type }.reverse
-        logger.debug { "Setting #{self} inverses for annotation attributes #{attr_mds.to_series}." }
-        attr_mds.each do |attr_md|
-          attr_md.type.define_proxy_attribute(self)
-          set_attribute_inverse(attr_md.to_sym, inv)
+        props = annotation_attributes.properties.partial_sort_by { |prop| prop.type }.reverse
+        logger.debug { "Setting #{self} inverses for annotation attributes #{props.to_series}." }
+        props.each do |prop|
+          prop.type.define_proxy_attribute(self)
+          set_attribute_inverse(prop.to_sym, inv)
         end
       end
       

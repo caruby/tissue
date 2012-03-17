@@ -5,20 +5,20 @@ module CaTissue
     # DYEXT tables of the introspected Java annotation class properties.
     class ReferenceWriter
       # @param [Integer] eid the referencing annotation entity id
-      # @param [CaRuby::Domain::Attribute] attr_md the annotation attribute metadata of the attribute to save
+      # @param [Jinx::Property] prop the annotation attribute metadata of the attribute to save
       # @param [Integer, nil] assn_eid the referenced annotation entity id
-      def initialize(eid, attr_md, assn_eid=nil)
-        logger.debug { "Mapping annotation #{attr_md.declarer.qp}.#{attr_md} role attributes to database columns..." }
+      def initialize(eid, prop, assn_eid=nil)
+        logger.debug { "Mapping annotation #{prop.declarer.qp}.#{prop} role attributes to database columns..." }
         efcd = EntityFacade.instance
         # the referenced annotation entity id
-        assn_eid ||= associated_entity_id(eid, attr_md)
+        assn_eid ||= associated_entity_id(eid, prop)
         # the referenced entity database table
         @table = efcd.annotation_table_for_entity_id(assn_eid)
         # map the attribute => column
-        attr_col_hash = map_attributes(attr_md.type, assn_eid)
-        logger.debug { "Annotation #{attr_md.declarer.qp} #{attr_md} maps to #{@table} as #{attr_col_hash.qp}" }
+        attr_col_hash = map_attributes(prop.type, assn_eid)
+        logger.debug { "Annotation #{prop.declarer.qp} #{prop} maps to #{@table} as #{attr_col_hash.qp}" }
         # the mapped attributes and columns
-        @attrs, cols = attr_col_hash.to_a.transpose
+        @attributes, cols = attr_col_hash.to_a.transpose
         # the SQL parameters clause
         params = Array.new(cols.size, '?').join(', ')
         # the create SQL
@@ -26,7 +26,7 @@ module CaTissue
         # the update SQL
         @upd_sql = UPDATE_SQL % [@table, cols.map { |col| "#{col} = ?" }.join(', ')]
         # the superclass writer for annotations with superclass DE forms
-        @parent = obtain_parent_writer(eid, attr_md)
+        @parent = obtain_parent_writer(eid, prop)
       end
       
       # @param [Annotation] annotation the referenced annotation value
@@ -39,9 +39,7 @@ module CaTissue
         values = database_parameters(annotation)
         logger.debug { "Saving #{annotation} to #{@table}..." }
         # dispatch the SQL update or create statement
-        Database.instance.executor.execute do |dbh|
-          dbh.prepare(sql) { |sth| sth.execute(*values) }
-        end
+        Database.instance.executor.transact(sql, *values)
         if @parent then
           logger.debug { "Saving #{annotation} parent entity attributes..." }
           @parent.save(annotation)
@@ -60,34 +58,34 @@ module CaTissue
       # @param (see #initialize)
       # @return [Integer] the entity id for the given attribute role
       # @raise [AnnotationError] if the associated entity was not found
-      def associated_entity_id(eid, attr_md)
-        EntityFacade.instance.associated_entity_id(eid, attr_md.property_descriptor.name) or
-          raise AnnotationError.new("Associated entity not found for entity #{eid} attribute #{attr_md}")
+      def associated_entity_id(eid, prop)
+        EntityFacade.instance.associated_entity_id(eid, prop.property_descriptor.name) or
+          raise AnnotationError.new("Associated entity not found for entity #{eid} attribute #{prop}")
       end      
       
       # @param (see #initialize)
       # @return [Integer, nil] the superclass associated entity id for the given attribute role, or nil if none
-      def obtain_parent_writer(eid, attr_md)
+      def obtain_parent_writer(eid, prop)
         # the superclass entity id for annotations with superclass DE forms
         peid = EntityFacade.instance.parent_entity_id(eid) || return
         # the associated entity id
-        aeid = EntityFacade.instance.associated_entity_id(peid, attr_md.property_descriptor.name)
-        ReferenceWriter.new(peid, attr_md, aeid) if aeid
+        aeid = EntityFacade.instance.associated_entity_id(peid, prop.property_descriptor.name)
+        ReferenceWriter.new(peid, prop, aeid) if aeid
       end
       
       # @param annotation (see #save)
       # @return [Array] the save SQL call parameters 
       def database_parameters(annotation)
-        @attrs.map do |attr|
-          value = annotation.send(attr)
+        @attributes.map do |pa|
+          value = annotation.send(pa)
           Annotation === value ? value.identifier : value
         end
       end
       
       def map_attributes(klass, eid)
         # the non-domain columns
-        hash = klass.nondomain_attributes.to_compact_hash do |attr|
-          nondomain_attribute_column(klass, attr, eid)
+        hash = klass.nondomain_attributes.to_compact_hash do |pas|
+          nondomain_attribute_column(klass, pas, eid)
         end
         # the owner attribute columns
         klass.owner_attributes.each do |oattr|
@@ -97,16 +95,17 @@ module CaTissue
       end
       
       def nondomain_attribute_column(klass, attribute, eid)
-        if attribute == :identifier then return IDENTIFIER_COL end
-        attr_md = klass.attribute_metadata(attribute)
+        return IDENTIFIER_COL if attribute == :identifier
+        prop = klass.property(attribute)
         # skip an attribute declared by the superclass
-        return unless attr_md.declarer == klass
-        xctr = Database.instance.executor
-        prop = attr_md.property_descriptor.name
+        return unless prop.declarer == klass
+        prop = prop.property_descriptor.name
         logger.debug { "Finding #{klass.qp} #{attribute} column for entity id #{eid} and property #{prop}..." }
-        result = xctr.execute { |dbh| dbh.select_one(NONDOMAIN_COLUMN_SQL, prop, eid) }
+        result = Database.instance.executor.query(NONDOMAIN_COLUMN_SQL, prop, eid).first
         col = result[0] if result
-        if col.nil? then raise AnnotationError.new("Column not found for #{klass.qp} #{attribute}") end
+        if col.nil? then
+          raise AnnotationError.new("Column not found for #{klass.qp} #{attribute}")
+        end
         col
       end
       
@@ -123,15 +122,15 @@ module CaTissue
       def owner_attribute_column(klass, attribute, eid)
         logger.debug { "Finding #{klass.qp} #{attribute} column in the context of entity id #{eid}..." }
         # The referenced class name (confusingly called a source role in the caTissue schema).
-        tgt_nm = klass.attribute_metadata(attribute).type.name.demodulize
-        result = Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm) }
+        tgt_nm = klass.property(attribute).type.name.demodulize
+        result = Database.instance.executor.query(OWNER_COLUMN_SQL, eid, tgt_nm).first
         col = result[0] if result
         if col.nil? then
-          result = Database.instance.executor.execute { |dbh| dbh.select_one(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize) }
+          result = Database.instance.executor.query(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize).first
           col = result[0] if result
         end
         if col.nil? then
-          result = Database.instance.executor.execute { |dbh| dbh.select_one(ALT_1_1_OWNER_COLUMN_SQL, eid) }
+          result = Database.instance.executor.query(ALT_1_1_OWNER_COLUMN_SQL, eid).first
           col = result[0] if result
         end
         if col.nil? then raise AnnotationError.new("Column not found for #{klass.qp} owner attribute #{attribute}") end

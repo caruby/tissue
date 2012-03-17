@@ -1,9 +1,6 @@
 
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.Department
-
   # The Department domain class.
   class Department
     set_secondary_key_attributes(:name)

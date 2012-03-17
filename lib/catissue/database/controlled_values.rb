@@ -1,8 +1,9 @@
 require 'singleton'
-require 'caruby/helpers/collection'
-require 'caruby/helpers/options'
-require 'caruby/helpers/visitor'
-require 'catissue/resource'
+require 'jinx/helpers/collections'
+require 'jinx/helpers/lazy_hash'
+require 'jinx/helpers/case_insensitive_hash'
+require 'jinx/helpers/options'
+require 'jinx/helpers/visitor'
 require 'catissue/database'
 require 'catissue/helpers/controlled_value'
 
@@ -16,10 +17,10 @@ module CaTissue
     def initialize
       @executor = Database.instance.executor
       # The pid => { value => CV } that associates each loaded parent CV to its children.
-      @pid_loaded_hash = LazyHash.new { |pid| load_pid_cvs(pid) }
+      @pid_loaded_hash = Jinx::LazyHash.new { |pid| load_pid_cvs(pid) }
       # The pid => { value => CV } that associates each fetched parent CV to its children.
-      @pid_value_cv_hash = LazyHash.new do |pid|
-        CaseInsensitiveHash.new { |hash, value| hash[value] = load_cv(pid, value) unless value.nil? }
+      @pid_value_cv_hash = Jinx::LazyHash.new do |pid|
+        Jinx::CaseInsensitiveHash.new { |hash, value| hash[value] = load_cv(pid, value) unless value.nil? }
       end
     end
 
@@ -68,9 +69,7 @@ module CaTissue
       end
       cv.identifier ||= next_id
       logger.debug { "Creating controlled value #{cv} in the database..." }
-      @executor.execute do |dbh|
-        dbh.prepare(INSERT_STMT).execute(cv.identifier, cv.parent_identifier, cv.public_id, cv.value)
-      end
+      @executor.transact(INSERT_STMT, cv.identifier, cv.parent_identifier, cv.public_id, cv.value)
       logger.debug { "Controlled value #{cv.public_id} #{cv.value} created with identifier #{cv.identifier}" }
       @pid_value_cv_hash[cv.public_id][cv.value] = cv
     end
@@ -80,7 +79,11 @@ module CaTissue
     #
     # @param [ControlledValue] cv the controlled value to delete
     def delete(cv)
-      @executor.execute { |dbh| delete_recursive(cv, dbh.prepare(DELETE_STMT)) }
+      @executor.transact do |dbh|
+        sth = dbh.prepare(DELETE_STMT)
+        delete_recursive(cv, sth)
+        sth.finish
+      end
     end
 
     private
@@ -103,7 +106,7 @@ module CaTissue
 
     def load_cv(public_id, value)
       logger.debug { "Loading controlled value #{public_id} #{value} from the database..." }
-      row = @executor.execute { |dbh| dbh.select_one(SEARCH_STMT, value) }
+      row = @executor.query(SEARCH_STMT, value).first
       logger.debug { "Controlled value #{public_id} #{value} not found." } and return if row.nil?
       identifier = row[0]
       logger.debug { "Controlled value #{public_id} #{value} loaded with identifier #{identifier}." }
@@ -111,7 +114,7 @@ module CaTissue
     end
 
     def next_id
-      @executor.execute { |dbh| dbh.select_one(MAX_ID_STMT)[0].to_i } + 1
+      @executor.query(MAX_ID_STMT).first[0].to_i + 1
     end
 
     def delete_recursive(cv, sth)
@@ -128,31 +131,37 @@ module CaTissue
     # @param [String => CaRuby::ControlledValue] the pid children value => CV hash
     def fetch_cvs_with_public_id(pid, value_cv_hash)
       logger.debug { "Loading #{pid} controlled values from the database..." }
-      cvs = []
-      @executor.execute do |dbh|
-        dbh.select_all(PID_ROOTS_STMT, pid) do |row|
-          identifier, value = row
-          cvs << value_cv_hash[value] ||= make_controlled_value(:identifier => identifier, :public_id => pid, :value => value)
-        end
-        # load the root CVs children
-        cvs.each { |cv| fetch_descendants(cv, value_cv_hash, dbh) }
+      cvs = @executor.query(PID_ROOTS_STMT, pid).map do |row|
+        identifier, value = row
+        cv = make_controlled_value(:identifier => identifier, :public_id => pid, :value => value)
+        value_cv_hash[value] ||= cv
+        cv
       end
+      cvs.each { |cv| fetch_descendants(cv, value_cv_hash) }
       logger.debug { "Loaded #{value_cv_hash.size} #{pid} controlled values from the database." }
       value_cv_hash
     end
 
-    def fetch_descendants(cv, value_cv_hash, dbh=nil)
-      if dbh.nil? then
-        return @executor.execute { |dbh| fetch_descendants(cv, value_cv_hash, dbh) }
+    def fetch_descendants(cv, value_cv_hash)
+      logger.debug { "Fetching #{cv} descendants..." }
+      # load the root CVs children
+      @executor.execute do |dbh|
+        sth = dbh.prepare(CHILDREN_STMT)
+        fetch_descendants_recursive(cv, value_cv_hash, sth)
+        sth.finish
       end
+    end
+
+    def fetch_descendants_recursive(cv, value_cv_hash, sth)
       pid = cv.public_id
-      children = []
-      dbh.select_all(CHILDREN_STMT, cv.identifier) do |row|
-         identifier, value = row
-         children << value_cv_hash[value] = make_controlled_value(:identifier => identifier, :public_id => pid, :parent => cv, :value => value)
+      # Collect the child CVs.
+      children = sth.execute(cv.identifier).map do |row|
+        identifier, value = row
+        child = make_controlled_value(:identifier => identifier, :public_id => pid, :parent => cv, :value => value)
+        value_cv_hash[value] = child
       end
       # recurse to chidren
-      children.each { |cv| fetch_descendants(cv, value_cv_hash, dbh) }
+      children.each { |cv| fetch_descendants_recursive(cv, value_cv_hash, sth) }
     end
     
     # Returns a new ControlledValue with attributes set by the given attribute => value hash.

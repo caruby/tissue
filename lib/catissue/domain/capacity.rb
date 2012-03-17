@@ -1,8 +1,6 @@
 require 'caruby/helpers/coordinate'
 
 module CaTissue
-  resource_import Java::edu.wustl.catissuecore.domain.Capacity
-
   class Capacity
     # Sets the first dimension to the specified value. If value is nil, then the dimension is set to default one.
     def one_dimension_capacity=(value)

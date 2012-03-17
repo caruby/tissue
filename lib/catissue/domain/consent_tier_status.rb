@@ -1,7 +1,4 @@
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.ConsentTierStatus
-
   class ConsentTierStatus
     add_mandatory_attributes(:consent_tier, :status)
 
@@ -23,7 +20,7 @@ module CaTissue
     def statement_match?(other)
       ct = consent_tier
       oct = other.consent_tier
-      (ct.nil? or oct.nil?) or (ct.identifier == oct.identifier or ct.statement == oct.statement)
+      ct.nil? or oct.nil? or ct.identifier == oct.identifier or ct.statement == oct.statement
     end
   end
 end

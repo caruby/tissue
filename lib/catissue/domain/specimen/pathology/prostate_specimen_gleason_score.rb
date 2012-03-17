@@ -1,6 +1,6 @@
 module CaTissue
   class Specimen
-    class Pathology
+    module Pathology
       # @quirk caTissue The 1.1.2 class GleasonScore is renamed to ProstateSpecimenGleasonScore in 1.2.
       #   Alias the ProstateSpecimenGleasonScore Ruby class to GleasonScore for backward compatibility.
       class ProstateSpecimenGleasonScore

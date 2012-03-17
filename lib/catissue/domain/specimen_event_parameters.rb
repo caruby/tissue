@@ -1,11 +1,8 @@
-require 'caruby/helpers/validation'
-require 'caruby/helpers/inflector'
+require 'jinx/helpers/validation'
+require 'jinx/helpers/inflector'
 require 'catissue/helpers/collectible'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenEventParameters
-
   class SpecimenEventParameters
     # date is a synonym for the more accurately titled timestamp attribute.
     add_attribute_aliases(:date => :timestamp)
@@ -47,15 +44,15 @@ module CaTissue
       rescue
         raise ArgumentError.new("Unsupported event parameters type: #{type}; #{class_name} must be a subtype of #{self}")
       end
-      event_params = klass.new(params)
+      ep = klass.new(params)
       case scg_or_specimen
-        when SpecimenCollectionGroup then event_params.specimen_collection_group = scg_or_specimen
-        when Specimen then event_params.specimen = scg_or_specimen
-        when nil then raise ArgumentError.new("Missing SpecimenEventParameters scg_or_specimen factory argument")
+        when CaTissue::SpecimenCollectionGroup then ep.specimen_collection_group = scg_or_specimen
+        when CaTissue::Specimen then ep.specimen = scg_or_specimen
+        when nil then raise ArgumentError.new("Missing SpecimenEventParameters SCG or Specimen owner argument")
         else
           raise ArgumentError.new("Unsupported SpecimenEventParameters factory argument - expected SpecimenCollectionGroup or Specimen, found #{scg_or_specimen.class}")
       end
-      event_params
+      ep
     end
 
     # @return [CaTissue::Collectible] specimen or SCG to which this event is attached
@@ -82,11 +79,11 @@ module CaTissue
     # The class name suffix for all event parameter classes.
     SUBCLASS_SUFFIX = 'EventParameters'
 
-    # @raise [CaRuby::ValidationError] if the subject is missing or there is both a SCG and a Specimen owner
+    # @raise [Jinx::ValidationError] if the subject is missing or there is both a SCG and a Specimen owner
     def validate_local
       super
       if subject.nil? then
-        raise CaRuby::ValidationError.new("Both specimen_collection_group and specimen are missing in SpecimenEventParameters #{self}")
+        raise Jinx::ValidationError.new("Both specimen_collection_group and specimen are missing in SpecimenEventParameters #{self}")
       end
     end
 

@@ -1,5 +1,5 @@
 require 'caruby/helpers/coordinate'
-require 'caruby/helpers/validation'
+require 'jinx/helpers/validation'
 
 module CaTissue
   # A Location is a non-Resource utility class which represents a Container row and column.
@@ -56,7 +56,7 @@ module CaTissue
     # @return [Location, nil] a new Location at the next slot in this Location's {#container},
     #   or nil if there are no more locations
     def succ
-      self.class.new(:in => container, :at => @coordinate).succ! rescue nil
+      self.class.new(:in => container, :at => @coordinate.dup).succ! rescue nil
     end
 
     # Sets this Location to the next slot in this Location's {#container}.

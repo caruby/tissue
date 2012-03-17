@@ -1,6 +1,6 @@
 module CaTissue
   class Specimen
-    class Pathology
+    module Pathology
       class SpecimenBaseSolidTissuePathologyAnnotation
         # @quirk caTissue The SpecimenBaseSolidTissuePathologyAnnotation => SpecimenHistologicGrade collection
         #   property is misnamed as histologicGrade rather than histologicGradeCollection. This misnaming

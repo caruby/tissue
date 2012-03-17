@@ -1,14 +1,12 @@
-require 'caruby/helpers/collection'
-require 'caruby/helpers/partial_order'
+require 'jinx/helpers/collections'
+
+require 'jinx/helpers/partial_order'
 require 'catissue/helpers/storage_type_holder'
 require 'catissue/helpers/hash_code'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.StorageType
-
   # The StorageType domain class.
-  class StorageType < CaTissue::ContainerType
+  class StorageType
     include StorageTypeHolder, CaRuby::PartialOrder, HashCode
 
     add_attribute_aliases(:default_temperature => :default_temprature_in_centigrade)

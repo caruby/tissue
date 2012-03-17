@@ -1,14 +1,13 @@
-require 'rubygems'
-require 'bundler/setup'
-
+require 'jinx/cli/command'
 require 'catissue'
-require 'caruby/cli/command'
+# defined check below guards against bundle exec redundant version.rb load.
+require 'catissue/version' unless CaTissue.const_defined?('VERSION')
 require 'caruby/database'
 
 module CaTissue
   module CLI
     # Augments +CaRuby::CLI::Command+ with caTissue-specific command line option handlers.
-    class Command < CaRuby::CLI::Command
+    class Command < Jinx::CLI::Command
       # Built-in options include those specified in +CaRuby::CLI::Command.initialize+
       # as well as the following:
       # * +--version+ : print the version of caRuby Tissue as well as the supported
@@ -33,7 +32,8 @@ module CaTissue
         super
         if opts[:version] then
           puts "#{CaTissue::VERSION} for caTissue v#{CaTissue::CATISSUE_VERSIONS}"
-        else
+          exit 0
+        elseuniqurify
           CaRuby::Database::ACCESS_OPTS.each do |opt, *spec|
             value = opts.delete(opt)
             CaTissue.properties[opt] = value if value

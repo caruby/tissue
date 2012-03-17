@@ -10,16 +10,19 @@ module CaTissue
       # objects. This is used for testing a migration dry run. It is recommended that the trial run
       # protocol is set to a test protocol as well.
       SPECS = [
-        [:input, "input", "Source file to migrate"],
-        [:target, "-t", "--target CLASS", "Migration target class"],
-        [:mapping, "-m", "--mapping FILE[,FILE...]", Array, "The input field => caTissue attribute mapping file(s)"],
-        [:filters, "--filters FILE[,FILE...]", Array, "The input value => caTissue value mapping file(s)"],
-        [:defaults, "-d", "--defaults FILE[,FILE...]", Array, "The caTissue attribute default value file(s)"],
-        [:shims, "-s", "--shims FILE[,FILE...]", Array, "Migration customization shim file(s) to load"],
-        [:bad, "-b", "--bad FILE", "Write each invalid record to the given file and continue migration"],
-        [:unique, "-u", "--unique", "Make the migrated objects unique for testing"],
-        [:offset, "-o", "--offset N", Integer, "Number of input records to skip before starting the migration"],
-        [:extract, "--extract EXTRACTOR", "Write the migrated caTissue object to the given appendable object as well as the database"]
+        [:input, 'INPUT', 'Source file to migrate'],
+        [:target, '-t', '--target CLASS', 'Migration target class'],
+        [:mapping, '-m', '--mapping FILE[,FILE...]', Array, 'The input field => caTissue attribute mapping file(s)'],
+        [:filters, '--filters FILE[,FILE...]', Array, 'The input value => caTissue value mapping file(s)'],
+        [:defaults, '-d', '--defaults FILE[,FILE...]', Array, 'The caTissue attribute default value file(s)'],
+        [:shims, '-s', '--shims FILE[,FILE...]', Array, 'Migration customization shim file(s) to load'],
+        [:controlled_values, '-k', '--controlled_values', 'Enable controlled value lookup'],
+        [:bad, '-b', '--bad FILE', 'Write each invalid record to the given file and continue migration'],
+        [:extract, '-x', '--extract FILE', 'Call the migration target extract method to write to the given extract'],
+        [:create, '-c', '--create', 'Always create the migration target'],
+        [:unique, '-u', '--unique', 'Make the migrated objects unique for testing'],
+        [:from, '--from N', Integer, 'Starting input record'],
+        [:to, '--to N', Integer, 'Ending input record'],
       ]
 
       # Creates a {Migrate} command with the {SPECS} command line specifications
@@ -35,32 +38,31 @@ module CaTissue
       private
       
       # Starts a Migrator with the command-line options. Each input record is migrated to
-      # the caTissue database. In addition, if the +:extract+ option is set, then each
-      # migrated target caTissue domain object is appended to the +:extract+ value using
-      # the +<<+ operator. 
+      # the caTissue database.
       #
       # @param opts (see CaTissue::Migrator#initialize)
       # @yield (see CaTissue::Migrator#migrate_to_database)
       # @yieldparam (see CaTissue::Migrator#migrate_to_database)
-      def migrate(opts)
-        validate(opts)
-        # The extractor which writes a extract from each migrated record.
-        @extractor = opts[:extract]
+      def migrate(opts, &block)
+        opts[:target] = resolve(opts[:target])
         # Migrate the input.
-        CaTissue::Migrator.new(opts).migrate_to_database do |tgt|
-          yield tgt if block_given?
-          @extractor << tgt if @extractor
-        end
+        CaTissue::Migrator.new(opts).migrate_to_database(&block)
       end
       
-      def validate(opts)
-        tgt = opts[:target]
-        if tgt.nil? then raise ArgumentError.new("Missing required migration target class option") end
+      # Resolves the given target class name in the caTissue context.
+      #
+      # @param [String] name the target class name
+      # @return [Class] the resolved class
+      # @raise [NameError] if the class could not be resolved
+      def resolve(name)
+        return if name.nil?
         begin
-          opts[:target] = CaTissue.const_get(tgt)
-        rescue Exception
-          logger.fatal("Could not load CaTissue class #{tgt} - #{$!}.\n#{$@.qp}")
-          raise MigrationError.new("Could not load migration target class #{tgt}")
+          # Strip the CaTissue module prefix, if necessary.
+          cnm = name.sub(/^CaTissue::/, '')
+          # Resolve the class in the CaTissue context.
+          CaTissue.module_for_name(cnm)
+        rescue Exception => e
+          Jinx.fail(NameError, "Could not load migration target class #{name}", e)
         end
       end
     end

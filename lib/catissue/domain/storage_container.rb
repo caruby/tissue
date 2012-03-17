@@ -1,14 +1,11 @@
 require 'enumerator'
-require 'caruby/helpers/validation'
-require 'caruby/helpers/partial_order'
+require 'jinx/helpers/validation'
+require 'jinx/helpers/partial_order'
 require 'catissue/helpers/storage_type_holder'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.StorageContainer
-
   # The +caTissue+ +StorageContainer+ domain class wrapper.
-  class StorageContainer < CaTissue::Container
+  class StorageContainer
     include StorageTypeHolder
     
     # @quirk caTissue Bug #64: Some domain collection properties not initialized.
@@ -127,7 +124,7 @@ module CaTissue
     #   {CaTissue::StorageType}
     def can_hold_child?(storable)
       st = storable.storable_type
-      not full? and child_types.any? { |ct| CaRuby::Resource.value_equal?(ct, st) }
+      not full? and child_types.any? { |ct| Jinx::Resource.value_equal?(ct, st) }
     end
     
     protected
@@ -142,10 +139,10 @@ module CaTissue
     #
     # @param @storable (see #add)
     # @return [StorageContainer, nil] self if added, nil otherwise
-    # @raise [CaRuby::ValidationError] if this container does not have a storage type, or if a circular
+    # @raise [Jinx::ValidationError] if this container does not have a storage type, or if a circular
     #   containment reference is detected
     def add_to_existing_container(storable)
-      if storage_type.nil? then raise CaRuby::ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
+      if storage_type.nil? then raise Jinx::ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer from among #{scs.pp_s} to place #{storable.qp}..." } unless scs.empty?
@@ -155,7 +152,7 @@ module CaTissue
         # in CaTissue::Database#query_object. The work-around circumvents the bug for now, but
         # it doesn't hurt to check again.
         if identifier and sc.identifier == identifier then
-          raise CaRuby::ValidationError.new("#{self} has a circular containment reference to subcontainer #{sc}")
+          raise Jinx::ValidationError.new("#{self} has a circular containment reference to subcontainer #{sc}")
         end
         # No circular reference; add to subcontainer if possible
         sc.add_to_existing_container(storable) if StorageContainer === sc

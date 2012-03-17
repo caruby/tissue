@@ -1,10 +1,7 @@
-require 'caruby/helpers/validation'
+require 'jinx/helpers/validation'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.ContainerPosition
-
-  class ContainerPosition < CaTissue::AbstractPosition
+  class ContainerPosition
     add_mandatory_attributes(:parent_container)
 
     add_attribute_aliases(:parent => :parent_container, :holder => :parent_container, :occupant => :occupied_container)
@@ -20,11 +17,11 @@ module CaTissue
     
     private
     
-    # @raise [CaRuby::ValidationError] if the parent is the same as the occupant 
+    # @raise [Jinx::ValidationError] if the parent is the same as the occupant 
     def validate_local
       super
       if parent == occupant or (parent.identifier and parent.identifier == occupant.identifier) then
-         raise CaRuby::ValidationError.new("#{self} has a circular containment reference to subcontainer #{occupant}")
+         raise Jinx::ValidationError.new("#{self} has a circular containment reference to subcontainer #{occupant}")
       end
     end
   end

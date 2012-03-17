@@ -1,6 +1,6 @@
 module CaTissue
   class Specimen
-    class Pathology
+    module Pathology
       # @quirk caTissue The 1.1 class Details is renamed to SpecimenDetails in 1.2.
       #   Alias the Details Ruby class to SpecimenDetails for forward compatibility.
       class Details

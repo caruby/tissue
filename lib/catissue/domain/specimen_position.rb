@@ -1,8 +1,5 @@
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.SpecimenPosition
-
-  class SpecimenPosition < CaTissue::AbstractPosition
+  class SpecimenPosition
     add_mandatory_attributes(:storage_container)
 
     add_attribute_aliases(:holder => :storage_container, :container => :storage_container, :occupant => :specimen)
@@ -23,7 +20,7 @@ module CaTissue
     #   SpecimenPosition save is accomplished by creating a proxy TransferEventParameters instead.
     def saver_proxy
       # Look for a transfer event that matches the position.
-      xfr = specimen.events.detect do |sep|
+      xfr = specimen.event_parameters.detect do |sep|
         CaTissue::TransferEventParameters === sep and sep.to == location
       end
       # Create a new transfer event, if necessary.

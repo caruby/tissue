@@ -1,10 +1,8 @@
-require 'caruby/helpers/collection'
+require 'jinx/helpers/collections'
+
 require 'catissue/helpers/hash_code'
 
 module CaTissue
-  # import the Java class
-  resource_import Java::edu.wustl.catissuecore.domain.CollectionProtocolEvent
-
   # The CollectionProtocolEvent domain class.
   class CollectionProtocolEvent
     include HashCode
@@ -51,7 +49,7 @@ module CaTissue
       protocol.events.delete(self) if protocol
     end
 
-    # Overrides +CaRuby::Resource.references+ in the case of the _specimen_requirements_ attribute to select
+    # Overrides +Jinx::Resource.references+ in the case of the _specimen_requirements_ attribute to select
     # only top-level SpecimenRequirements not derived from another SpecimenRequirement.
     def direct_dependents(attribute)
       if attribute == :specimen_requirements then
