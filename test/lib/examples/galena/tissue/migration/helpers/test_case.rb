@@ -34,7 +34,7 @@ module Galena
       FIXTURES = File.join(Galena::ROOT_DIR, 'data')
       
       # The config directory.
-      CONF_DIR = File.join(Galena::ROOT_DIR, 'conf', 'migration')
+      CONF_DIR = File.join(Galena::ROOT_DIR, 'conf')
       
       # The shims directory.
       SHIMS_DIR = File.join(Galena::ROOT_DIR, 'lib', 'galena')
