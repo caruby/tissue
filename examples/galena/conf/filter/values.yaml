@@ -1,0 +1,8 @@
+# This value filter configuration file demonstrates how to transform an input field value
+# to a caTissue value. The specimen type input field is a string which can be a
+# case-insensitive variation of TRUE, FALSE or missing. If the input value matches the
+# case-insensitive regular expression /TRUE/i, then the input value is transformed to
+# the caTissue value 'Frozen Tissue'. Otherwise, the specimen type is set to 'Fixed Tissue'.
+TissueSpecimen.specimen_type:
+  /TRUE/i : 'Frozen Tissue'
+  /.*/ : 'Fixed Tissue'

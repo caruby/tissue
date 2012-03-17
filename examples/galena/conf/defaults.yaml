@@ -1,0 +1,9 @@
+# This is the Galena example migration defaults file.
+# Each entry is in the format:
+#   property: value
+
+# The collection protocol title.
+CollectionProtocol.title: Galena Migration
+
+# The collection site.
+Site.name: Galena Hospital

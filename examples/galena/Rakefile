@@ -1,0 +1,30 @@
+require 'fileutils'
+require File.expand_path('version', File.dirname(__FILE__) + '/lib/galena')
+
+# the gem name
+GEM = 'galena'
+GEM_VERSION = Galena::VERSION
+
+WINDOWS = (Config::CONFIG['host_os'] =~ /mingw|win32|cygwin/ ? true : false) rescue false
+SUDO = WINDOWS ? '' : 'sudo'
+
+desc "Makes the API documentation"
+task :doc do
+  FileUtils.rm_rf 'doc/api'
+  `yardoc`
+end
+
+desc "Builds the gem"
+task :gem do
+  `jgem build #{GEM}.gemspec`
+end
+
+desc "Installs the gem"
+task :install => :gem do
+  `#{SUDO} jgem install #{GEM}-#{GEM_VERSION}.gem`
+end
+
+desc "Runs all tests"
+task :test do
+  `rspec examples/galena`
+end

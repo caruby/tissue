@@ -1,0 +1,6 @@
+MRN: ParticipantMedicalIdentifier.medical_record_number
+Initials: Participant.first_name, Participant.last_name
+Frozen?: TissueSpecimen.specimen_type
+SPN: SpecimenCollectionGroup.surgical_pathology_number
+Collection Date: ReceivedEventParameters.timestamp
+Quantity: TissueSpecimen.initial_quantity

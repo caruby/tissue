@@ -1,0 +1,6 @@
+# The registration example mapping.
+# The MRN maps to the medical identifier and registration PPI.
+MRN: ParticipantMedicalIdentifier.medical_record_number, CollectionProtocolRegistration.protocol_participant_identifier
+First: Participant.first_name
+Middle: Participant.middle_name
+Last: Participant.last_name
