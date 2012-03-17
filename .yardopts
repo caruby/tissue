@@ -1,1 +1,1 @@
--o doc/api --name-tag 'quirk:Technology idiosyncracy' - History.md LEGAL LICENSE
+-o doc/api --private --protected --name-tag 'quirk:Technology idiosyncracy' - History.md LEGAL LICENSE
