@@ -4,16 +4,18 @@ require 'galena/seed'
 
 module CaTissue
   # Augment the classes below with sufficient content to pass the create mandatory attribute validation.
-  #  This simulates an existing administrative object for testing purposes.
+  # This simulates an existing administrative object for testing purposes.
+  #
+  # This file is not placed in the specs support directory, since it is dynamically loaded as a shim.
   shims CollectionProtocol, CollectionProtocolEvent, Site, StorageContainer, User
-  
+
   class CollectionProtocol
-    # Augments +CaRuby::Migratable.migrate+ for the Galena example by adding the following defaults:
+    # Augments +Jinx::Migratable.migrate+ for the Galena example by adding the following defaults:
     # * the CP principal_investigator defaults to the {Galena::Seed#protocol} PI
     # * if the sites is empty, then the {Galena::Seed#tissue_bank} is added
     #   to the CP sites
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
       self.title ||= migration_default_title(migrated)
@@ -35,11 +37,11 @@ module CaTissue
   end
   
   class CollectionProtocolEvent
-    # Augments +CaRuby::Migratable.migrate+ for the example by adding the following defaults:
+    # Augments +Jinx::Migratable.migrate+ for the example by adding the following defaults:
     # * create a {CaTissue::TissueSpecimenRequirement}
-    # * copy the event point from the matching {Galena::Seed} CPE, if any
+    # * copy the event point from {Galena::Seed}
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
       match = Galena.administrative_objects.protocols.detect_value do |pcl|
@@ -57,10 +59,10 @@ module CaTissue
   end
 
   class Site
-    # Augments +CaRuby::Migratable.migrate+ for the example by merging the content of the
+    # Augments +Jinx::Migratable.migrate+ for the example by merging the content of the
     # {Galena::Seed} site which matches on this Site's name, if any.
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
       # Match the site by name. Account for uniquification by a partial match, e.g.
@@ -76,11 +78,11 @@ module CaTissue
   end
 
   class StorageContainer
-    # Augments +CaRuby::Migratable.migrate+ for the example by setting the
+    # Augments +Jinx::Migratable.migrate+ for the example by setting the
     # the container site and type to the {Galena::Seed}
     # box site and type, resp.
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
       self.site ||= Galena.administrative_objects.tissue_bank
@@ -88,30 +90,34 @@ module CaTissue
     end
   end
   
+  class SpecimenEventParameters
+    # Fills in the event parameters user details.
+    #
+    # @param (see Jinx::Migratable#migrate)
+    def migrate(row, migrated)
+      user.migrate(row, migrated) if user
+    end
+  end
+  
   class User
-    # Augments +CaRuby::Migratable.migrate+ for the example as follows:
+    # Augments +Jinx::Migratable.migrate+ for the example as follows:
     # * infer the first and last name from the email address
     # * copy the address and organizations from the tissue bank coordinator 
     #
-    # @param (see CaRuby::Migratable#migrate)
+    # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
-      # invent the mandatory name fields based on the email address, if necessary
-      if email_address then
-        n1, n2 = email_address[/[^@]+/].split('.')
-        if n2 then
-          first, last = n1, n2
-        else
-          first = 'Oscar'
-          last = n1.capitalize
-        end
-        self.first_name = n1.capitalize
-        self.last_name = n2.capitalize
+      # Invent the mandatory name fields based on the login, if necessary.
+      if login_name then
+        last, first = login_name[/[^@]+/].split('.').reverse.map { |s| s.capitalize }
+        first ||= 'Oscar'
+        self.first_name ||= first
+        self.last_name ||= last
       end
       # the coordinator serves as the User content template
       coord = Galena.administrative_objects.hospital.coordinator
       # deep copy of the address
-      self.address = coord.address.copy
+      self.address ||= coord.address.copy
       # shallow copy of the mandatory references
       merge(coord, [:cancer_research_group, :department, :institution])
     end
