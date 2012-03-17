@@ -7,3 +7,4 @@ require File.dirname(__FILE__) + '/../lib/catissue/cli/example'
 
 # run the command
 CaTissue::CLI::Example.new.start
+exit 0
