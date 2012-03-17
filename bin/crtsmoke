@@ -14,3 +14,4 @@ require File.dirname(__FILE__) + '/../lib/catissue/cli/smoke'
 
 # run the command
 CaTissue::CLI::Smoke.new.start
+exit 0

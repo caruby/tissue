@@ -25,3 +25,4 @@ CaTissue::CLI::Command.new(SPECS).start do |opts|
   # print the object graph
   puts obj.database.lazy_loader.suspend { obj.dump }
 end
+exit 0
