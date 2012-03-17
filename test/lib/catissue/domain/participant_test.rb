@@ -1,7 +1,5 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
-require 'caruby/helpers/uniquifier'
-
-require 'json'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
+require 'jinx/helpers/uniquifier'
 
 class ParticipantTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -27,7 +25,7 @@ class ParticipantTest < Test::Unit::TestCase
   def test_key
     mrn = '5555'
     pmi = @pnt.add_mrn(defaults.tissue_bank, '5555')
-    assert_equal(pmi, @pnt.key, 'Person key is not the MRN')
+    assert_equal(pmi.key, @pnt.key, 'Person key is not the MRN')
     # add the preferred SSN key
     expected = @pnt.social_security_number = '555-55-5555'
     assert_equal(expected, @pnt.key, 'Person key is not the SSN')
@@ -94,18 +92,6 @@ class ParticipantTest < Test::Unit::TestCase
     assert_same(@pnt, lab.hook, "Lab proxy hook not set")
   end
   
-  def test_radiation_annotation
-    if CaTissue::Participant::Clinical::RadiationTherapy != CaTissue::Participant::Clinical::RadRXAnnotation then
-      assert_raises(CaTissue::AnnotationError, "RadiationTherapy is not deprecated.") { CaTissue::Participant::Clinical::RadiationTherapy.new}
-    end
-  end  
-
-  def test_chemotherapy_annotation
-    if CaTissue::Participant::Clinical::Chemotherapy != CaTissue::Participant::Clinical::ChemoRXAnnotation then
-      assert_raises(CaTissue::AnnotationError, "Chemotherapy is not deprecated.") { CaTissue::Participant::Clinical::Chemotherapy.new}
-    end
-  end
-  
   def test_json
     CaTissue::Race.new(:participant => @pnt, :race_name => 'White')
     dup = JSON[@pnt.to_json]
@@ -126,7 +112,7 @@ class ParticipantTest < Test::Unit::TestCase
   def test_find_phantom_mrn_filter
     # add an MRN
     site = defaults.registration.participant.participant_medical_identifiers.first.site
-    @pnt.add_mrn(site, CaRuby::Uniquifier.qualifier)
+    @pnt.add_mrn(site, Jinx::Uniquifier.qualifier)
     # save the patient
     verify_save(@pnt)
     # fetch the saved patient

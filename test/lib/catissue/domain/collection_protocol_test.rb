@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
 
 class CollectionProtocolTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -22,7 +22,7 @@ class CollectionProtocolTest < Test::Unit::TestCase
   end
 
   def test_alias
-    assert(CaTissue::CollectionProtocol.method_defined?(:events), "Study alias not recogized: events")
+    assert(CaTissue::CollectionProtocol.method_defined?(:events), "Protocol alias not recogized: events")
   end
 
   # Tests the work-around for caTissue bug - CollectionProtocol and CollectionProtocolEvent are equal in caTissue 1.1.

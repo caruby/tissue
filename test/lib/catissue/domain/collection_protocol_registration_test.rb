@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
 
 class CollectionProtocolRegistrationTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -42,11 +42,16 @@ class CollectionProtocolRegistrationTest < Test::Unit::TestCase
     spc = @reg.specimens.first
     assert_not_nil(spc, "#{@reg} specimen missing")
     child = spc.derive(:specimen_class => :molecular, :specimen_requirement => defaults.specimen_requirement)
-    attributes = [:specimen_collection_groups, :specimens, :child_specimens]
-    @reg.visit_path(attributes) { |obj| obj.activity_status = 'Disabled' }
+    @reg.visit_path(:specimen_collection_groups, :specimens, :child_specimens) do |ref|
+      ref.activity_status = 'Disabled'
+    end
     assert_equal('Disabled', @reg.activity_status, "#{@reg} not disabled")
-    @reg.specimen_collection_groups.each { |scg| assert_equal('Disabled', scg.activity_status, "#{scg} not disabled") }
-    @reg.specimens.each { |rspc| assert_equal('Disabled', rspc.activity_status, "#{rspc} not disabled") }
+    @reg.specimen_collection_groups.each do |scg|
+      assert_equal('Disabled', scg.activity_status, "#{scg} not disabled")
+    end
+    @reg.specimens.each do |rspc|
+      assert_equal('Disabled', rspc.activity_status, "#{rspc} not disabled")
+    end
     assert_equal('Disabled', child.activity_status, "Child Specimen #{child} not disabled")
   end
   

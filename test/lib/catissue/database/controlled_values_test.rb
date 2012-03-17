@@ -1,5 +1,5 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
-require 'caruby/helpers/uniquifier'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
+require 'jinx/helpers/uniquifier'
 require 'catissue/database/controlled_values'
 
 class ControlledValuesTest < Test::Unit::TestCase
@@ -20,14 +20,14 @@ class ControlledValuesTest < Test::Unit::TestCase
   end
 
   def test_find_recursive
-    gp = CaTissue::ControlledValues.instance.find(:tissue_site, 'DIGESTIVE ORGANS', true)
-    assert_not_nil(gp, "DIGESTIVE ORGANS CV not found")
-    assert(!gp.children.empty?, "CV missing children")
-    parent = gp.children.detect { |cv| cv.value == 'ESOPHAGUS' }
-    assert_not_nil(parent, "DIGESTIVE ORGANS 'ESOPHAGUS' child CV not found")
-    child = parent.children.detect { |cv| cv.value == 'Esophagus, NOS' }
-    assert_not_nil(child, "ESOPHAGUS 'Esophagus, NOS' child CV not found")
-    assert(gp.descendants.include?(child), "DIGESTIVE ORGANS CV missing 'Esophagus, NOS' descendant")
+    root = CaTissue::ControlledValues.instance.find(:tissue_site, 'DIGESTIVE ORGANS', true)
+    assert_not_nil(root, "'DIGESTIVE ORGANS' CV not found")
+    assert(!root.children.empty?, "#{root} missing children")
+    stomach = root.children.detect { |cv| cv.value == 'STOMACH' }
+    assert_not_nil(stomach, "#{root} STOMACH child CV not found")
+    pylorus = stomach.children.detect { |cv| cv.value == 'Pylorus' }
+    assert_not_nil(pylorus, "#{pylorus} Pylorus child CV not found")
+    assert(stomach.descendants.include?(pylorus), "#{root} CV missing #{pylorus} descendant")
   end
 
   def test_create_delete

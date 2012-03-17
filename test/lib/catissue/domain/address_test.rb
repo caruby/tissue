@@ -1,5 +1,5 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
-require 'caruby/helpers/uniquifier'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
+require 'jinx/helpers/uniquifier'
 
 class AddressTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -9,6 +9,10 @@ class AddressTest < Test::Unit::TestCase
     # make the unique test address
     @user = defaults.tissue_bank.coordinator
     @addr = @user.address
+  end
+  
+  def test_primary_key
+    assert_equal([:identifier], CaTissue::Address.primary_key_attributes, "Primary key is not the identifier")
   end
 
   def test_defaults
@@ -21,10 +25,7 @@ class AddressTest < Test::Unit::TestCase
   end
 
   def test_save
-    # Create the address.
-    verify_save(@addr)
-    # Modify the address.
-    expected = @addr.street = "#{CaRuby::Uniquifier.qualifier} Elm St."
-    verify_save(@addr)
+    # Address cannot be created.
+    assert_raises(CaRuby::DatabaseError, "Address create is incorrectly allowed.") { @addr.create }
   end
 end

@@ -1,5 +1,5 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
-require 'caruby/helpers/transitive_closure'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
+require 'jinx/helpers/transitive_closure'
 
 class SpecimenTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -11,8 +11,8 @@ class SpecimenTest < Test::Unit::TestCase
 
   def test_requirement_copy
     rqmt = @spc.requirement
-    rqmt.value_hash(rqmt.class.nondomain_attributes).each do |attr, value|
-      assert_equal(value, @spc.send(attr), "Specimen requirement #{attr} not copied")
+    rqmt.value_hash(rqmt.class.nondomain_attributes).each do |pa, value|
+      assert_equal(value, @spc.send(pa), "Specimen requirement #{pa} not copied")
     end
   end
 
@@ -236,16 +236,16 @@ class SpecimenTest < Test::Unit::TestCase
     # Save the specimen, which will update the anticipatory specimen
     verify_save(@spc)
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
-    # make a nonanticipatory specimen
+    # Make a nonanticipatory specimen.
     spc2 = CaTissue::Specimen.create_specimen(
       :requirement => defaults.specimen_requirement,
       :specimen_collection_group => defaults.specimen_collection_group,
       :initial_quantity => 2.0)
-    # add an event to the nonanticipatory specimen
+    # Dispose the nonanticipatory specimen.
     ev2 = CaTissue::DisposalEventParameters.new(:specimen => spc2)
-    # Save the new specimen
+    # Save the new disposed specimen.
     verify_save(spc2)
-    assert_not_nil(ev.identifier, "#{spc2} event #{ev2} not saved")
+    assert_not_nil(ev2.identifier, "#{spc2} event #{ev2} not saved")
   end
  
   # Verifies the work-around for caTissue Bug #159: Update pending Specimen ignores availableQuantity.
@@ -293,7 +293,7 @@ class SpecimenTest < Test::Unit::TestCase
     verify_save(@spc)
   end
   
-  # Exercise creation of a child specimen.
+  # Exercises creation of a child specimen.
   def test_derived_create
     # derive a specimen
     drv = @spc.derive(:specimen_class => :molecular, :initial_quantity => 20, :specimen_type => 'DNA')
@@ -309,8 +309,20 @@ class SpecimenTest < Test::Unit::TestCase
       assert(drv.match_in_owner_scope(children), "Derived specimen not found in parent query result")
     end
   end
+
+  # Exercises aliquot creation.
+  def test_aliquot_create
+    # make the aliquots
+    alqs = @spc.derive(:count => 2)
+    # save the specimens
+    verify_save(@spc)
+    # verify that each aliquot was created
+    alqs.each do |alq|
+      assert_not_nil(alq.identifier, "#{@spc} aliquot #{alq} not saved")
+    end
+  end
   
-  # Exercise update of an auto-generated child specimen.
+  # Exercises update of an auto-generated child specimen.
   #
   # This test case differs from {#test_derived_create} in that there are critical caTissue code path
   # differences which dictate how the derived object save template is built. See the caTissue

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
 
 class SpecimenRequirementTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -27,7 +27,7 @@ class SpecimenRequirementTest < Test::Unit::TestCase
      @rqmt.derive(:count => 2, :specimen_type => (@rqmt.specimen_type + ' Block'))
      assert_equal(2, @rqmt.children.size, "Derived requirement count incorrect")
      @rqmt.add_defaults
-     assert_raise(CaRuby::ValidationError, "Multiple derivatives incorrectly succeeds validation") { @rqmt.validate }
+     assert_raise(Jinx::ValidationError, "Multiple derivatives incorrectly succeeds validation") { @rqmt.validate }
    end
 
   def test_save

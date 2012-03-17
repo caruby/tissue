@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
 
 class SpecimenCollectionGroupTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -8,8 +8,8 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     @scg = defaults.specimen_collection_group
   end
 
-  # This test case exercises the key method for a domain class with a secondary key.
-  def test_secondary_key
+  # This test case exercises the secondary_key method for a domain class with a secondary key.
+  def test_key
     @scg.name = 'Test SCG'
     assert_equal(@scg.name, @scg.key, 'Key incorrect')
   end
@@ -31,6 +31,16 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert_nil(@scg.collection_event, 'Collection event not removed')
     @scg.add_defaults
     assert_equal(collection_event, @scg.collection_event, 'Collection event not set to default')
+  end
+  
+  def test_haemotology_annotation
+    pth = CaTissue::SpecimenCollectionGroup::Pathology::BaseHaematologyPathologyAnnotation.new(:specimen_collection_group => @scg)
+    hst = CaTissue::SpecimenCollectionGroup::Pathology::HistologicType.new(:base_pathology_annotation => pth, :histologic_type => 'Adenocarcinoma - NOS')
+    fnd = CaTissue::SpecimenCollectionGroup::Pathology::AdditionalFinding.new(:base_pathology_annotation => pth, :pathologic_finding => 'Test finding')
+    dtl = CaTissue::SpecimenCollectionGroup::Pathology::Details.new(:additional_finding => fnd, :detail => 'Test detail')
+    assert_equal([hst], pth.histologic_types.to_a, "#{pth} histologic types incorrect")
+    assert_equal([fnd], pth.additional_findings.to_a, "#{pth} additional findings incorrect")
+    assert_equal([dtl], fnd.details.to_a, "#{fnd} details incorrect")
   end
 
   def test_prostatectomy_annotation
@@ -112,18 +122,18 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
   ## DATABASE TEST CASES ##
   
   def test_save
-    logger.debug { "Verifying SCG create..." }
+    logger.debug { "Verifying #{@scg} create..." }
     verify_save(@scg)
     assert_equal('Complete', @scg.collection_status, "Collection status after store incorrect")
-    assert_equal(2, @scg.events.size, "#{@scg} events size incorrect")
+    assert_equal(2, @scg.event_parameters.size, "#{@scg} events size incorrect")
     tmpl = @scg.copy(:identifier)
-    verify_query(tmpl, :events) do |fetched|
+    verify_query(tmpl, :event_parameters) do |fetched|
       assert_equal(2, fetched.size, "#{@scg} fetched events size incorrect")
     end
     assert_equal(1, @scg.specimens.size, "#{@scg} specimens size incorrect")
     spc = @scg.specimens.first
-    assert_equal(2, spc.events.size, "#{@scg} #{spc} events size incorrect")
-    verify_query(spc, :events) do |fetched|
+    assert_equal(2, spc.event_parameters.size, "#{@scg} #{spc} events size incorrect")
+    verify_query(spc, :event_parameters) do |fetched|
       assert_equal(2, fetched.size, "#{@scg} #{spc} events query result size incorrect")
     end
 
@@ -135,7 +145,7 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     verify_save(@scg)
 
     # query the specimens
-    logger.debug { "Verifying #{@scg.qp} specimens query..." }
+    logger.debug { "Verifying #{@scg} specimens query..." }
     tmpl = @scg.copy(@scg.class.secondary_key_attributes)
     verify_query(tmpl, :specimens) do |fetched|
       assert_equal(1, fetched.size, "#{@scg} specimens query result size incorrect")
@@ -152,15 +162,24 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
       assert_not_nil(fcep, "Collection event missing")
       assert_equal('Test Comment', fcep.comment, "Collection event comment not saved")
     end
+    
+    # test update CEP from a partial template
+    tmpl = @scg.copy(:identifier)
+    tcep = CaTissue::SpecimenEventParameters.create_parameters(:collection, tmpl, :comment => 'Updated Test Comment')
+    verify_save(tmpl)
+    ceps = tmpl.specimen_event_parameters.select { |ep| CaTissue::CollectionEventParameters === ep }
+    assert(ceps.include?(tcep), "#{tmpl} is missing #{tcep}")
+    assert_equal(1, ceps.size, "#{tmpl} has extraneous CEPs: #{ceps.qp}")
+    assert(Jinx::Resource.value_equal?(cep.date, tcep.date), "#{tmpl} event parameters #{tcep} date #{tcep.date} not merged from #{cep} date #{cep.date}")
 
     # update the comment
-    logger.debug { "Verifying #{@scg.qp} update..." }
+    logger.debug { "#{self.class.qp} verifying #{@scg} update..." }
     @scg.comment = comment = 'Test Comment'
     verify_save(@scg)
     @scg.comment = nil
     database.find(@scg)
     assert_equal(comment, @scg.comment, "Comment not updated in database")
-    logger.debug { "Verified #{@scg.qp} store." }
+    logger.debug { "Verified #{@scg} store." }
 
     # create a new SCG with two specimens
     logger.debug { "Verifying second SCG create..." }
@@ -181,11 +200,20 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert(spc_ids.include?(spc1.identifier), "#{scg} specimen #{spc1} not found")
     assert(spc_ids.include?(spc2.identifier), "#{scg} specimen #{spc2} not found")
   end
+  
+  def test_save_without_consent
+    ctr = defaults.registration.consent_tier_responses.first
+    defaults.registration.consent_tier_responses.delete(ctr)
+    verify_save(@scg)
+    assert_nil(@scg.consent_tier_statuses.first, "#{@scg} has a consent tier status although there is no registration consent tier response")
+    # restore the response
+    defaults.registration.consent_tier_responses << ctr
+  end
 
   # This test follows caTissue SCG, SEP and Specimen auto-generation as follows:
   # * Create CPR => SCG auto-generated with status Pending, new Specimen, no SCG SEP
   # * Update SCG status to Complete => SCG SEP created
-  def test_autogenerated
+  def test_save_autogenerated
     # make a new registration
     pnt = CaTissue::Participant.new(:name => 'Test Participant'.uniquify)
     pcl = defaults.protocol
@@ -263,6 +291,14 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     verify_save(scg)
   end
   
+  def test_save_haemotology_annotation
+    pth = CaTissue::SpecimenCollectionGroup::Pathology::BaseHaematologyPathologyAnnotation.new(:specimen_collection_group => @scg)
+    hst = CaTissue::SpecimenCollectionGroup::Pathology::HistologicType.new(:base_pathology_annotation => pth, :histologic_type => 'Adenocarcinoma - NOS')
+    fnd = CaTissue::SpecimenCollectionGroup::Pathology::AdditionalFinding.new(:base_pathology_annotation => pth, :pathologic_finding => 'Test finding')
+    dtl = CaTissue::SpecimenCollectionGroup::Pathology::Details.new(:additional_finding => fnd, :detail => 'Test detail')
+    verify_save(pth)
+  end
+   
   def test_save_prostatectomy_annotation
     pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
     pa.specimen_collection_group = @scg

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../helpers/test_case'
+require File.dirname(__FILE__) + '/../../../helpers/test_case'
 
 class SpecimenEventParametersTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -15,7 +15,7 @@ class SpecimenEventParametersTest < Test::Unit::TestCase
 
   def test_missing_scg
     @sep.specimen_collection_group = nil
-    assert_raises(CaRuby::ValidationError, "Parameters without SCG passes SCG validation") { @sep.validate }
+    assert_raises(Jinx::ValidationError, "Parameters without SCG passes SCG validation") { @sep.validate }
   end
 
   def test_java_date
@@ -36,11 +36,11 @@ class SpecimenEventParametersTest < Test::Unit::TestCase
   
   ## DATABASE TESTS ##
 
-  def test_save
+  def test_save_specimen_sep
     verify_save(@sep)
     # update the freeze method
     @sep.freeze_method = 'Cryostat'
-    logger.debug { "#{self.class.qp} updating #{@seo.qp}..." }
+    logger.debug { "#{self.class.qp} updating #{@sep.qp}..." }
     verify_save(@sep)
   end
 end
