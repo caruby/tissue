@@ -1,3 +1,0 @@
-fields: test/fixtures/catissue/extract/conf/spc_fields.yaml
-output: test/results/catissue/extract/spc.csv
-target: TissueSpecimen
