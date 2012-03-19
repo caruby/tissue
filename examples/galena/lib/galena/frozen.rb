@@ -1,5 +1,3 @@
-require File.expand_path('migrator', File.dirname(__FILE__))
-
 module CaTissue
   # Declares the classes modified for migration.
   shims TissueSpecimen, CollectionProtocolRegistration, StorageContainer 
