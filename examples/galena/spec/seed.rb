@@ -18,21 +18,10 @@ module CaTissue
     # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
-      self.title ||= migration_default_title(migrated)
+      self.title ||= Galena.administrative_objects.protocol.title
       self.principal_investigator ||= Galena.administrative_objects.protocol.principal_investigator
       sites << Galena.administrative_objects.tissue_bank if sites.empty?
       coordinators << Galena.administrative_objects.tissue_bank.coordinator if coordinators.empty?
-    end
-    
-    private
-    
-    # @param (see #migrate)
-    # @return [String, nil] the short title of the {Galena::Seed} protocol which
-    #   matches this protocol's event, or nil if no match 
-    def migration_default_title(migrated)
-      cpe = migrated.detect { |obj| CaTissue::CollectionProtocolEvent === obj } || return
-      pcl = Galena.administrative_objects.protocols.detect { |p| p.events.first.label == cpe.label } || return
-      pcl.title
     end
   end
   
@@ -44,17 +33,10 @@ module CaTissue
     # @param (see Jinx::Migratable#migrate)
     def migrate(row, migrated)
       super
-      match = Galena.administrative_objects.protocols.detect_value do |pcl|
-        cpe = pcl.events.first
-        cpe if cpe.label == label
-      end
-      if match then
-        self.event_point ||= match.event_point
-        rqmt = match.requirements.first
-        CaTissue::TissueSpecimenRequirement.new(:collection_event => self, :specimen_type => rqmt.specimen_type)
-      else
-        CaTissue::TissueSpecimenRequirement.new(:collection_event => self)
-      end
+      cpe = Galena.administrative_objects.protocol.events.first
+      self.event_point ||= cpe.event_point
+      rqmt = cpe.requirements.first
+      CaTissue::TissueSpecimenRequirement.new(:collection_event => self, :specimen_type => rqmt.specimen_type)
     end
   end
 
@@ -74,7 +56,7 @@ module CaTissue
     
     private
     
-    TEMPLATES = [Galena.administrative_objects.hospital, Galena.administrative_objects.tissue_bank]
+    TEMPLATES ||= [Galena.administrative_objects.hospital, Galena.administrative_objects.tissue_bank]
   end
 
   class StorageContainer
