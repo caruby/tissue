@@ -309,7 +309,7 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     invn = CaTissue::SpecimenCollectionGroup::Pathology::Invasion.new
     invn.merge_attributes(:lymphatic_invasion => 'Present', :base_solid_tissue_pathology_annotation => pa)
     gleason = CaTissue::SpecimenCollectionGroup::Pathology::GleasonScore.new
-    gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_pathology_annotation => pa)
+    gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :tertiary_pattern_score => 4, :prostate_pathology_annotation => pa)
     margin = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyMargin.new
     margin.merge_attributes(:margin_status => 'Benign glands at surgical Margin', :radical_prostatectomy_pathology_annotation => pa)
     verify_save(pa)
