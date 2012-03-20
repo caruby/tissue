@@ -225,7 +225,7 @@ module CaTissue
       # Define the proxy attribute.
       attr_create_on_demand_accessor(pa) { Set.new }
       # Register the attribute.
-      add_attribute(pa, proxy, :collection, :saved)
+      add_attribute(pa, proxy, :collection, :saved, :nosync)
       # the annotation module => proxy attribute association
       @ann_mod_pxy_hash ||= {}
       @ann_mod_pxy_hash[mod] = pa
