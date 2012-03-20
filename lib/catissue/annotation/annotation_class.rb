@@ -325,7 +325,7 @@ module CaTissue
     # @param [Symbol] attribute the attribute to save
     def save_dependent_attribute(annotation, attribute)
       annotation.send(attribute).enumerate do |ref|
-        logger.debug { "Saving #{annotation} #{attribute} dependent #{ref.qp}..." }
+        logger.debug { "Saving annotation #{annotation} #{attribute} dependent #{ref.qp}..." }
         wtr = writer(attribute)
         if wtr.nil? then raise AnnotationError.new("Annotation reference writer not found for #{qp} #{attribute}") end
         wtr.save(ref)
@@ -341,17 +341,17 @@ module CaTissue
   
     # @return [{Symbol => Annotation::ReferenceWriter}] the annotation attribute => writer hash
     def map_writers
-      hash = {}
+      awh = {}
       dependent_attributes.each_pair do |pa, prop|
         # skip attributes defined in a superclass
         next unless prop.declarer == self
         if @entity_id.nil? then
           raise AnnotationError.new("Cannot define reference writers for #{qp} since it does not have an entity id.")
         end
-        hash[pa] = Annotation::ReferenceWriter.new(@entity_id, prop)
+        awh[pa] = Annotation::ReferenceWriter.new(@entity_id, prop)
       end
       # If the superclass is also an annotation, then form the union of its writers with the local writers.
-      superclass < Annotation && superclass.primary? ? hash + superclass.attribute_writer_hash : hash
+      superclass < Annotation && superclass.primary? ? awh + superclass.attribute_writer_hash : awh
     end
   
     # Wraps the proxy reader method to convert a proxy to its hook.

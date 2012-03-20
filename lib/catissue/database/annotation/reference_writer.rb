@@ -16,7 +16,7 @@ module CaTissue
         @table = efcd.annotation_table_for_entity_id(assn_eid)
         # map the attribute => column
         attr_col_hash = map_attributes(prop.type, assn_eid)
-        logger.debug { "Annotation #{prop.declarer.qp} #{prop} maps to #{@table} as #{attr_col_hash.qp}" }
+        logger.debug { "Annotation #{prop.declarer.qp} #{prop} reference type #{prop.type.qp} maps to #{@table} as #{attr_col_hash.qp}" }
         # the mapped attributes and columns
         @attributes, cols = attr_col_hash.to_a.transpose
         # the SQL parameters clause
@@ -37,9 +37,10 @@ module CaTissue
         annotation.identifier ||= next_identifier
         # the values to bind to the SQL parameters
         values = database_parameters(annotation)
-        logger.debug { "Saving #{annotation} to #{@table}..." }
+        logger.debug { "Saving annotation #{annotation} to #{@table}..." }
         # dispatch the SQL update or create statement
         Database.instance.executor.transact(sql, *values)
+        # Save the superclass attributes.
         if @parent then
           logger.debug { "Saving #{annotation} parent entity attributes..." }
           @parent.save(annotation)
@@ -83,15 +84,15 @@ module CaTissue
       end
       
       def map_attributes(klass, eid)
-        # the non-domain columns
-        hash = klass.nondomain_attributes.to_compact_hash do |pas|
+        # Fill in the attribute => column hash for non-domain attributes.
+        ach = klass.nondomain_attributes.to_compact_hash do |pas|
           nondomain_attribute_column(klass, pas, eid)
         end
-        # the owner attribute columns
+        # Add the owner attribute => column entries.
         klass.owner_attributes.each do |oattr|
-          hash[oattr] = owner_attribute_column(klass, oattr, eid)
+          ach[oattr] = owner_attribute_column(klass, oattr, eid)
         end
-        hash
+        ach
       end
       
       def nondomain_attribute_column(klass, attribute, eid)
