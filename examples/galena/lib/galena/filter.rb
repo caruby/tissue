@@ -2,7 +2,7 @@ require 'uom'
 
 module CaTissue
   # Declares the classes modified for migration.
-  shims Participant, TissueSpecimen, SpecimenCollectionGroup
+  shims Participant, SpecimenCollectionGroup
 
   class Participant
     # Extracts the Participant first name from the +Initials+ input field.
@@ -13,18 +13,6 @@ module CaTissue
     # Extracts the Participant last name from the +Initials+ input field.
     def migrate_last_name(value, row)
       value[-1, 1]
-    end
-  end
-
-  class TissueSpecimen
-    # Parses the source field as a UOM::Measurement if it is a string.
-    # Otherwises, returns the source value.
-    def migrate_initial_quantity(value, row)
-      # if value is not a string, then use it as is
-      return value unless value.is_a?(String)
-      # the value has a unit qualifier; parse the measurement.
-      # the unit is normalized to the Specimen standard unit.
-      value.to_measurement_quantity(standard_unit)
     end
   end
 

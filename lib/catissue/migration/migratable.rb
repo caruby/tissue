@@ -1,9 +1,10 @@
+require 'uom'
 require 'jinx/migration/migrator'
 require 'catissue/annotation/proxy'
 
 module CaTissue
-  shims SpecimenCollectionGroup, CollectionProtocolRegistration, SpecimenCharacteristics,
-    SpecimenEventParameters, CollectionEventParameters, ReceivedEventParameters
+  shims SpecimenCollectionGroup, TissueSpecimen, SpecimenCharacteristics,
+    SpecimenEventParameters, CollectibleEventParameters
 
   class SpecimenCollectionGroup
     @@diagnosis_cv_finder = nil
@@ -29,6 +30,32 @@ module CaTissue
     # @return [String] the {diagnosis_controlled_value}
     def migrate_clinical_diagnosis(value, row)
       SpecimenCollectionGroup.diagnosis_controlled_value(value)
+    end
+  end
+
+  class Specimen
+    # Parses the source field as a UOM::Measurement if it is a string.
+    # Otherwises, returns the source value.
+    def migrate_initial_quantity(value, row)
+      standardize_quantity(value)
+    end
+    
+    # Parses the source field as a UOM::Measurement if it is a string.
+    # Otherwises, returns the source value.
+    def migrate_initial_quantity(value, row)
+      standardize_quantity(value)
+    end
+    
+    private
+    
+    # Parses the source field as a UOM::Measurement if it is a string.
+    # Otherwises, returns the source value.
+    def standardize_quantity(value)
+      # if value is not a string, then use it as is
+      return value unless value.is_a?(String)
+      # the value has a unit qualifier; parse the measurement.
+      # the unit is normalized to the Specimen standard unit.
+      value.to_measurement_quantity(standard_unit)
     end
   end
 
