@@ -10,14 +10,11 @@ Gem::Specification.new do |s|
   s.author        = 'OHSU'
   s.email         = 'caruby.org@gmail.com'
   s.homepage      = 'http://caruby.rubyforge.org/tissue.html'
-  s.files         = Dir['{bin,conf,examples,lib}/**/*'] +
-    Dir['examples/*/{Gemfile,Rakefile,README.md}'] +
-    Dir['examples/*/{bin,conf,data,lib,spec}/**/*'] +
-    ['History.md', 'LEGAL', 'LICENSE', 'README.md', 'Gemfile']
+  s.files         = `git ls-files`.split("\n")
   s.require_path  = 'lib'
   s.bindir        = 'bin'
-  s.executables   = Dir['bin/*'].map{ |f| File.basename(f) }
-  s.test_files    = Dir.glob('test/lib/**/*.rb')
+  s.executables   = `git ls-files bin`.split("\n").map{ |f| File.basename(f) }
+  s.test_files    = `git ls-files test`.split("\n")
   s.add_runtime_dependency 'bundler'
   s.add_runtime_dependency 'jinx', '>= 2.1.1'
   s.add_runtime_dependency 'jinx-json', '>= 2.1.1'
