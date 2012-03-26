@@ -118,7 +118,7 @@ module CaTissue
       
       # Obtains the undocumented caTisue container id for the given primary entity id.
       #
-      # @quirk caTissue 1.1.2 EntityManager.getContainerIdForEntitycontainer uses an
+      # @quirk caTissue 1.1.2 EntityManager.getContainerIdForEntity uses an
       #   incorrect table (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=421&sid=5252d951301e598eebf3e90036da43cb).
       #   The standard DE API call submits the query:
       #     SELECT IDENTIFIER FROM dyextn_container WHERE ENTITY_ID = ?
@@ -215,8 +215,8 @@ module CaTissue
       def nonrecursive_associated_entity_id(eid, role)
         logger.debug { "Finding entity id #{eid} #{role} associated entity id..." }
         result = @executor.query(ASSN_ENTITY_ID_SQL, eid, role).first
-        # The role role can be a mutation of the property name with spaces inserted in the
-        # camel-case components, e.g. 'Additional Finding' instead of 'AdditionalFinding'.
+        # The role can be a mutation of the property name with spaces inserted in the
+        # mixed-case components, e.g. 'Additional Finding' instead of 'AdditionalFinding'.
         # TODO - fix this kludge by finding out how the role relates to the property in the
         # database.
         if result.nil? and role =~ /.+[A-Z]/ then
