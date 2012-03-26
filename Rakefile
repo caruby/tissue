@@ -8,15 +8,6 @@ GEM_VERSION = CaTissue::VERSION
 WINDOWS = (Config::CONFIG['host_os'] =~ /mingw|win32|cygwin/ ? true : false) rescue false
 SUDO = WINDOWS ? '' : 'sudo'
 
-desc 'Makes the API documentation'
-task :doc do
-  FileUtils.rm_rf 'doc/api'
-  sh "yardoc"
-  #  Make the example documentation separately.
-  FileUtils.rm_rf 'examples/galena/doc/api'
-  sh "yardoc -o examples/galena/yardoc/doc/api examples/galena"
-end
-
 desc 'Builds the gem'
 task :gem do
   sh "jgem build #{GEM}.gemspec"
@@ -25,6 +16,15 @@ end
 desc 'Installs the gem'
 task :install => :gem do
   sh "#{SUDO} jgem install #{GEM}-#{GEM_VERSION}.gem"
+end
+
+desc 'Documents the API'
+task :doc do
+  FileUtils.rm_rf 'doc/api'
+  sh "yardoc"
+  #  Make the example documentation separately.
+  FileUtils.rm_rf 'examples/galena/doc/api'
+  sh "yardoc -o examples/galena/yardoc/doc/api examples/galena"
 end
 
 desc 'Runs the example specs'
