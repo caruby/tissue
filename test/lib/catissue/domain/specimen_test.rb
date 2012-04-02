@@ -236,6 +236,7 @@ class SpecimenTest < Test::Unit::TestCase
     # Save the specimen, which will update the anticipatory specimen
     verify_save(@spc)
     assert_not_nil(ev.identifier, "#{@spc} event #{ev} not saved")
+    assert_equal('Closed', @spc.activity_status, "Disposed #{@spc} is not closed")
     # Make a nonanticipatory specimen.
     spc2 = CaTissue::Specimen.create_specimen(
       :requirement => defaults.specimen_requirement,
