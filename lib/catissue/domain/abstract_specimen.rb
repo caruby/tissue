@@ -126,12 +126,12 @@ module CaTissue
       SpecimenClass::UNIT_HASH[self.specimen_class]
     end
 
-    # Derives a new specimen from this specimen. The parameters are described in
+    # Derives a new specimen from this specimen. The options are described in
     # {Specimen.create_specimen}, with one addition:
     # * +:count+(+Integer+) - the optional number of specimens to derive
     #
-    # If the +:count+ parameter is greater than one and the +:specimen_class+,
-    # +:specimen_type+ and +:specimen_characteristics+ parameters are not set to values
+    # If the +:count+ option is greater than one and the +:specimen_class+,
+    # +:specimen_type+ and +:specimen_characteristics+ options are not set to values
     # which differ from the respective values for this Specimen, then the specimen is
     # aliquoted, otherwise the derived specimens are created independently, e.g.:
     #   spc = Specimen.create_specimen(:specimen_class => :tissue, :specimen_type => :frozen)
@@ -152,39 +152,41 @@ module CaTissue
     #
     # The default derived specimen label is _label_+_+_n_, where _label_ is this specimen's
     # label and _n_ is this specimen's child count after including the new derived specimen,
-    # e.g. 3090_3 for the third child in parent specimen with label 3090.
+    # e.g. +3090_3+ for the third child in the parent specimen with label +3090+.
     #
-    # @return the new derived specimen if _count_ is one, otherwise an Array of _count_ derived specimens
+    # @param [{Symbol => Object}, nil] opts the attribute => value hash
+    # @return [AbstractSpecimen, <AbstractSpecimen>] the new derived specimen if the +:count+ option
+    #   is missing or one, otherwise an Array of _count_ derived specimens
     # @raise [Jinx::ValidationError] if an aliquoted parent available quantity is not greater than zero
     #   or the derived specimen quantities exceed the parent available quantity
-    def derive(params={})
+    def derive(opts=Hash::EMPTY_HASH)
       # add defaults
       add_defaults if specimen_class.nil?
-      # copy the parameters
-      params = params.dup
+      # copy the option hash
+      opts = opts.dup
       # standardize the requirement param, if any
-      rqmt = params.delete(:requirement)
-      params[:specimen_requirement] ||= rqmt if rqmt
+      rqmt = opts.delete(:requirement)
+      opts[:specimen_requirement] ||= rqmt if rqmt
       # the default specimen parameters
-      unless params.has_key?(:specimen_requirement) then
-        params[:specimen_class] ||= self.specimen_class ||= infer_specimen_class
-        params[:specimen_type] ||= self.specimen_type
+      unless opts.has_key?(:specimen_requirement) then
+        opts[:specimen_class] ||= self.specimen_class ||= infer_specimen_class
+        opts[:specimen_type] ||= self.specimen_type
       end
-      unless Class === params[:specimen_class] then
-        params[:specimen_class] = infer_class(params)
+      unless Class === opts[:specimen_class] then
+        opts[:specimen_class] = infer_class(opts)
       end
-      count = params.delete(:count)
+      count = opts.delete(:count)
       count ||= 1
       aliquot_flag = false
-      if count > 1 and params[:specimen_class] == self.class and params[:specimen_type] == self.specimen_type then
+      if count > 1 and opts[:specimen_class] == self.class and opts[:specimen_type] == self.specimen_type then
         # aliquots share the specimen_characteristics
-        child_chr = params[:specimen_characteristics] ||= specimen_characteristics
+        child_chr = opts[:specimen_characteristics] ||= specimen_characteristics
         aliquot_flag = child_chr == specimen_characteristics
       end
       # set aliquot parameters if necessary
-      if aliquot_flag then set_aliquot_parameters(params, count) end
+      if aliquot_flag then set_aliquot_parameters(opts, count) end
       # make the derived specimens
-      count == 1 ? create_derived(params) : Array.new(count) { create_derived(params) }
+      count == 1 ? create_derived(opts) : Array.new(count) { create_derived(opts) }
     end
 
     # Returns whether this AbstractSpecimen is minimally consistent with the other specimen.
@@ -259,19 +261,23 @@ module CaTissue
       CaTissue.const_get(cls_nm)
     end
 
-    # Creates a derived specimen.
+    # Creates a derived specimen. The options is an attribute => value hash. The options
+    # can also include a +:specimen_requirement+. The non-domain attribute values of the
+    # new derived specimen are determined according to the following precedence rule:
+    # 1. The attribute => value option.
+    # 2. The requirement property value.
+    # 3. This specimen's property value.
     #
-    # @param [{Symbol => Object}] params the derived specimen attribute => value hash
-    # @return [Specimen] the derived specimen
-    def create_derived(params)
+    # @param [{Symbol => Object}] opts the derived specimen attribute => value hash
+    # @return [AbstractSpecimen] the derived specimen or requirement
+    def create_derived(opts)
       # Merge the non-domain attribute values from this specimen, unless there is a requirement.
-      # Precedence order is given params highest, requirements next, this specimen lowest
-      params = value_hash(DERIVED_MERGEABLE_ATTRS).merge!(params) unless params.has_key?(:specimen_requirement)
-      # copy this specimen's characteristics if not already given in the derived specimen params
-      params[:specimen_characteristics] ||= default_derived_characteristics
-      # make the new specimen
-      spc = Specimen.create_specimen(params)
-      # set the parent
+      opts = value_hash(DERIVED_MERGEABLE_ATTRS).merge!(opts) unless opts.has_key?(:specimen_requirement)
+      # Copy this specimen's characteristics, if not already given in the options.
+      opts[:specimen_characteristics] ||= default_derived_characteristics
+      # Make the new specimen.
+      spc = Specimen.create_specimen(opts)
+      # The derived specimen's parent is this specimen.
       spc.parent = self
       spc
     end
