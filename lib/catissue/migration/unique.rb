@@ -1,4 +1,4 @@
-require 'jinx/resource/uniquify'
+require 'jinx/resource/unique'
 
 module CaTissue
   shims CollectionProtocol, CollectionProtocolEvent, Container, ContainerType, StorageType,

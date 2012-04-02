@@ -4,7 +4,7 @@ caRuby Tissue: Simplifying caTissue
 **Home**:         [http://caruby.rubyforge.org/catissue.html](http://caruby.rubyforge.org/catissue.html)    
 **Git**:          [http://github.com/caruby/tissue](http://github.com/caruby/tissue)       
 **Author**:       OHSU Knight Cancer Institute    
-**Copyright**:    2010, 2011    
+**Copyright**:    2010, 2011, 2012    
 **License**:      MIT License    
 
 Synopsis
@@ -41,6 +41,6 @@ The caRuby Tissue [FAQ](https://caruby.tenderapp.com/dashboard/sections/tissue) 
 Copyright
 ---------
 
-caRuby &copy; 2010, 2011 by [Oregon Health & Science University](http://www.ohsu.edu/xd/health/services/cancer/index.cfm).
+caRuby &copy; 2010, 2011, 2012 by [Oregon Health & Science University](http://www.ohsu.edu/xd/health/services/cancer/index.cfm).
 caRuby is licensed under the MIT license. Please see the LICENSE and LEGAL
 files for more information.
