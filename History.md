@@ -1,9 +1,9 @@
-This history lists major release themes. See the GitHub Commits (https://github.com/caruby/tissue)
+This history lists major release themes. See the GitHub commits (https://github.com/caruby/tissue)
 for change details.
 
-2.1.1 / 2011-11-23
+2.1.1 / 2012-03-27
 ------------------
-* Initial web service release.
+* Jinx-based refactoring.
 
 1.5.6 / 2011-09-30
 ------------------

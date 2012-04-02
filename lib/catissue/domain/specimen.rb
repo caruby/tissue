@@ -349,7 +349,7 @@ module CaTissue
       specimen_event_parameters.any? { |ep| CaTissue::DisposalEventParameters === ep }
     end
     
-    # Permanently dispose of this specimen with status 'Closed'.
+    # Permanently dispose of this specimen.
     #
     # @param [String, nil] reason the optional disposal reason
     # @return [CaTissue::DisposalEventParameters] the disposal event

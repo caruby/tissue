@@ -71,7 +71,7 @@ module CaTissue
     # The built-in caTissue migration shims.
     MIGRATABLE_SHIM = File.expand_path('migratable.rb', File.dirname(__FILE__))
     
-    UNIQUIFY_SHIM = File.expand_path('uniquify.rb', File.dirname(__FILE__))
+    UNIQUIFY_SHIM = File.expand_path('unique.rb', File.dirname(__FILE__))
         
     # The context module is determined as follows:
     # * For an {Annotation} target class, the context module is the {AnnotationClass#annotation_module}.
