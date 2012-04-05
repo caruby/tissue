@@ -1,7 +1,5 @@
 require 'jinx/helpers/log'
 require 'jinx/migration/migrator'
-require 'catissue/database/controlled_values'
-require 'catissue/database/controlled_value_finder'
 
 module CaTissue
   # Migrates a CSV extract to caTissue. See the {#initialize} documentation for usage options.
@@ -57,8 +55,8 @@ module CaTissue
 
       # The CV look-up option.
       if opts[:controlled_values] then
-        CaTissue::SpecimenCharacteristics.tissue_site_cv_finder = ControlledValueFinder.new(:tissue_site)
-        CaTissue::SpecimenCollectionGroup.diagnosis_cv_finder = ControlledValueFinder.new(:clinical_diagnosis)
+        CaTissue::SpecimenCharacteristics.enable_cv_finder
+        CaTissue::SpecimenCollectionGroup.enable_cv_finder
         logger.info("Migrator enabled tissue site and clinical diagnosis controlled value lookup.")
       end
     end

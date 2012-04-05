@@ -1,5 +1,7 @@
 require 'uom'
 require 'jinx/migration/migrator'
+require 'catissue/database/controlled_values'
+require 'catissue/database/controlled_value_finder'
 require 'catissue/annotation/proxy'
 
 module CaTissue
@@ -7,39 +9,56 @@ module CaTissue
     SpecimenEventParameters, CollectibleEventParameters
 
   class SpecimenCollectionGroup
-    @@diagnosis_cv_finder = nil
-
-    # Sets this SpecimenCollectionGroup diagnosis ControlledValueFinder.
-    def self.diagnosis_cv_finder=(finder)
-      @@diagnosis_cv_finder = finder
+    # @return [String] the diagnosis controlled value
+    # @raise [Jinx::MigrationError] if the value is not supported
+    def migrate_clinical_diagnosis(value, row)
+      cv = standard_cv_diagnosis(value)
+      if cv.nil? then
+        cv = variant_cv_diagnosis(value)
+        if cv then 
+          logger.warn("Migrator substituted diagnosis #{cv} for #{value}.")
+        else
+          raise Jinx::MigrationError.new("#{cv} is not a recognized controlled value.")
+        end
+      end
+      cv
     end
+    
+    # Enables diagnosis controlled value lookup.
+    def self.enable_cv_finder
+      @diagnosis_cv_finder ||= ControlledValueFinder.new(:clinical_diagnosis)
+    end
+    
+    private
 
     # Returns the diagnosis controlled value as follows:
     # * If CV lookup is disabled, then this method returns value.
-    # * Otherwise, if the value is remapped via a configuration remap file,
-    #   then this method returns the remapped CV.
-    # * Otherwise, if the value is a valid CV, then this method returns value.
-    # * Otherwise, this method returns nil.
+    # * Otherwise, delegate to the CV finder.
     #
     # @param [String] value the input diagnosis
     # @return [String] the mapped CV
     def self.diagnosis_controlled_value(value)
-      @@diagnosis_cv_finder.nil? ? value : @@diagnosis_cv_finder.controlled_value(value)
+      @diagnosis_cv_finder.nil? ? value : @diagnosis_cv_finder.controlled_value(value)
     end
 
-    # @return [String] the {diagnosis_controlled_value}
-    def migrate_clinical_diagnosis(value, row)
-      SpecimenCollectionGroup.diagnosis_controlled_value(value)
+    # @return [String, nil] the caTissue diagnosis permissible value, or nil if not found
+    def standard_cv_diagnosis(value)
+      SpecimenCollectionGroup.diagnosis_controlled_value(value) rescue nil
+    end
+
+    # Returns the tissue site which adds the 'NOS' suffix to a value without one or removes
+    # 'NOS' from a value with the suffix.
+    #
+    # @return [String, nil] a supported variant of the input value, or nil if none
+    # @raise (see ControlledValueFinder#controlled_value)
+    def variant_cv_diagnosise(value)
+      # try an NOS suffix variation
+      variation = value =~ /, NOS$/ ? value[0...-', NOS'.length] : value + ', NOS'
+      SpecimenCollectionGroup.diagnosis_controlled_value(variation) rescue nil
     end
   end
 
   class Specimen
-    # Parses the source field as a UOM::Measurement if it is a string.
-    # Otherwises, returns the source value.
-    def migrate_initial_quantity(value, row)
-      standardize_quantity(value)
-    end
-    
     # Parses the source field as a UOM::Measurement if it is a string.
     # Otherwises, returns the source value.
     def migrate_initial_quantity(value, row)
@@ -60,56 +79,58 @@ module CaTissue
   end
 
   class SpecimenCharacteristics
-    @@site_finder = nil
-
-    # Sets this SpecimenCharacteristics tissue site ControlledValueFinder.
-    def self.tissue_site_cv_finder=(finder)
-      @@site_finder = finder
+    # Enables tissue site controlled value lookup.
+    def self.enable_cv_finder
+      @site_finder ||= ControlledValueFinder.new(:tissue_site)
     end
 
-    # Returns the tissue site controlled value as follows:
-    # * If CV lookup is disabled, then this method returns value.
-    # * Otherwise, if the value is remapped via a configuration remap file,
-    #   then this method returns the remapped CV.
-    # * Otherwise, if the value is a valid CV, then this method returns value.
-    # * Otherwise, this method returns nil.
-    #
-    # @return [String] the caTissue tissue site permissible value
-    def self.tissue_site_controlled_value(value)
-      @@site_finder.nil? ? value : @@site_finder.controlled_value(value)
-    end
-
-    # @return [String] the {tissue_site_controlled_value}
+    # @return [String] the tissue site controlled value
+    # @raise [Jinx::MigrationError] if the value is not supported
     def migrate_tissue_site(value, row)
-      standard_cv_tissue_site(value) or variant_cv_tissue_site(value)
+      cv = standard_cv_tissue_site(value)
+      if cv.nil? then
+        cv = variant_cv_tissue_site(value)
+        if cv then 
+          logger.warn("Migrator substituted tissue site #{cv} for #{value}.")
+        else
+          raise Jinx::MigrationError.new("#{cv} is not a recognized controlled value.")
+        end
+      end
+      cv
     end
 
     private
 
-    # Returns the {tissue_site_controlled_value}.
+    # Returns the tissue site controlled value as follows:
+    # * If CV lookup is disabled, then this method returns value.
+    # * Otherwise, delegate to the CV finder.
     #
-    # @return [String, nil] the caTissue tissue site permissible value, or nil if not found
+    # @return [String] the caTissue tissue site permissible value
+    def self.tissue_site_controlled_value(value)
+      @site_finder.nil? ? value : @site_finder.controlled_value(value)
+    end
+
+    # @return [String, nil] the caTissue tissue site permissible value,
+    #   or nil if not found
     def standard_cv_tissue_site(value)
       SpecimenCharacteristics.tissue_site_controlled_value(value) rescue nil
     end
 
-    # Returns the {tissue_site_controlled_value} which adds the 'NOS' suffix to a value
-    # without one or removes 'NOS' from a value with the suffix.
+    # Returns the tissue site which adds the 'NOS' suffix to a value without one
+    # or removes 'NOS' from a value with the suffix.
     #
-    # @return [String] a supported variant of the input value
-    # @raise (see ControlledValueFinder#controlled_value)
+    # @return [String, nil] a supported variant of the input value, or nil if none
     def variant_cv_tissue_site(value)
       # try an NOS suffix variation
       variation = value =~ /, NOS$/ ? value[0...-', NOS'.length] : value + ', NOS'
-      cv = SpecimenCharacteristics.tissue_site_controlled_value(value)
-      logger.warn("Migrator substituted tissue site #{cv} for #{value}.")
-      cv
+      SpecimenCharacteristics.tissue_site_controlled_value(variation) rescue nil
     end
   end
 
   class SpecimenEventParameters
     # Returns nil by default, since only CollectibleEventParameters have a SCG owner.
-    # {CollectibleEventParameters#migrate_specimen_collection_group} overrides this method.
+    # {CollectibleEventParameters#migrate_specimen_collection_group} overrides this
+    # method.
     #
     # @return nil
     def migrate_specimen_collection_group(scg, row)
