@@ -943,7 +943,10 @@ module CaTissue
       # Leave status Active if there is a disposal event, since quantities cannot be reset
       # on a closed Specimen and creating the disposal event below will close the Specimen.
       specimen.activity_status = ostatus unless dsp
-      update(specimen)
+      # Update directly without a cyclic operation check, since update(specimen) of a
+      # derived specimen delegates to the parent, which in turn might be the outer
+      # save context.
+      update_from_template(specimen)
       
       # Finally, create the disposal event if one is pending.
       if dsp then

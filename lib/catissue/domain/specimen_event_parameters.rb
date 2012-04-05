@@ -12,14 +12,6 @@ module CaTissue
     # specimen is abstract but unfetched.
     qualify_attribute(:specimen, :unfetched)
 
-    private
-
-    def self.allocate
-      raise NotImplementedError.new("SpecimenEventParameters is abstract; use the create method to make a new instance")
-    end
-
-    public
-
     # Creates a SpecimenEventParameters of the specified subclass type. The type is a
     # SpecimenEventParameters subclass name without the +EventParameters+ suffix, e.g.
     # +Collection+. Lower-case, underscore symbols are supported and preferred, e.g. the
@@ -79,6 +71,10 @@ module CaTissue
     # The class name suffix for all event parameter classes.
     SUBCLASS_SUFFIX = 'EventParameters'
 
+    def self.allocate
+      raise NotImplementedError.new("SpecimenEventParameters is abstract; use the create method to make a new instance")
+    end
+
     # @raise [Jinx::ValidationError] if the subject is missing or there is both a SCG and a Specimen owner
     def validate_local
       super
@@ -98,6 +94,8 @@ module CaTissue
 
     # @return [CaTissue::User] the SCG receiver
     def default_user
+      user = specimen.receiver if specimen
+      return user if user
       scg = specimen_collection_group || (specimen.specimen_collection_group if specimen)
       scg.receiver if scg
     end
