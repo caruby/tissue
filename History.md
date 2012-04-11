@@ -1,7 +1,7 @@
 This history lists major release themes. See the GitHub commits (https://github.com/caruby/tissue)
 for change details.
 
-2.1.1 / 2012-03-27
+2.1.1 / 2012-04-11
 ------------------
 * Jinx-based refactoring.
 
