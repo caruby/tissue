@@ -82,12 +82,6 @@ module CaTissue
 
     # The Specimen-SpecimenRequirement association is bi-directional.
     set_attribute_inverse(:specimen_requirement, :specimens)
-    # 
-    # # @quirk caTissue The Specimen save argument available flag is ignored and set by caTissue instead.
-    # qualify_attribute(:is_available, :volatile)
-    # 
-    # # @quirk caTissue The Specimen save argument available quantity is ignored and set by caTissue instead.
-    # qualify_attribute(:available_quantity, :volatile)
     
     # @quirk caTissue The Specimen save argument created_on flag is ignored and set by caTissue instead.
     qualify_attribute(:created_on, :volatile)
