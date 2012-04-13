@@ -4,6 +4,7 @@ require 'jinx'
 require 'jinx/json'
 require 'jinx/json/serializer'
 require 'caruby'
+require 'caruby/resource'
 require 'catissue/annotation/annotatable'
 require 'catissue/annotation/annotatable_class'
 require 'catissue/helpers/properties_loader'
@@ -11,7 +12,7 @@ require 'catissue/helpers/properties_loader'
 # The caTissue domain package metadata mix-in. Each domain class automatically
 # includes this CaTissue module when it is referenced.
 module CaTissue
-  include Jinx::JSON::Serializer, Annotatable, Jinx::Resource
+  include Jinx::JSON::Serializer, Annotatable, CaRuby::Resource, Jinx::Resource
   
   # The domain class definition Ruby mix-ins.
   # @private
@@ -39,7 +40,7 @@ module CaTissue
     super
   end
   
-  # Makes the introspected class annotatable.
+  # Makes the introspected class persistable and annotatable.
   #
   # @param [Class] klass the caTissue domain class
   def self.add_metadata(klass)
