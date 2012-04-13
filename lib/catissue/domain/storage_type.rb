@@ -1,5 +1,3 @@
-require 'jinx/helpers/collections'
-
 require 'jinx/helpers/partial_order'
 require 'catissue/helpers/storage_type_holder'
 require 'catissue/helpers/hash_code'
@@ -7,7 +5,7 @@ require 'catissue/helpers/hash_code'
 module CaTissue
   # The StorageType domain class.
   class StorageType
-    include StorageTypeHolder, CaRuby::PartialOrder, HashCode
+    include StorageTypeHolder, Jinx::PartialOrder, HashCode
 
     add_attribute_aliases(:default_temperature => :default_temprature_in_centigrade)
 

@@ -1,10 +1,9 @@
-require 'jinx/helpers/collections'
-
+require 'jinx/helpers/partial_order'
 
 module CaTissue
   # The StorageTypeHolder mix-in adds common methods for the StorageType or StorageContainer child type accessors.
   module StorageTypeHolder
-    include CaRuby::PartialOrder
+    include Jinx::PartialOrder
     
     # @return [StorageType] the allowable child storage types
     def child_storage_types
