@@ -38,7 +38,7 @@ module CaTissue
       annotation_defined?(symbol)
     end
 
-    # Refines the +Jinx::Properties.toxic_attributes+ to exclude annotation attributes.
+    # Refines the +CaRuby::Propertied.toxic_attributes+ to exclude annotation attributes.
     #
     # @return [<Symbol>] the non-annotation unfetched attributes
     def toxic_attributes
@@ -67,10 +67,10 @@ module CaTissue
       end
     end
 
-    # Filters +Jinx::Properties#loadable_attributes} to exclude the {.annotation_attributes+
+    # Filters +CaRuby::Propertied#loadable_attributes} to exclude the {.annotation_attributes+
     # since annotation lazy-loading is not supported.
     #
-    # @return (see Jinx::Properties#loadable_attributes)
+    # @return (see CaRuby::Propertied#loadable_attributes)
     def loadable_attributes
       @antbl_ld_attrs ||= unfetched_attributes.compose do |prop|
         # JRuby bug - Copied super body to avoid infinite loop. See const_missing.

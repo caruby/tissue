@@ -66,7 +66,7 @@ module CaTissue
       @ann_attrs ||= domain_attributes.compose { |prop| prop.type < Annotation }
     end
 
-    # Filters +Jinx::Properties.loadable_attributes+ to exclude all references,
+    # Filters +CaRuby::Propertied.loadable_attributes+ to exclude all references,
     # since annotation lazy-loading is not supported.
     #
     # @return [Array] an empty array
