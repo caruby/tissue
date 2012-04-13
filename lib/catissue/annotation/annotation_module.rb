@@ -75,11 +75,11 @@ module CaTissue
     # @param (see #initialize_annotation)
     def enable_metadata(hook, opts)
       # Add introspection and annotation capability.
-      include Jinx::JSON::Serializer, Annotation, Jinx::Resource
+      include Jinx::JSON::Serializer, Annotation, CaRuby::Resource, Jinx::Resource
       # Mix in the annotation importer.
       extend Annotation::Importer
       # The annotation parent module is the hook domain module.
-      @parent_module = hook.domain_module
+      @parent_importer = hook.domain_module
       # the package name
       package(opts[:package])
       # the annotation Ruby source files
