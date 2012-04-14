@@ -1,4 +1,5 @@
 require 'jinx/metadata/id_alias'
+require 'caruby/resource'
 require 'caruby/migration/migratable'
 require 'jinx/json/serializer'
 require 'caruby/database/persistable'
@@ -7,7 +8,7 @@ require 'catissue/database'
 # The caTissue-specific Resource mix-in.
 module CaTissue
   module Resource
-    include Jinx::IdAlias, CaRuby::Migratable, CaRuby::Persistable
+    include Jinx::IdAlias, CaRuby::Migratable, CaRuby::Persistable, Jinx::Resource
 
     # Returns whether each of the given attribute values either equals the
     # respective other attribute value or one of the values is nil or 'Not Specified'.
