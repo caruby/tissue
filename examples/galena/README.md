@@ -52,7 +52,7 @@ Migrate the Galena `simple` example as follows:
 
 3. Run the following:
 
-   `crtmigrate --target TissueSpecimen --mapping conf/simple/fields.yaml data/simple.csv`
+   `crtmigrate --target TissueSpecimen --mapping conf/simple/fields.yaml --defaults conf/defaults.yaml data/simple.csv`
 
    This command migrates the CSV record in the `simple.csv` input file into a caTissue
    `TissueSpecimen` based on the `simple/fields.yaml` mapping file.
@@ -68,10 +68,6 @@ features of the caRuby Migration utility as follows:
 * <tt>registration</tt> - registers participants in a collection protocol
 
   `crtmigrate --target CollectionProtocolRegistration --mapping conf/registration/fields.yaml --defaults conf/defaults.yaml data/registration.csv`
-
-* <tt>simple</tt> - migrates one specimen with limited input fields
-
-  `crtmigrate --target TissueSpecimen --mapping conf/simple/fields.yaml --defaults conf/defaults.yaml data/simple.csv`
 
 * <tt>general</tt> - migrates specimens with lots of input fields and a minimal configuration
 
