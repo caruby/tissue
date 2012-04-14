@@ -319,7 +319,14 @@ module CaTissue
       end
       rcvr = cp.coordinators.first
       if rcvr.nil? then
-        raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
+        # Try to fetch the CP 
+        if cp.identifier.nil? then
+          cp.find
+          rcvr = cp.coordinators.first 
+          if rcvr.nil? then
+            raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
+          end
+        end
       end
       # make the REP
       ev = CaTissue::SpecimenEventParameters.create_parameters(:received, self, :user => rcvr)

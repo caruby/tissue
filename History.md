@@ -1,6 +1,10 @@
 This history lists major release themes. See the GitHub commits (https://github.com/caruby/tissue)
 for change details.
 
+2.1.3 / 2012-04-13
+------------------
+* Fix example.
+
 2.1.2 / 2012-04-13
 ------------------
 * Add caruby-core dependency.
