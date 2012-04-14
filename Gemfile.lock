@@ -1,27 +1,21 @@
 PATH
-  remote: /Users/loneyf/workspace/caruby/core
-  specs:
-    caruby-core (2.1.1)
-      bundler
-      jinx (~> 2.1.1)
-      jinx-json (~> 2.1.1)
-      rdbi
-
-PATH
   remote: .
   specs:
     caruby-tissue (2.1.1)
       bundler
       jinx (>= 2.1.1)
       jinx-json (>= 2.1.1)
-      jinx-migrate (>= 2.1.1)
       uom (>= 1.2.2)
 
 PATH
-  remote: examples/galena
+  remote: /Users/loneyf/workspace/caruby/core
   specs:
-    galena (2.1.1-java)
-      caruby-tissue (>= 2.1.1)
+    caruby-core (2.1.1)
+      bundler
+      jinx (~> 2.1.1)
+      jinx-json (~> 2.1.1)
+      jinx-migrate (>= 2.1.1)
+      rdbi
 
 PATH
   remote: /Users/loneyf/workspace/jinx/core
@@ -44,6 +38,12 @@ PATH
       bundler
       fastercsv
       rack
+
+PATH
+  remote: examples/galena
+  specs:
+    galena (2.1.1-java)
+      caruby-tissue (>= 2.1.1)
 
 GEM
   remote: http://rubygems.org/
