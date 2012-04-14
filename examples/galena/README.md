@@ -49,8 +49,10 @@ Migrate the Galena `simple` example as follows:
    
    This command initializes the administrative objects in the Galena test database,
    including the Galena collection protocol, site, cancer center, tissue bank and coordinator.
+   
+3. Run `crtmigrate --help` to see the migration options.
 
-3. Run the following:
+4. Run the following:
 
    `crtmigrate --target TissueSpecimen --mapping conf/simple/fields.yaml --defaults conf/defaults.yaml data/simple.csv`
 
@@ -59,7 +61,7 @@ Migrate the Galena `simple` example as follows:
    Peruse the configuration and data files to see which data are migrated and
    where this data ends up in caTissue.
    
-4. Open the caTissue application on the test server and verify the content of the
+5. Open the caTissue application on the test server and verify the content of the
    Galena CP collection protocol.
    
 The other examples are run in a similar manner. Each example demonstrates different
@@ -83,10 +85,14 @@ features of the caRuby Migration utility as follows:
 
 * <tt>annotation</tt> - annotates the specimens with Dynamic Extensions
 
-  `crtmigrate --target SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation --mapping conf/annotation/fields.yaml --defaults conf/defaults.yaml,conf/annotation/defaults.yaml data/annotation.csv`
+  `crtmigrate --debug --log log/galena.log --target SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation --mapping conf/annotation/fields.yaml --defaults conf/defaults.yaml,conf/annotation/defaults.yaml data/annotation.csv`
 
-Try running an example with the `--debug` flag and look at the `log/migration.log` file to see
+The annotation migration prints debug log messages. Take a look at the `log/migration.log` file to see
 what caRuby is up to behind the scenes (hint: a lot!).
+
+The `--unique` flag is useful for testing. This flag places the migrated objects in a unique name space with their own collection protocol.
+
+If you have a lot of records to migrate, the `--verbose` flag prints the migration progress.
 
 Input data
 ----------
