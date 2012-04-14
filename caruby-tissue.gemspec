@@ -19,8 +19,7 @@ Gem::Specification.new do |s|
   s.executables   = Dir['bin/*'].map{ |f| File.basename(f) }
   s.test_files    = Dir.glob('test/lib/**/*.rb')
   s.add_runtime_dependency 'bundler'
-  s.add_runtime_dependency 'jinx', '>= 2.1.1'
-  s.add_runtime_dependency 'jinx-json', '>= 2.1.1'
+  s.add_runtime_dependency 'caruby-core', '>= 2.1.1'
   s.add_runtime_dependency 'uom', '>= 1.2.2'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'rake'
