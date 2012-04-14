@@ -72,7 +72,7 @@ module CaTissue
     UNIQUIFY_SHIM = File.expand_path('unique.rb', File.dirname(__FILE__))
         
     # The context module is determined as follows:
-    # * For an {Annotation} target class, the context module is the {AnnotationClass#annotation_module}.
+    # * For an {Annotation} target class, the context module is the {Annotation::Metadata#annotation_module}.
     # * Otherwise, delegate to +Jinx::Migrator+.
     # * For an {Annotation} target class, the context module is the annotated class's
     #   +CaRuby::Metadata.annotation_module+.

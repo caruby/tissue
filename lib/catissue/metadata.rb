@@ -1,14 +1,16 @@
-require 'jinx/helpers/inflector'
-require 'catissue/annotation/annotation_module'
+require 'caruby/metadata'
+require 'catissue/annotation/importer'
 require 'catissue/annotation/de_integration'
 
 module CaTissue
-  # Mix-in for extending a caTissue domain class with annotations.
-  module AnnotatableClass
+  # Mix-in for extending a caTissue domain class with +Jinx::Metadata+ introspection and annotations.
+  module Metadata
+    include CaRuby::Metadata
+    
     # @return [Integer, nil] the the hook class designator that is used by caTissue to persist primary
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
-      
+    
     # @return [Class] the {Annotation::DEIntegration} proxy class (nil for 1.1 caTissue)
     def de_integration_proxy_class
       @de_integration_proxy_class or (superclass.de_integration_proxy_class if superclass < Annotatable)
@@ -52,7 +54,7 @@ module CaTissue
         (superclass.annotation_proxy_attribute(mod) if superclass < Annotatable) or
         raise AnnotationError.new("#{qp} #{mod} proxy attribute not found.")
     end
-    
+  
     # Loads the annotations, if necessary, and tries to get the constant again.
     #
     # @param [Symbol] symbol the missing constant
@@ -77,33 +79,33 @@ module CaTissue
         prop.java_property? and not prop.type.abstract? and not prop.type < Annotation
       end
     end
-    
+  
     def printable_attributes
       # JRuby bug - Copied super body to avoid infinite loop. See const_missing.
       @prbl_attrs ||= java_attributes.union(annotation_attributes)
     end
-    
+  
     def annotation_attributes
       @ann_mod_pxy_hash ||= {}
       @ann_attrs ||= append_ancestor_enum(@ann_mod_pxy_hash.enum_values) do |sc|
         sc.annotation_attributes if sc < Annotatable
       end
     end
-    
+  
     protected
-    
+  
     # @return [<AnnotationModule>] the annotation modules in the class hierarchy
     def annotation_modules
       @ann_mods ||= load_annotations
     end
-    
+  
     private
-    
+  
     # @return [Boolean] whenter this class's annotations are loaded
     def annotations_loaded?
       !!@ann_mods
     end
-    
+  
     # @param [String] name the proxy record entry class name
     def annotation_proxy_class_name=(name)
       @de_integration_proxy_class = Annotation::DEIntegration.proxy(name)
@@ -118,7 +120,7 @@ module CaTissue
         logger.debug { "Ignored the missing caTissue #{qp} proxy class name #{name}, presumably unsupported in this caTissue release." }
       end
     end
-    
+  
     # Loads the annotation modules in the class hierarchy.
     #
     # @return [<AnnotationModule>] an Enumerable on the loaded annotation modules
@@ -126,15 +128,15 @@ module CaTissue
       @local_ann_mods = load_local_annotations
       superclass < Annotatable ? @local_ann_mods.union(superclass.annotation_modules) : @local_ann_mods
     end
-    
+  
     def parent_entity_id
       superclass.entity_id if superclass < Annotatable
     end
-    
+  
     def annotatable_class_hierarchy
       class_hierarchy.filter { |klass| klass < Annotatable }
     end
-    
+  
     # Declares an annotation scoped by this class.
     #
     # @param [String] name the name of the annotation module
@@ -157,12 +159,12 @@ module CaTissue
       @ann_spec_hash[mod_sym] = opts
       logger.info("Added #{qp} annotation #{name} with module #{mod_sym}, package #{pkg}, service #{svc} and group #{grp}.")
     end
-    
+  
     # @return [Boolean] whether this annotatable class's annotations are loaded
     def annotations_loaded?
       !!@ann_mods
     end
-    
+  
     # Loads this class's annotations.
     #
     # @return [<AnnotationModule>] the loaded annotation modules
@@ -173,12 +175,12 @@ module CaTissue
       # build the annotations
       @ann_spec_hash.map { |name, opts| import_annotation(name, opts) }
     end
-    
+  
     # Determines this annotated class's {#entity_id} and {#de_integration_proxy_class}.
     def initialize_annotation_holder
       @entity_id = Annotation::EntityFacade.instance.hook_entity_id(self)
     end
-    
+  
     # @param [Symbol] attribute the annotation accessor
     # @return [Module] the annotation module which implements the attribute
     def annotation_attribute_module(attribute)
@@ -197,7 +199,7 @@ module CaTissue
       class_eval("module #{name}; end")
       mod = const_get(name)
       # Append the AnnotationModule methods.
-      mod.extend(AnnotationModule)
+      mod.extend(Annotation::Importer)
       # Build the annnotation module.
       mod.initialize_annotation(self, opts) { |pxy| create_proxy_attribute(mod, pxy) }
       mod
@@ -212,7 +214,7 @@ module CaTissue
     def annotation_defined?(symbol)
       property_defined?(symbol) and property(symbol).type < Annotation
     end
-    
+  
     # Makes an attribute whose name is the demodulized underscored given module name.
     # The attribute reader creates an {Annotation::Proxy} instance of the method
     # receiver {Annotatable} instance on demand.

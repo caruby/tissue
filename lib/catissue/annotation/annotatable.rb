@@ -1,5 +1,4 @@
 require 'catissue/resource'
-require 'catissue/annotation/annotatable_class'
 
 module CaTissue
   # Annotatable extends {CaTissue::Resource} with annotation capability.

@@ -116,7 +116,7 @@ module CaTissue
       # @quirk caTissue The role can be a mutation of the demodulized class name as follows:
       #   * decapitalization, e.g. role +specimenCollectionGroup+ for class +SpecimenCollectionGroup+
       #
-      # @param [AnnotationClass] klass the annotation class
+      # @param [Metadata] klass the annotation class
       # @param [Symbol] attribute the owner attribute
       # @param [Integer] eid the annotation entity id
       # @return [String] the owner reference SQL column name
