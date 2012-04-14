@@ -99,8 +99,7 @@ module Galena
       # CPE has default 1.0 event point and label
       cpe = CaTissue::CollectionProtocolEvent.new(
         :collection_protocol => @protocol,
-        :event_point => 1.0,
-        :label => 'Galena Migration_1.0'
+        :event_point => 1.0
       )
       
       # The sole specimen requirement. Setting the requirement collection_event attribute to a CPE automatically
