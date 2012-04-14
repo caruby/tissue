@@ -21,7 +21,7 @@ module CaTissue
         klass.class_eval { include mixin }
       end
       
-      # @return [AnnotatableClass] the hook class for this proxy
+      # @return [Metadata] the hook class for this proxy
       def hook
         hook_property.type
       end
@@ -29,7 +29,7 @@ module CaTissue
       # Sets this proxy's hook to the given class and creates the
       # proxy => hook attribute with the given hook => proxy inverse.
       #
-      # @param [AnnotatableClass] klass the annotated domain object class
+      # @param [Metadata] klass the annotated domain object class
       def hook=(klass)
         # Make a new hook reference attribute.
         pa = klass.name.demodulize.underscore
@@ -56,7 +56,7 @@ module CaTissue
       
       # Ensures that the given primary class references this proxy.
       #
-      # @param [AnnotationClass] klass the primary annotation class to check
+      # @param [Metadata] klass the primary annotation class to check
       def ensure_primary_references_proxy(klass)
         # Define the superclass proxy attributes, starting with the most general class.
         klass.annotation_hierarchy.to_a.reverse_each do |anc|
@@ -103,7 +103,7 @@ module CaTissue
         end
       end
       
-      # @return <AnnotationClass> the non-proxy annotation classes
+      # @return <Metadata> the non-proxy annotation classes
       def non_proxy_annotation_classes
         annotation_module.annotation_classes.filter { |klass| not klass < Proxy }
       end

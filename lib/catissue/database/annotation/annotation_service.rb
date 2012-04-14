@@ -1,7 +1,6 @@
 require 'jinx/helpers/inflector'
 require 'caruby/database/sql_executor'
 require 'caruby/database/persistence_service'
-require 'catissue/annotation/annotatable'
 
 module CaTissue
   module Annotation
@@ -26,7 +25,7 @@ module CaTissue
       # * associate the annotation to the hook object
       # * Save all referenced annotation objects
       #
-      # This method is only called on {AnnotationClass#primary?} annotation objects.
+      # This method is only called on {Metadata#primary?} annotation objects.
       # 
       # @param [Annotation] annotation the annotation object to create
       # @return [Annotation] the annotation

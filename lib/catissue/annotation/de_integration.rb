@@ -5,6 +5,8 @@ module CaTissue
     # DEIntegration encapsulates the auxiliary DE integration package in caTissue 1.2 and higher.
     module DEIntegration
       include Jinx::Resource
+      
+      extend Jinx::Importer
 
       # The caTissue Java package name.
       packages 'edu.wustl.catissuecore.domain.deintegration'
