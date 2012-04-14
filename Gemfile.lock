@@ -13,11 +13,8 @@ PATH
   specs:
     caruby-core (2.1.1)
       bundler
-      fastercsv
       jinx (~> 2.1.1)
       jinx-json (~> 2.1.1)
-      json_pure
-      rack
       rdbi
 
 PATH
