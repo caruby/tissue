@@ -16,6 +16,10 @@ class UserTest < Test::Unit::TestCase
   def test_defaults
     verify_defaults(@user)
   end
+  
+  def test_json
+    verify_json(@user)
+  end
 
   # Exercises setting the login name from the email address.
   def test_default_login_value

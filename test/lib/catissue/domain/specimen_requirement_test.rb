@@ -16,6 +16,10 @@ class SpecimenRequirementTest < Test::Unit::TestCase
     @rqmt.specimen_characteristics = nil
     verify_defaults(@rqmt)
   end
+  
+  def test_json
+    verify_json(@rqmt)
+  end
 
   # Tests whether the child_specimens domain type is overridden in the configuration from the
   # inferred Java parameterized generic type property.

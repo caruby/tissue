@@ -5,8 +5,12 @@ class ExternalIdentifierTest < Test::Unit::TestCase
 
   def setup
     super
-    spc = defaults.specimen
-    @eid = CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :value => 'Test Value'.uniquify, :specimen => spc)
+    @spc = defaults.specimen
+    @eid = CaTissue::ExternalIdentifier.new(
+      :name => 'Test Name'.uniquify,
+      :value => 'Test Value'.uniquify,
+      :specimen => @spc
+    )
   end
 
   def test_defaults
@@ -17,11 +21,10 @@ class ExternalIdentifierTest < Test::Unit::TestCase
   def test_save
     # create the EID
     verify_save(@eid)
-    spc = @eid.specimen
     # update the EID
     oldval = @eid.value
     newval = @eid.value = 'Test Value'.uniquify
-    logger.debug { "#{self} verifying #{@eid} update of value changed from #{oldval} to #{newval}..." }
+    logger.debug { "#{self} verifying #{@eid} update of value from #{oldval} to #{newval}..." }
     verify_save(@eid)
   end
 end

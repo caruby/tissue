@@ -24,6 +24,10 @@ class StorageContainerTest < Test::Unit::TestCase
   def test_defaults
     verify_defaults(@frz)
   end
+  
+  def test_json
+    verify_json(@frz)
+  end
 
   def test_add
     @frz << @spc

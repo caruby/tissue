@@ -12,6 +12,10 @@ class SiteTest < Test::Unit::TestCase
   def test_defaults
     verify_defaults(@site)
   end
+  
+  def test_json
+    verify_json(@site)
+  end
 
   def test_save
     # create the site

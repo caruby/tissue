@@ -19,6 +19,10 @@ class AddressTest < Test::Unit::TestCase
     verify_defaults(@addr)
   end
   
+  def test_json
+    verify_json(@addr)
+  end
+  
   def test_zip_code
     @addr.zip_code = 55555
     assert_equal('55555', @addr.zip_code, "Integer zip code value is not correctly transformed")

@@ -55,6 +55,10 @@ class CollectionProtocolRegistrationTest < Test::Unit::TestCase
     assert_equal('Disabled', child.activity_status, "Child Specimen #{child} not disabled")
   end
   
+  def test_json
+    verify_json(@reg)
+  end
+  
   # Tests creating and fetching a registration.
   def test_save
     # store the registration without an SCG

@@ -28,6 +28,8 @@ module CaTissue
     
     # Tests the domain object +add_defaults_local+ method.
     # Subclasses are responsible for setting every attribute that is a pre-condition for default value initialization.
+    #
+    # @param [Resource] subject the domain object to test
     def verify_defaults(subject)
       # fetch an existing object to enable lazy-loading
       subject.find if subject.identifier
@@ -35,11 +37,23 @@ module CaTissue
       msg = "#{subject.qp} with default attributes fails validation"
       assert_nothing_raised(Jinx::ValidationError, msg) { subject.validate }
     end
+    
+    # Tests JSON serialization of the given domain object.
+    #
+    # @param [Resource] subject the domain object to test
+    # @return [Resource] the deserialized object
+    def verify_json(subject)
+      subject.add_defaults
+      dup = JSON[subject.to_json]
+      assert_nothing_raised("#{subject} JSON is incomplete") { dup.validate }
+      dup
+    end 
+
 
     # Tests saving the subject. Calls +CaRuby::Database::Writer.save+ on the subject and verifies that subject and its
     # references were persisted.
     #
-    # @param [Resource] subject the object to save
+    # @param [Resource] subject the domainobject to save
     def verify_save(subject)
       logger.debug{ "Verifying #{subject.qp} save with content:\n#{dump(subject)}" }
       # capture the save operation time
