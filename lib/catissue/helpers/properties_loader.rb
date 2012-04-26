@@ -11,13 +11,6 @@ module CaTissue
     private
 
     # Loads the caTissue classpath and connection properties.
-    #
-    # @quirk caTissue The classpath remoteServices.xml stream is corrupted, e.g. with a line:
-    #     at top level in <value>http://cabig4 at line 8080
-    #   instead of the expected:
-    #     <property name="serviceUrl">http://cabig4:8080<\/property>
-    #   This might be a classpath order side-effect or an install jar corruption, e.g. as
-    #   occurs when building the caCORE API with a custom DE jar.
     def load_properties
       # the properties file
       file = default_properties_file
@@ -25,18 +18,31 @@ module CaTissue
       props = file && File.exists?(file) ? load_properties_file(file) : {}
       # Load the Java application jar path.
       path = props[:classpath] || props[:path] || infer_classpath
-      if path then
-        Java.expand_to_class_path(path)
+      Java.expand_to_class_path(path) if path
+      # Get the application login properties from the remoteService.xml, if necessary.
+      unless props.has_key?(:host) or props.has_key?(:port) then
+        url = remote_service_url
+        if url then
+          host, port = url.split(':')
+          props[:host] = host
+          props[:port] = port
+        end
       end
-      # TODO - below doesn't work because of caTissue bug described in the method rubydoc.
-      # Augment the application login properties with the remoteService.xml url property.
-      # path[:url] ||= remote_service_url
-      # def remote_service_url
-      #   is = Java::edu.wustl.catissuecore.domain.Specimen.java_class.class_loader.getResourceAsStream('remoteService.xml')
-      #   xml = Java::java.util.Scanner.new(is).useDelimiter("\\A").next
-      #   /<property.+serviceUrl['"]?>(.+)<\/property>/.match(xml).captures.first
-      # end
       props
+    end
+    
+    def remote_service_url
+      file = $CLASSPATH.detect_value do |loc|
+        if File.directory?(loc) then
+          f = File.expand_path('remoteService.xml', loc)
+          f if File.exists?(f)
+        end
+      end
+      if file then
+        url = File.new(file).detect_value { |line| line[%r{http://(.*)/catissuecore/http/remoteService}, 1] }
+        logger.debug { "Inferred the access url #{url} from #{file}." } if url
+        url
+      end                                                   
     end
     
     def load_properties_file(file)
@@ -105,6 +111,11 @@ module CaTissue
     #   should not be included in the client class path, even though it is in the client lib
     #   directory.
     def infer_classpath
+      
+      
+      ENV['CATISSUE_CLIENT_HOME'] = '/usr/local/src/catissue/build/caTissue_Suite_API_Client_v1.2_Installable'
+      
+      
       dir = ENV['CATISSUE_CLIENT_HOME'] || '.'
       logger.info("Inferring the class path from directory #{dir}...")
       # Hunt for the client directories
@@ -123,13 +134,15 @@ module CaTissue
       logger.info("Inferred the class path #{path}.")
       path
     end
-    
-    def client_directory(dir, subdir)
-      clt_dir = File.expand_path(subdir, dir)
-      unless File.directory?(clt_dir) then
-        raise ConfigurationError.new("caTissue installation client directory not found: #{clt_dir}")
+         
+    # @param [String] dir the caTissue install parent directory
+    # @param [<String>] subdirs the possible client subdirectory locations 
+    def client_directory(dir, *subdirs)
+      subdirs.each do |subdir|
+        clt_dir = File.expand_path(subdir, dir)
+        return clt_dir if File.directory?(clt_dir) 
       end
-      clt_dir
+      raise ConfigurationError.new("caTissue client subdirectory not found in installation directory #{dir}: #{subdirs.to_series('or')}")
     end
     
     def client_subdirectory(dir, subdir)

@@ -94,11 +94,18 @@ class ParticipantTest < Test::Unit::TestCase
   
   def test_json
     CaTissue::Race.new(:participant => @pnt, :race_name => 'White')
-    dup = JSON[@pnt.to_json]
+    dup = verify_json(@pnt)
     race = dup.races.first
     assert_not_nil(race, "Race not serialized")
     assert_equal('White', race.race_name, "Race name not serialized correctly")
     assert_same(dup, race.participant, "Race participant not serialized correctly")
+  end
+  
+  def test_annotation_json
+    lab = CaTissue::Participant::Clinical::LabAnnotation.new
+    lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => @pnt)
+    dup = verify_json(lab)
+    assert_not_nil(dup.participant,"#{lab} participant not serialized")
   end
 
    ## DATABASE TEST CASES

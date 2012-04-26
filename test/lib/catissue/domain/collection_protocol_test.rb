@@ -57,6 +57,10 @@ class CollectionProtocolTest < Test::Unit::TestCase
     @pcl.events << event
     assert_equal(event_cnt, @pcl.events.size, "Protocol events has duplicate event")
   end
+  
+  def test_json
+    verify_json(@pcl)
+  end
 
   def test_save
     # ignore registrations

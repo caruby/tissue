@@ -118,6 +118,10 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert(spcs.include?(spc1), "#{spc1} not found in #{scg}")
     assert(spcs.include?(spc2), "#{spc2} not found in #{scg}")
   end
+  
+  def test_json
+    verify_json(@scg)
+  end
 
   ## DATABASE TEST CASES ##
   

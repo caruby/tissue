@@ -11,4 +11,8 @@ class SpecimenCharacteristicsTest < Test::Unit::TestCase
   def test_defaults
     verify_defaults(@chr)
   end
+  
+  def test_json
+    verify_json(@chr)
+  end
 end

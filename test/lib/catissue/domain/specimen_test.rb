@@ -132,6 +132,10 @@ class SpecimenTest < Test::Unit::TestCase
       assert_equal(expected_qty, aliquot.initial_quantity, "Aliquot quantity incorrect")
     end
   end
+  
+  def test_json
+    verify_json(@spc)
+  end
 
   # Tests whether a specimen with a position save template does not include the position.
   # The position is saved as a caTissue side-effect by creating a proxy transfer event.
@@ -179,8 +183,8 @@ class SpecimenTest < Test::Unit::TestCase
     verify_save(@spc)
 
     # verify SCG specimens query
-    logger.debug { "Verifying SCG specimens query..." }
     scg = @spc.specimen_collection_group
+    logger.debug { "#{self} verifying #{scg} specimens query..." }
     tmpl = scg.copy(:identifier)
     spcs = database.query(tmpl, :specimens)
     assert_equal(1, spcs.size, "SCG specimen query result count incorrect")
@@ -188,7 +192,13 @@ class SpecimenTest < Test::Unit::TestCase
     # make a new specimen in the same SCG
     spc2 = @spc.copy(:specimen_class, :specimen_type, :initial_quantity)
     spc2.specimen_collection_group = scg
+    logger.debug { "#{self} verifying #{scg} second specimen #{spc2} create..." }
     verify_save(spc2)
+    
+    # update the specimen
+     logger.debug { "#{self} verifying #{@spc} update..." }
+     @spc.available_quantity /= 2
+     verify_save(@spc)
   end
   
   def test_characteristics_save
@@ -343,13 +353,21 @@ class SpecimenTest < Test::Unit::TestCase
     pa = CaTissue::Specimen::Pathology::ProstateSpecimenPathologyAnnotation.new
     pa.specimen = @spc
     grade = CaTissue::Specimen::Pathology::SpecimenHistologicGrade.new
-    grade.merge_attributes(:grading_system_name => 'Not Specified', :grade => 3, :specimen_base_solid_tissue_pathology_annotation => pa)
+    grade.merge_attributes(
+      :grading_system_name => 'Not Specified',
+      :grade => 3,
+      :specimen_base_solid_tissue_pathology_annotation => pa
+    )
     htype = CaTissue::Specimen::Pathology::SpecimenHistologicType.new
     htype.merge_attributes(:type => 3, :specimen_base_solid_tissue_pathology_annotation => pa)
     invn = CaTissue::Specimen::Pathology::SpecimenInvasion.new
     invn.merge_attributes(:lymphatic_invasion => 'Present', :specimen_base_solid_tissue_pathology_annotation => pa)
     gleason = CaTissue::Specimen::Pathology::ProstateSpecimenGleasonScore.new
-    gleason.merge_attributes(:primary_pattern_score => 3, :secondary_pattern_score => 4, :prostate_specimen_pathology_annotation => pa)
+    gleason.merge_attributes(
+      :primary_pattern_score => 3,
+      :secondary_pattern_score => 4,
+      :prostate_specimen_pathology_annotation => pa
+    )
     verify_save(pa)
     assert_not_nil(pa.identifier, "#{@spc} annotation #{pa} not saved")
     assert_not_nil(grade.identifier, "#{@spc} annotation #{grade} not saved")
@@ -360,8 +378,15 @@ class SpecimenTest < Test::Unit::TestCase
 
   def test_melanoma_annotation_save
     ma = CaTissue::Specimen::Pathology::MelanomaSpecimenPathologyAnnotation.new
-    ma.merge_attributes(:specimen => @spc, :comments => "Test Comment", :depth_of_invasion => 2.0, :mitotic_index => "Less than 1 mitotic figure per mm-square",
-      :ulceration => "Absent", :tumor_regression => "Present involving 75% or more of lesion", :tumor_infiltrating_lymphocytes => "Brisk")
+    ma.merge_attributes(
+      :specimen => @spc,
+      :comments => "Test Comment",
+      :depth_of_invasion => 2.0,
+      :mitotic_index => "Less than 1 mitotic figure per mm-square",
+      :ulceration => "Absent",
+      :tumor_regression => "Present involving 75% or more of lesion",
+      :tumor_infiltrating_lymphocytes => "Brisk"
+    )
     inv = CaTissue::Specimen::Pathology::SpecimenInvasion.new
     inv.merge_attributes(:venous_invasion => 'Present', :specimen_base_solid_tissue_pathology_annotation => ma)
     verify_save(ma)

@@ -84,6 +84,11 @@ module CaTissue
     
     MAX_ADDR_ID_SQL = "select max(identifier) from catissue_address"
     
+    # @quirk caTissue The database connection properties cannot be inferred from the caTissue
+    #   +HibernateUtil+ class. The class is found, but class load results in the following error:
+    #     NameError: cannot initialize Java class edu.wustl.common.hibernate.HibernateUtil
+    #   This error is probably due to the arcane caTissue static initializer dependencies.
+    #
     # return (see #executor)
     def create_executor
       # Augment the user-defined application properties with Hibernate properties.
@@ -958,19 +963,32 @@ module CaTissue
       specimen
     end
     
-    # Overrides +CaRuby::Database::Persistifier.detoxify+ to work around the
+    # Augments +CaRuby::Database::Persistifier.detoxify+ to work around the
     # caTissue bugs described in {CaTissue::Specimen.remove_phantom_external_identifier}
     # and {CaTissue::Participant.remove_phantom_medical_identifier}.
+    #
+    # @param [Resource, <Resource>] the toxic domain object(s)
     def detoxify(toxic)
       if toxic.collection? then
         case toxic.first
-          when CaTissue::ExternalIdentifier then
-            CaTissue::Specimen.remove_phantom_external_identifier(toxic)
-          when CaTissue::ParticipantMedicalIdentifier then
-            CaTissue::Participant.remove_phantom_medical_identifier(toxic)    
+        when CaTissue::ExternalIdentifier then
+          CaTissue::Specimen.remove_phantom_external_identifier(toxic)
+        when CaTissue::ParticipantMedicalIdentifier then
+          CaTissue::Participant.remove_phantom_medical_identifier(toxic)    
         end
       end
       super
+    end
+    
+    # @see #detoxify
+    def clear_toxic_attributes(toxic)
+      super
+      case toxic
+      when CaTissue::Specimen then
+        CaTissue::Specimen.remove_phantom_external_identifier(toxic.external_identifiers)
+      when CaTissue::Participant then
+        CaTissue::Participant.remove_phantom_medical_identifier(toxic.participant_medical_identifiers)    
+      end
     end
 
     # Overrides +CaRuby::Database::Reader.fetch_object} to circumvent {Annotation+ fetch, since an annotation
@@ -984,6 +1002,17 @@ module CaTissue
         when CaTissue::Specimen then fetch_specimen_alternative(obj)
         when CaTissue::Participant then fetch_participant_alternative(obj)
       end
+    end
+
+    # @quirk JRuby Fetching a specimen with consent_tier_statuses can replace the status with
+    #   a different, empty status. The status swizzle occurs even though the attribute fetched
+    #   is not the consent_tier_statuses and the statuses are not touched. The work-around,
+    #   believe it or not, is to reference the consent_tier_statuses after the fetch.
+    #   This problem occurs in the caSmall update_spec test.
+    def fetch_association(obj, attribute)
+      result = super
+      obj.consent_tier_statuses if CaTissue::Specimen === obj
+      result
     end
     
     # @quirk JRuby fetching a CPR CP swizzles the CPR participant. This only occurs when the CP exists in

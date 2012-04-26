@@ -16,6 +16,10 @@ class SpecimenArrayTest < Test::Unit::TestCase
     verify_defaults(@array)
   end
   
+  def test_json
+    verify_json(@array)
+  end
+  
   def test_occupied_positions_occlusion
     assert(!CaTissue::SpecimenArray.attributes.include?(:occupied_positions), "occupied_positions is not excluded from SpecimenArray")
     assert(CaTissue::Container.attributes.include?(:occupied_positions), "occupied_positions is not retained in the SpecimenArray superclass")

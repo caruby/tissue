@@ -10,6 +10,15 @@ module CaTissue
     # @return [Integer, nil] the the hook class designator that is used by caTissue to persist primary
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
+
+    # Declares that the given {Annotation} classes will be dynamically modified.
+    # This method introspects the classes, if necessary.
+    #
+    # @param [<Class>] classes the classes to modify
+    def shims(*classes)
+      # Nothing to do, since all this method does is ensure that the arguments are
+      # introspected when they are referenced.
+    end
     
     # @return [Class] the {Annotation::DEIntegration} proxy class (nil for 1.1 caTissue)
     def de_integration_proxy_class
@@ -90,6 +99,23 @@ module CaTissue
       @ann_attrs ||= append_ancestor_enum(@ann_mod_pxy_hash.enum_values) do |sc|
         sc.annotation_attributes if sc < Annotatable
       end
+    end
+                         
+    # @param [String] a class name, optionally qualified by the annotation module
+    # @return [Class, nil] the annotation class with the given name,
+    #   or nil if no such annotation is found
+    # @raise [NameError] if there is more than one annotation class for the given name
+    def annotation_class_for_name(name)
+      nmod = name[/^\w+/] if name.index('::')
+      klasses = annotation_modules.map do |mod|
+        cnm = nmod && mod.name.demodulize == (nmod) ? name[nmod.length..-1] : name
+        mod.module_for_name(cnm) rescue nil
+      end
+      klasses.compact!
+      if klasses.size > 1 then
+        raise NameError.new("Ambiguous #{self} annotation classes for #{name}: #{klasses.to_series}")
+      end
+      klasses.first
     end
   
     protected

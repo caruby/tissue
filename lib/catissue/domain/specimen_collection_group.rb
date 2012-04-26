@@ -143,15 +143,13 @@ module CaTissue
     end
 
     # Merges the other object into this SpecimenCollectionGroup. This method augments
-    # +Jinx::Resource.merge_attributes+ as follows:
-    # * Adds the transitive closure of each non-derived Specimen in other.
+    # {CaTissue::Collectible#merge_attributes} as follows:
+    # * Adds the transitive closure of each non-derived Specimen in the source.
     #
-    # @param (see Jinx::Resource#merge_attributes)
+    # @param (see CaTissue::Collectible#merge_attributes)
     # @option (see CaTissue::Collectible#merge_attributes)
     def merge_attributes(other, attributes=nil)
       if Hash === other then
-        # extract the event parameters
-        other[:specimen_event_parameters] = extract_event_parameters(other)
         # take the transitive closure of the specimens
         spcs = other.delete(:specimens)
         if spcs then
@@ -160,7 +158,7 @@ module CaTissue
           other[:specimens] = spcs.select { |spc| spc.parent.nil? }.transitive_closure(:children)
         end
       end
-      # delegate to super for standard attribute value merge
+      # delegate to Collectible
       super
     end
 
@@ -313,26 +311,30 @@ module CaTissue
     end
 
     def create_default_received_event_parameters
-      cp = collection_protocol
-      if cp.nil? then
-        raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol: #{self}")
-      end
-      rcvr = cp.coordinators.first
-      if rcvr.nil? then
-        # Try to fetch the CP 
-        if cp.identifier.nil? then
-          cp.find
-          rcvr = cp.coordinators.first 
-          if rcvr.nil? then
-            raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
-          end
-        end
+      rcv = default_receiver
+      if rcv.nil? then
+        raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
       end
       # make the REP
-      ev = CaTissue::SpecimenEventParameters.create_parameters(:received, self, :user => rcvr)
+      ev = CaTissue::SpecimenEventParameters.create_parameters(:received, self, :user => rcv)
       ev.add_defaults_recursive
       logger.debug { "Made default #{qp} received event parameter #{ev.qp}." }
       ev
+    end
+                                                   
+    # Returns the collection protocol coordinator. Fetches the CP if necessary and possible.
+    # Adds defaults to the CP if necessary, which sets a default coordinator if possible.
+    #
+    # @return [CaTissue::User] the default receiver
+    def default_receiver
+      cp = collection_protocol || return
+      rcv = cp.coordinators.first
+      return rcv if rcv or cp.fetched?
+      # Try to fetch the CP coordinator 
+      return cp.coordinators.first if cp.find
+      # CP does not exist; add the CP defaults and retry
+      cp.add_defaults
+      cp.coordinators.first
     end
 
     def create_default_collection_event_parameters

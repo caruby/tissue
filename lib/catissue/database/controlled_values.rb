@@ -85,6 +85,12 @@ module CaTissue
         sth.finish
       end
     end
+                        
+    # Empties the CV cache.
+    def clear
+      @pid_loaded_hash.clear
+      @pid_value_cv_hash.clear
+    end
 
     private
 

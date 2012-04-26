@@ -92,12 +92,12 @@ module CaTissue
       self.user ||= default_user
     end
 
-    # @return [CaTissue::User] the SCG receiver
+    # @return [CaTissue::User] the specimen or SCG receiver
     def default_user
-      user = specimen.receiver if specimen
-      return user if user
+      rcv = database.lazy_loader.enable { specimen.receiver } if specimen
+      return rcv if rcv
       scg = specimen_collection_group || (specimen.specimen_collection_group if specimen)
-      scg.receiver if scg
+      database.lazy_loader.enable { scg.receiver } if scg
     end
   end
 end
