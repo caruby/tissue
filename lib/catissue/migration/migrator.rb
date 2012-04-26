@@ -83,6 +83,21 @@ module CaTissue
       @target_class < Annotation ? @target_class.annotation_module : super
     end
     
+    # @param [String] the class name to resolve in the context of this migrator
+    # @return [Class] the corresponding class
+    # @raise [NameError] if the name cannot be resolved
+    def class_for_name(name)
+      begin
+        super
+      rescue NameError
+        if @target_class < Annotatable then
+          @target_class.annotation_class_for_name(name) || raise
+        else
+          raise
+        end
+      end
+    end
+    
     # Clears the migration protocol CPR and SCG references.
     # This action frees up memory for the next iteration, thereby ensuring that migration is an
     # O(1) rather than O(n) operation.
