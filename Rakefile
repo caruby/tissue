@@ -29,7 +29,7 @@ end
 
 desc 'Runs the example specs'
 task :spec do
-  Dir['examples/galena/spec/**/*_spec.rb'].each { |f| sh "rspec #{f}" rescue nil }
+  Dir[File.dirname(__FILE__) + '/examples/galena/spec/**/*_spec.rb'].each { |f| sh "cd examples/galena; rspec #{f}" rescue nil }
 end
 
 desc 'Runs the unit tests'
