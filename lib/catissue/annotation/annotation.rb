@@ -1,6 +1,7 @@
 require 'jinx/metadata/id_alias'
 require 'catissue/resource'
 require 'catissue/helpers/hash_code'
+require 'catissue/annotation/json'
 
 module CaTissue
   # The annotation error class.
@@ -13,11 +14,6 @@ module CaTissue
   #   The work-around is to include the HashCode mixin, which reimplements the hash and equality
   #   test methods to be invariant with respect to identifier assignment.
   module Annotation
-    include Resource, HashCode
-
-    # @return [Database] the database which stores this object
-    def database
-      Database.instance
-    end
+    include JSON, Resource, HashCode
   end
 end
