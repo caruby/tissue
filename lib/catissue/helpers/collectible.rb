@@ -4,14 +4,22 @@ module CaTissue
   # A Collectible mix-in instance can hold a #{CaTissue::ReceivedEventParameters} and a
   # #{CaTissue::CollectedEventParameters}.
   module Collectible
-    # Builds this collectible domain object's SpecimenEventParameters from atomic parameters.
+    # Augments +Jinx::Resource#merge_attributes+ to builds this collectible domain object's
+    # SpecimenEventParameters. If the other source object is a Hash, then it includes
+    # both the standard attribute => value associations as well as the options described
+    # below. 
     #
     # @example
-    #   scg = CaTissue::SpecimenCollectionGroup.new(..., :collector => collector, :receiver => receiver)
-    #   scg.collection_event_parameters.user #=> collector
-    #   scg.received_event_parameters.user #=> receiver
-    # @param (see Jinx::Resource#merge_attributes)
-    # @option opts (see #collect)
+    #   scg = CaTissue::SpecimenCollectionGroup.new(..., :collector => srg)
+    #   scg.collection_event_parameters.user #=> srg
+    #
+    # @param other [Collectible, {Symbol => Object}] other the source object or Hash
+    # @option other [Enumerable] :specimen_event_parameters the optional SEP merge collection to augment
+    # @option other [CaTissue::User] :receiver the tissue bank user who received the tissue
+    # @option other [Date] :received_date the received date (defaults to now)
+    # @option other [CaTissue::User] :collector the user who acquired the tissue
+    #   (defaults to the receiver)
+    # @option opts [Date] :collected_date the collection date (defaults to the received date)
     def merge_attributes(other, attributes=nil)
       if Hash === other then
         # extract the event parameters
@@ -88,14 +96,14 @@ module CaTissue
     end
 
     # Extracts #{CaTissue::CollectibleEventParameters} from the given options.
-    # The options are removed from the opts paramater.
+    # The options are removed from the *opts* paramater.
     #
     # @param [{Symbol => Object}] opts the merge options
     # @option opts [Enumerable] :specimen_event_parameters the optional SEP merge collection to augment
-    # @option opts [CaTissue::User] :receiver the required tissue bank user who received the tissue
+    # @option opts [CaTissue::User] :receiver the tissue bank user who received the tissue
     # @option opts [Date] :received_date the received date (defaults to now)
-    # @option opts [CaTissue::User] :collector the optional user who acquired the tissue from the
-    #   #{CaTissue::Participant} (defaults to the receiver)
+    # @option opts [CaTissue::User] :collector the user who acquired the tissue
+    #   (defaults to the receiver)
     # @option opts [Date] :collected_date the collection date (defaults to the received date)
     # @return [CaTissue::SpecimenEventParameters] the augmented SEPS
    def extract_event_parameters(opts)
