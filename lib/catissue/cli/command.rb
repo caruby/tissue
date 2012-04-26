@@ -16,12 +16,13 @@ module CaTissue
       # @param (see CaRuby::CLI::Command#initialize)
       def initialize(specs=[])
         specs << VERSION_OPT
+        specs.concat(CaRuby::Database::ACCESS_OPTS)
         super
       end
       
       private
       
-      VERSION_OPT = [:version, "--version", "Prints the version of caRuby Tissue and the supported caTissue releases and exits"]
+      VERSION_OPT = [:version, '--version', 'Prints the version of caRuby Tissue and the supported caTissue releases and exits']
 
       # If the version option is set, then prints the version and exits.
       # Otherwise, extracts the connection command line options, adds them
@@ -33,7 +34,7 @@ module CaTissue
         if opts[:version] then
           puts "#{CaTissue::VERSION} for caTissue v#{CaTissue::CATISSUE_VERSIONS}"
           exit 0
-        elseuniqurify
+        else
           CaRuby::Database::ACCESS_OPTS.each do |opt, *spec|
             value = opts.delete(opt)
             CaTissue.properties[opt] = value if value
