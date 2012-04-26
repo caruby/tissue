@@ -77,48 +77,40 @@ module CaTissue
       reg.nil? ? Array::EMPTY_ARRAY : reg.specimens
     end
 
-    # Adds specimens to this protocol. The following parameter options are supported:
-    # * :participant - the Participant from whom the specimen is collected
-    # * :biospecimens - the collected top-level underived specimens
-    # * additional SCG parameters as described in {CaTissue::SpecimenCollectionGroup#merge_attributes}.
+    # Adds specimens to this protocol. The argumentes includes the
+    # specimens to add followed by a Hash with parameters and options.
+    # If the SCG registration parameter is not set, then a default registration
+    # is created which registers the given participant to this protocol.
     #
-    # If the options does not include a +:collection_protocol_event+, then the SCG is assigned
-    # to the first collection event in this protocol.
-    # If the options does not include a +:specimen_collection_site+, then the SCG is assigned
-    # to the participant's collection site as determined by {CaTissue::Participant#collection_site},
-    # if that can be uniquely determined.
+    # @example
+    #   protocol.add_specimens(tumor, normal, :participant => pnt, :collector => srg) 
+    #   #=> a new SCG for the given participant with a matched pair of samples
+    #   #=> collected by the given surgeon.
     #
-    # This add_specimens method adds the following parameter options before calling the
-    # {CaTissue::SpecimenCollectionGroup} constructor:
-    # * :registration => a new {CaTissue::CollectionProtocolRegistration} for this protocol
-    #   and the specified participant
-    #
-    # @param [(<Specimen>, {Symbol => Object})] specimens_and_params the specimens to add followed
-    #   by the required parameter hash
-    # @return [CaTissue::SpecimenCollectionGroup] a new SCG for the given participant containing the specimens
-    # @raise [ArgumentError] if the {SpecimenCollectionGroup} does not include all required attributes
-    def add_specimens(*specimens_and_params)
-      params = specimens_and_params.pop
-      spcs = specimens_and_params
+    # @param [(<Specimen>, {Symbol => Object})] args the specimens to add followed
+    #   by the parameters and options hash
+    # @option args [CaTissue::Participant] :participant the person from whom the
+    #   specimen is collected
+    # @return [CaTissue::SpecimenCollectionGroup] the new SCG
+    # @raise [ArgumentError] if the options do not include either a participant or a registration
+    def add_specimens(*args)
+      hash = args.pop
+      spcs = args
       # validate arguments
-      unless params then
+      unless Hash === hash then
         raise ArgumentError.new("Collection parameters are missing when adding specimens to protocol #{self}")
       end
-      # there must be a participant
-      pnt = params.delete(:participant)
-      unless pnt then
-        raise ArgumentError.new("Participant missing from collection parameters: #{params.qp}")
-      end
-      # there must be a receiver
-      unless params[:receiver] then
-        raise ArgumentError.new("Receiver missing from collection parameters: #{params.qp}")
-      end
-      # the required registration
-      unless params.has_key?(:registration) || params.has_key?(:collection_protocol_registration) then
-        params[:registration] = registration(pnt) || make_cpr(pnt)
+      # Make the default registration, if necessary.
+      unless hash.has_key?(:registration) || hash.has_key?(:collection_protocol_registration) then
+        # the participant
+        pnt = hash.delete(:participant)
+        unless pnt then
+          raise ArgumentError.new("Registration or participant missing from collection parameters: #{hash.qp}")
+        end
+        hash[:registration] = registration(pnt) || make_cpr(pnt)
       end
       # the new SCG
-      scg = SpecimenCollectionGroup.new(params)
+      scg = SpecimenCollectionGroup.new(hash)
       # set each Specimen SCG
       spcs.each { |spc| spc.specimen_collection_group = scg }
       scg
