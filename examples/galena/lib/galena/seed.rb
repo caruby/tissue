@@ -43,16 +43,11 @@ module Galena
       end
     end
 
-    # Makes the following attributes unique:
-    # * each collection protocol title
-    # * each collection protocol event label
+    # Makes the collection protocol title unique.
     #
     # @return [Seed] this fixture
     def uniquify
-      # make the CP and MRN unique; these values will ripple through the SCG, CPR, et al.
-      # to make them unique as well
       @protocol.title = @protocol.title.uniquify
-      @protocol.events.each  { |cpe| cpe.label = cpe.label.uniquify }
       self
     end
 
