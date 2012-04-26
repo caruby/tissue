@@ -310,32 +310,30 @@ module CaTissue
       specimen_collection_group.collection_protocol
     end
 
-    # Withdraws consent for this Specimen.
+    # Withdraws consent for this Specimen as follows:
+    # * If a consent tier is provided, then the SCG {CaTissue::ConsentTierStatus} with the
+    #   given consent tier is withdrawn.
+    # * Otherwise, all SCG consents are withdrawn.
     #
-    # _Experimental_. TODO - test this method.
-    #
-    # If a consent_tier is provided, then the SCG CaTissue::ConsentTierStatus with this consent tier is withdrawn.
-    # Otherwise, if there is a single SCG CaTissue::ConsentTierStatus, then that consent tier is withdrawn.
-    # Otherwise an exception is thrown.
-    #
-    # @param [CaTissue::ConsentTier, nil] optional consent tier of the SCG CaTissue::ConsentTierStatus to withdraw
-    # @raise [Jinx::ValidationError] if an unambiguous SCG CaTissue::ConsentTierStatus to withdraw could not be determined
+    # @param [CaTissue::ConsentTier, nil] consent_tier the optional consent tier to withdraw
+    # @raise [Jinx::ValidationError] if there is no SCG consent status for the given consent tier
     def withdraw_consent(consent_tier=nil)
-      statuses = specimen_collection_group.consent_tier_statuses
-      status = if consent_tier then
-        statuses.detect { |cts| cts.consent_tier.identifier == consent_tier.identifier } or
-        raise Jinx::ValidationError.new("SCG #{specimen_collection_group} consent status not found for consent '#{consent_tier.statement}'")
-      elsif specimen_collection_group.consent_tier_statuses.size == 1 then
-        statuses.first
-      elsif specimen_collection_group.consent_tier_statuses.size == 0 then
-        raise Jinx::ValidationError.new("Specimen #{self} SCG does not have a consent tier status")
-      else
-        raise Jinx::ValidationError.new("Specimen #{self} SCG consent tier is ambiguous:#{consent_tier_statuses.select { |cts| "\n  #{cts.statement}" }.to_series('or')}")
+      scg_ctss = specimen_collection_group.consent_tier_statuses
+      if consent_tier.nil? then
+        scg_ctss.each { |cts| withdraw_consent(cts.consent_tier) }
+        return
       end
-      ct = status.consent_tier
-      cts = consent_tier_statuses.detect { |item| item.consent_tier == ct }
-      consent_tier_statuses << cts = ConsentTierStatus.new(:consent_tier => ct) if cts.nil?
-      cts.status = 'Withdrawn'
+      scg_cts = scg_ctss.detect { |cts| cts.consent_tier.identifier == consent_tier.identifier }
+      if scg_cts.nil? then
+        raise Jinx::ValidationError.new("SCG #{specimen_collection_group} consent status not found for consent '#{consent_tier.statement}'")
+      end
+      ct = scg_cts.consent_tier 
+      spc_ctss = consent_tier_statuses
+      spc_cts = spc_ctss.detect { |cts| cts.consent_tier == ct }
+      if spc_cts.nil? then
+        spc_ctss << spc_cts = ConsentTierStatus.new(:consent_tier => ct)
+      end
+      spc_cts.status = 'Withdrawn'
     end
     
     # @return [Boolean] whether this specimen includes a {CaTissue::DisposalEventParameters}
@@ -361,8 +359,6 @@ module CaTissue
       phantom = eids.detect { |eid| eid.name.nil? }
       if phantom then
         logger.debug { "Work around caTissue bug by removing the phantom fetched #{phantom.specimen.qp} #{phantom.qp} from #{eids.qp}..." }
-        # dissociate the specimen
-        phantom.specimen = nil
         # remove the phantom eid
         eids.delete(phantom)
       end
@@ -391,10 +387,10 @@ module CaTissue
         raise Jinx::ValidationError.new("Top-level specimen #{self} is missing specimen collection group")
       end
       if available_quantity and initial_quantity and available_quantity > initial_quantity then
-        raise Jinx::ValidationError.new("#{self} available quantity #{available_quantity} cannot exceed initial quantity #{initial_quantity}")
+        raise Jinx::ValidationError.new("#{self} available quantity #{available_quantity} cannot exceed the initial quantity #{initial_quantity}")
       end
-      if available? and available_quantity.zero? then
-        raise Jinx::ValidationError.new("#{self} availablility flag cannot be set when the avaialble quantity is zero")
+      if available? and (initial_quantity.zero? or available_quantity.zero?) then
+        raise Jinx::ValidationError.new("#{self} availablility flag cannot be set if the available quantity is zero")
       end
       if collected? then
         unless event_parameters.detect { |ep| CaTissue::CollectionEventParameters === ep } then
