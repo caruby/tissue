@@ -82,11 +82,12 @@ module CaTissue
     end
 
     alias :contents :occupants
-
+     
+    # @param [Resource] obj the item to find
     # @return [Boolean] whether this Container holds the given item or this Container holds
-    # a subcontainer which holds the item
-    def include?(item)
-      occupants.detect { |occ| occ == item or occ.include?(item) }
+    #   a subcontainer which holds the item
+    def include?(obj)
+      occupants.any? { |occ| occ == obj } or subcontainers.any? { |ctr| ctr.include?(obj) }
     end
 
     # @return [<Specimen>] the direct Specimen occupants
