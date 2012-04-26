@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require 'spec/spec_helper'
 
 module Galena::Annotation
   TARGET = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation
