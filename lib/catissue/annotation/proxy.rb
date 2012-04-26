@@ -1,7 +1,11 @@
+require 'catissue/annotation/json'
+
 module CaTissue
   module Annotation
     # {CaTissue::Resource} annotation hook proxy mix-in.
     module Proxy
+      include JSON
+      
       # @return [Annotatable] the annotated domain object  
       def hook
         send(self.class.owner_property.reader)
