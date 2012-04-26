@@ -34,7 +34,7 @@ module CaTissue
     # Aternative to the inherited secondary key +name+.
     set_alternate_key_attributes(:site, :barcode)
 
-    add_mandatory_attributes(:storage_type)
+    add_mandatory_attributes(:storage_type, :site)
 
     qualify_attribute(:collection_protocols, :fetched)
 
@@ -142,7 +142,9 @@ module CaTissue
     # @raise [Jinx::ValidationError] if this container does not have a storage type, or if a circular
     #   containment reference is detected
     def add_to_existing_container(storable)
-      if storage_type.nil? then raise Jinx::ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type") end
+      if storage_type.nil? then
+        raise Jinx::ValidationError.new("Cannot add #{storable.qp} to #{qp} with missing storage type")
+      end
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer from among #{scs.pp_s} to place #{storable.qp}..." } unless scs.empty?
