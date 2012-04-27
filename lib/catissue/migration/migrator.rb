@@ -25,13 +25,6 @@ module CaTissue
     # @option opts [String] :bad write each invalid record to the given file and continue migration
     # @option opts [String] :offset zero-based starting source record number to process (default 0)
     def initialize(opts={})
-      # if there is a configuration file, then add config options into the parameter options
-      conf_file = opts.delete(:file)
-      if conf_file then
-        conf = CaRuby::Properties.new(conf_file, :array => [:shims])
-        # add config options but don't override the parameter options
-        opts.merge!(conf, :deep) { |key, oldval, newval| oldval }
-      end
       # tailor the options
       opts[:name] ||= NAME
       opts[:database] ||= CaTissue::Database.instance
