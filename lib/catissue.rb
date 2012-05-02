@@ -9,6 +9,10 @@ require 'catissue/helpers/properties_loader'
 
 # The caTissue domain package metadata mix-in. Each domain class automatically
 # includes this CaTissue module when it is referenced.
+#
+# The CaTissue API client must set the application properties defined in
+# +CaRuby::Database::ACCESS_OPTS+. Application configuration is described in the
+# +README.md+ file.
 module CaTissue
   include Annotatable, Resource
   
