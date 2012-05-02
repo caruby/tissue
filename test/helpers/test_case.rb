@@ -16,7 +16,6 @@ module CaTissue
 
     def teardown
       super
-      @database.close if @database
       logger.info("Test #{name} completed.")
       @defaults = nil
     end
