@@ -1,12 +1,12 @@
 require 'jinx/helpers/log'
-require 'jinx/migration/migrator'
+require 'caruby/migration/migrator'
 
 module CaTissue
   # Migrates a CSV extract to caTissue. See the {#initialize} documentation for usage options.
   #
   # See the Galena migration example for further information about to tailor the migration,
   # esp. the use of the field mappings and shims.
-  class Migrator < Jinx::Migrator
+  class Migrator < CaRuby::Migrator
     # Creates a new Migrator with the given options.
     #
     # This migrator must include sufficient information to build a well-formed migration target object.
@@ -15,9 +15,9 @@ module CaTissue
     # database or the migration must build a Participant and a CollectionProtocol.
     # 
     # @option (see Jinx::Migrator#initialize)
-    # @option opts [String] :controlled_values enable controlled value lookup
-    # @option opts [String] :database target application +CaRuby::Database+
-    # @option opts [String] :target required target domain class
+    # @option opts [Boolean] :controlled_values enable controlled value lookup
+    # @option opts [CaRuby::Database] :database the target application database
+    # @option opts [String] :target required target domain class name
     # @option opts [String] :input required source file to migrate
     # @option opts [String] :shims optional array of shim files to load
     # @option opts [String] :unique makes migrated objects unique object for testing
@@ -76,12 +76,27 @@ module CaTissue
       @target_class < Annotation ? @target_class.annotation_module : super
     end
     
+    # @quirk caTissue In caTissue 1.1.2, the  annotation proxy class and hook class have the same demodulized
+    #   name. This confutes the caRuby migration configuration since the name resolves to the proxy in the
+    #   context of an annotation migration target. The proxy class is caTissue DE cruft that should not be
+    #   exposed to the user. Thus, the class name should resolve to the hook class instead. Work around this
+    #   by a special 1.1.2 hack.  
+    #
     # @param [String] the class name to resolve in the context of this migrator
     # @return [Class] the corresponding class
     # @raise [NameError] if the name cannot be resolved
     def class_for_name(name)
       begin
-        super
+        klass = super
+        # the 1.1.2 hack described in the rubydoc
+        if klass < Annotation::Proxy then
+          if klass.name.demodulize == @target_class.hook.name.demodulize then
+             klass = @target_class.hook
+          else
+            raise Jinx::MigrationError.new("Migration configuration class #{name} resolves to the unsupported hidden caTissue 1.1.2 annotation proxy class #{klass}")
+          end
+        end
+        klass
       rescue NameError
         if @target_class < Annotatable then
           @target_class.annotation_class_for_name(name) || raise
