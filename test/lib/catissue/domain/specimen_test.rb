@@ -239,6 +239,11 @@ class SpecimenTest < Test::Unit::TestCase
     assert_not_nil(ev.identifier, "#{spc2} event #{ev2} not saved")
   end
   
+  def test_dispose_save
+    @spc.create
+    verify_save(CaTissue::Specimen.new(:label => @spc.label).find.dispose)
+  end
+  
   # Verifies the caRuby Bug #9, #10 and #11 fixes.
   def test_disposal_event_save
     # add an event to the anticipatory specimen
