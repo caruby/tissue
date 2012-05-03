@@ -240,9 +240,10 @@ module CaTissue
       position.location if position
     end
     
-    # Creates a new Specimen or CaTissue::SpecimenRequirement from the given symbol => value params hash.
+    # Creates a new Specimen or CaTissue::SpecimenRequirement from the given symbol => value
+    # parameter hash.
     #
-    # The default class is inferred from the _class_ parameter, if given, or inherited
+    # The default class is inferred from the +:class+ parameter, if given, or inherited
     # from this parent specimen otherwise. The inferred class is the camel-case parameter value
     # with +Specimen+ appended, e.g. +:tissue+ => +TissueSpecimen+. This class name is resolved to
     # a class in the CaTissue module context.
