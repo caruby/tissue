@@ -5,6 +5,8 @@ module Galena
   end
   
   # Creates the {Seed} administrative objects in the database if necessary.
+  #
+  # @return [Seed] the seed fixture
   def self.seed
     administrative_objects.ensure_exists
   end
@@ -41,6 +43,7 @@ module Galena
         frz << @box
         @box.create
       end
+      self
     end
 
     # Makes the collection protocol title unique.
