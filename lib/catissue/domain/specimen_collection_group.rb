@@ -15,7 +15,8 @@ module CaTissue
     #
     # @return [Java::JavaUtil::Set] the statuses
     def consent_tier_statuses
-      getConsentTierStatusCollection or (self.consent_tier_statuses = Java::JavaUtil::LinkedHashSet.new)
+      ctss = getConsentTierStatusCollection
+      ctss ||= self.consent_tier_statuses = Java::JavaUtil::LinkedHashSet.new
     end
 
     # Sets the collection status for this SCG.
@@ -41,7 +42,8 @@ module CaTissue
     add_attribute_aliases(:collection_event => :collection_protocol_event,
       :event => :collection_protocol_event,
       :event_parameters => :specimen_event_parameters,
-      :registration => :collection_protocol_registration)
+      :registration => :collection_protocol_registration
+    )
 
     # @quirk caTissue Bug #116: specimen_collection_site is incorrectly attached in the caTissue class
     #   model to AbstractSpecimenCollectionGroup rather than SpecimenCollectionGroup. CollectionProtocolEvent

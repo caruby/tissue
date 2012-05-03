@@ -604,7 +604,7 @@ module CaTissue
       #   tmpl.setSpecimen(obj.specimen)
       #   eids = query(tmpl).select { |eid| eid.name.nil? }
       #   if eids.size > 1 then
-      #     Jinx.fail(DatabaseError, "#{spc} has more than external identifier without a name: #{eids}")
+      #     raise DatabaseError.new("#{spc} has more than external identifier without a name: #{eids}")
       #   end
       #   # Set the identifier.
       #   obj.identifier = eids.first.identifier
