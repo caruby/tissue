@@ -57,7 +57,7 @@ module CaTissue
     # @raise [CaRuby::DatabaseError] if the object is a {CaTissue::Address}
     def create(obj)
       if CaTissue::Address === obj then
-        raise CaRuby::DatabaseError, "Address creation is not supported.new(since a caTissue bug does not set the create result identifier property.")
+        raise CaRuby::DatabaseError.new("Address creation is not supported.new(since a caTissue bug does not set the create result identifier property.")
       end
       super
     end
