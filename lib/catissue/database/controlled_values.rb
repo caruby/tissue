@@ -15,7 +15,7 @@ module CaTissue
     include Singleton
 
     def initialize
-      @executor = Database.instance.executor
+      @executor = Database.current.executor
       # The pid => { value => CV } that associates each loaded parent CV to its children.
       @pid_loaded_hash = Jinx::LazyHash.new { |pid| load_pid_cvs(pid) }
       # The pid => { value => CV } that associates each fetched parent CV to its children.

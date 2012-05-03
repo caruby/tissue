@@ -10,7 +10,7 @@ module CaTissue
       java_import Java::deintegration.FormContext
 
       def initialize
-        super(SVC_NAME, CaTissue::Database.instance.access_properties)
+        super(SVC_NAME, CaTissue::Database.current.access_properties)
       end
 
       # Associates the given hook domain object to the annotation.

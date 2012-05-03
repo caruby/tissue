@@ -31,7 +31,7 @@ public class JBridge {
         // load the JBridge facade definition
         load(FACADE_FILE);
         // the CaTissue::Database instance
-        database = container.runScriptlet("CaTissue::Database.instance");
+        database = container.runScriptlet("CaTissue::Database.current");
         // the CaTissue::JBridge instance
         facade = container.runScriptlet("CaTissue::JBridge.instance");
     }

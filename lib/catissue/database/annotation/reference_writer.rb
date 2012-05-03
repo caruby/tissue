@@ -39,7 +39,7 @@ module CaTissue
         values = database_parameters(annotation)
         logger.debug { "Saving annotation #{annotation} to #{@table}..." }
         # dispatch the SQL update or create statement
-        Database.instance.executor.transact(sql, *values)
+        Database.current.executor.transact(sql, *values)
         # Save the superclass attributes.
         if @parent then
           logger.debug { "Saving #{annotation} parent entity attributes..." }
@@ -102,7 +102,7 @@ module CaTissue
         return unless prop.declarer == klass
         prop = prop.property_descriptor.name
         logger.debug { "Finding #{klass.qp} #{attribute} column for entity id #{eid} and property #{prop}..." }
-        result = Database.instance.executor.query(NONDOMAIN_COLUMN_SQL, prop, eid).first
+        result = Database.current.executor.query(NONDOMAIN_COLUMN_SQL, prop, eid).first
         col = result[0] if result
         if col.nil? then
           raise AnnotationError.new("Column not found for #{klass.qp} #{attribute}")
@@ -124,14 +124,14 @@ module CaTissue
         logger.debug { "Finding #{klass.qp} #{attribute} column in the context of entity id #{eid}..." }
         # The referenced class name (confusingly called a source role in the caTissue schema).
         tgt_nm = klass.property(attribute).type.name.demodulize
-        result = Database.instance.executor.query(OWNER_COLUMN_SQL, eid, tgt_nm).first
+        result = Database.current.executor.query(OWNER_COLUMN_SQL, eid, tgt_nm).first
         col = result[0] if result
         if col.nil? then
-          result = Database.instance.executor.query(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize).first
+          result = Database.current.executor.query(OWNER_COLUMN_SQL, eid, tgt_nm.decapitalize).first
           col = result[0] if result
         end
         if col.nil? then
-          result = Database.instance.executor.query(ALT_1_1_OWNER_COLUMN_SQL, eid).first
+          result = Database.current.executor.query(ALT_1_1_OWNER_COLUMN_SQL, eid).first
           col = result[0] if result
         end
         if col.nil? then raise AnnotationError.new("Column not found for #{klass.qp} owner attribute #{attribute}") end

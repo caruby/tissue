@@ -19,7 +19,7 @@ module CaTissue
         puts DB_MSG
         logger.info(DB_MSG)
         # connect to the database and query on a Site
-        CaTissue::Database.instance.open { find_in_transit_site }
+        CaTissue::Database.current.open { find_in_transit_site }
       end
       
       def find_in_transit_site

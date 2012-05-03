@@ -27,7 +27,7 @@ module CaTissue
     def initialize(opts={})
       # tailor the options
       opts[:name] ||= NAME
-      opts[:database] ||= CaTissue::Database.instance
+      opts[:database] ||= CaTissue::Database.current
       # the shims file(s)
       opts[:shims] ||= []
       shims = opts[:shims] ||= []

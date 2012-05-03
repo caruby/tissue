@@ -5,7 +5,7 @@ module CaTissue
     # The IdGenerator delegates to the caTissue entity manager to create a new identifier for an annotation.
     class IdGenerator
       def initialize
-        @executor = CaTissue::Database.instance.executor
+        @executor = CaTissue::Database.current.executor
       end
 
       # @quirk caTissue DE API subquery search fails.

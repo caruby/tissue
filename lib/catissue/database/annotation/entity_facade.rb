@@ -18,7 +18,7 @@ module CaTissue
         # the work-around id generator
         @idgen = IdGenerator.new
         # a general-purpose SQL executor for calling the work-arounds
-        @executor = CaTissue::Database.instance.executor
+        @executor = CaTissue::Database.current.executor
         # the primary entity class => entity id hash
         @pr_eid_hash = {}
       end

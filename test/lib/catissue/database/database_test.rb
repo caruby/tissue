@@ -4,10 +4,10 @@ module CaTissue
   class DatabaseTest < Test::Unit::TestCase
     def test_executor
       assert_nothing_raised("Executor execute failed") do
-        CaTissue::Database.instance.executor.execute { |dbh| dbh.execute(SQL) }
+        CaTissue::Database.current.executor.execute { |dbh| dbh.execute(SQL) }
       end
       assert_nothing_raised("Executor query failed") do
-        CaTissue::Database.instance.executor.query(SQL)
+        CaTissue::Database.current.executor.query(SQL)
       end
     end
   

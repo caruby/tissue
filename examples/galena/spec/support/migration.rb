@@ -58,7 +58,7 @@ shared_context 'a migration' do
   # @see #migrator
   def migrate_to_database(fixture, opts, &block)
     tgts = []
-    db_opts = opts.merge(:database => CaTissue::Database.instance)
+    db_opts = opts.merge(:database => CaTissue::Database.current)
     db_opts[:unique] = true unless db_opts.has_key?(:unique)
     mgtr = migrator(fixture, db_opts)
     mgtr.migrate_to_database do |tgt, rec|
