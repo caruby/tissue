@@ -67,7 +67,7 @@ module CaTissue
     
       # @return [CaRuby::PersistenceService] this module's application service
       def persistence_service
-        @ann_svc ||= Database.instance.annotator.create_annotation_service(self, @svc_nm)
+        @ann_svc ||= Database.current.annotator.create_annotation_service(self, @svc_nm)
       end
     
       private

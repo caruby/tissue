@@ -1,4 +1,3 @@
-require 'singleton'
 require 'jinx/helpers/validation'
 require 'jinx/helpers/uniquifier'
 require 'caruby/database'
@@ -7,15 +6,19 @@ require 'catissue/helpers/collectible_event_parameters'
 require 'catissue/helpers/collectible'
 
 module CaTissue
-  # A CaTissue::Database mediates access to the caTissue database.
-  # The CaRuby::Database functionality is preserved, but this CaTissue::Database overrides
+  # +CaTissue::Database+ mediates access to the caTissue application service and database.
+  # The +CaRuby::Database+ functionality is preserved, but +CaTissue::Database+ overrides
   # several base class private methods to enable alternate CaTissue-specific search strategies
   # and work around caTissue and caCORE bugs.
+  #
+  # There is a single caTissue client database instance per thread. 
   #
   # This class contains a grab-bag of long and convoluted method implementations for the
   # many caTissue API quirks that necessitate special attention.
   class Database < CaRuby::Database
-    include Singleton
+    def self.current
+      Thread.current[:crtdb] ||= new 
+    end
     
     # Creates a new Database with the +catissuecore+ service and {#access_properties}.
     def initialize

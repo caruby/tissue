@@ -20,7 +20,7 @@ module CaTissue
 
     # @return [Database] the database which stores this object
     def database
-      Database.instance
+      Database.current
     end
 
     protected

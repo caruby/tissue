@@ -315,7 +315,7 @@ module CaTissue
     def create_default_received_event_parameters
       rcv = default_receiver
       if rcv.nil? then
-        raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no collection protocol coordinator: #{self}")
+        raise Jinx::ValidationError.new("SCG with status Complete default CollectionEventParameters could not be created since there is no #{self} collection protocol coordinator")
       end
       # make the REP
       ev = CaTissue::SpecimenEventParameters.create_parameters(:received, self, :user => rcv)

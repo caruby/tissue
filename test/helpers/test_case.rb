@@ -11,7 +11,7 @@ module CaTissue
     def setup
       super
       logger.info("Testing #{name}...")
-      @database = Database.instance
+      @database = Database.current
     end
 
     def teardown
