@@ -57,7 +57,7 @@ module CaTissue
     # @raise [CaRuby::DatabaseError] if the object is a {CaTissue::Address}
     def create(obj)
       if CaTissue::Address === obj then
-        Jinx.fail(CaRuby::DatabaseError, "Address creation is not supported, since a caTissue bug does not set the create result identifier property.")
+        raise CaRuby::DatabaseError, "Address creation is not supported.new(since a caTissue bug does not set the create result identifier property.")
       end
       super
     end
@@ -238,7 +238,7 @@ module CaTissue
       elsif CaTissue::ConsentTierResponse === obj then
         return update_consent_tier_response(obj)
       elsif Annotation === obj then
-        Jinx.fail(CaRuby::DatabaseError, "Annotation update is not supported on #{obj}")
+        raise CaRuby::DatabaseError.new("Annotation update is not supported on #{obj}")
       end
       
       # Finally, the standard update.
@@ -287,13 +287,13 @@ module CaTissue
       if obj.characteristics.nil? then
         logger.debug { "Fetching #{obj} characteristics for update..." }
         fetched = fetch_association(obj, :specimen_characteristics)
-        Jinx.fail(CaRuby::DatabaseError, "#{obj} is missing characteristics") if fetched.nil?
+        raise CaRuby::DatabaseError.new("#{obj} is missing characteristics") if fetched.nil?
         logger.debug { "Set #{obj} characteristics to #{fetched}." }
         obj.characteristics = fetched
       elsif obj.characteristics.identifier.nil? then
         logger.debug { "Fetching #{obj} characteristics identifier for update..." }
         fetched = fetch_association(obj, :specimen_characteristics)
-        raise Jinx.fail(CaRuby::DatabaseError, "#{obj} is missing characteristics") if fetched.nil?
+        raise raise CaRuby::DatabaseError.new("#{obj} is missing characteristics") if fetched.nil?
         obj.characteristics.identifier = fetched.identifier
         logger.debug { "Set #{obj} characteristics #{obj.characteristics} identifier." }
       end
@@ -485,7 +485,7 @@ module CaTissue
     def ensure_primary_annotation_has_hook(annotation)
       hook = annotation.hook
       if hook.nil? then
-        Jinx.fail(CaRuby::DatabaseError, "Cannot save annotation #{annotation} since it does not reference a hook entity")
+        raise CaRuby::DatabaseError.new("Cannot save annotation #{annotation} since it does not reference a hook entity")
       end
       if hook.identifier.nil? then
         logger.debug { "Ensuring that the annotation #{annotation.qp} hook entity #{hook.qp} exists in the database..." }
@@ -624,12 +624,12 @@ module CaTissue
       elsif obj.identifier and CaTissue::SpecimenCollectionGroup === obj then
         # add the extraneous SCG template CPR protocol and PPI, if necessary 
         cpr = obj.collection_protocol_registration
-        if cpr.nil? then Jinx.fail(Jinx::ValidationError, "#{obj} cannot be updated since it is missing a CPR") end
+        if cpr.nil? then raise Jinx::ValidationError.new("#{obj} cannot be updated since it is missing a CPR") end
         tcpr = template.collection_protocol_registration
-        if tcpr.nil? then Jinx.fail(Jinx::ValidationError, "#{obj} CPR #{cpr} was not copied to the update template #{tcpr}") end
+        if tcpr.nil? then raise Jinx::ValidationError.new("#{obj} CPR #{cpr} was not copied to the update template #{tcpr}") end
         if tcpr.collection_protocol.nil? then
           pcl = lazy_loader.enable { cpr.collection_protocol }
-          if pcl.nil? then Jinx.fail(Jinx::ValidationError, "#{obj} cannot be updated since it is missing a referenced CPR #{cpr} protocol") end
+          if pcl.nil? then raise Jinx::ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} protocol") end
           tpcl = pcl.copy(:identifier)
           logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} protocol #{tpcl}..." }
           tmpl.collection_protocol = tpcl
@@ -637,7 +637,7 @@ module CaTissue
         if tcpr.protocol_participant_identifier.nil? then
           ppi = lazy_loader.enable { cpr.protocol_participant_identifier }
           if ppi.nil? then
-            Jinx.fail(Jinx::ValidationError, "#{obj} cannot be updated since it is missing a referenced CPR #{cpr} PPI required to work around a caTissue SCG update bug")
+            raise Jinx::ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} PPI required to work around a caTissue SCG update bug")
           end
           tppi = ppi.copy(:identifier)
           logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} PPI #{tppi}..." }
@@ -645,16 +645,16 @@ module CaTissue
         end
         unless obj.received? then
           rep = obj.instance_eval { create_default_received_event_parameters }
-          if rep.nil? then Jinx.fail(CaRuby::DatabaseError, "Default received event parameters were not added to #{obj}.") end
+          if rep.nil? then raise CaRuby::DatabaseError.new("Default received event parameters were not added to #{obj}.") end
           rep.copy.merge_attributes(:user => rep.user, :specimen_collection_group => template)
         end
         unless obj.collected? then
           cep = obj.instance_eval { create_default_collection_event_parameters }
-          if cep.nil? then Jinx.fail(CaRuby::DatabaseError, "Default collection event parameters were not added to #{obj}.") end
+          if cep.nil? then raise CaRuby::DatabaseError.new("Default collection event parameters were not added to #{obj}.") end
           cep.copy.merge_attributes(:user => cep.user, :specimen_collection_group => template)
         end
       elsif Annotation::Proxy === obj then
-        Jinx.fail(CaRuby::DatabaseError, "Annotation proxy direct database save is not supported: #{obj}")
+        raise CaRuby::DatabaseError.new("Annotation proxy direct database save is not supported: #{obj}")
       elsif Annotation === obj and obj.class.primary? then
         copy_annotation_proxy_owner_to_template(obj, template)
       end
@@ -749,7 +749,7 @@ module CaTissue
           table = case bogus.class.name.demodulize
           when 'CollectionEventParameters' then 'catissue_coll_event_param'
           when 'ReceivedEventParameters' then 'catissue_received_event_param'
-          else Jinx.fail(CaRuby::DatabaseError, "Collectible event parameter class not recognized: #{bogus.class}")
+          else raise CaRuby::DatabaseError.new("Collectible event parameter class not recognized: #{bogus.class}")
           end
           sql = "delete from #{table} where identifier = ?"
           executor.transact(sql, bogus.identifier)
@@ -875,7 +875,7 @@ module CaTissue
         end
         next_addr_id += 1
       end
-      Jinx.fail(CaRuby::DatabaseError, "No address found which matches the created #{address}")
+      raise CaRuby::DatabaseError.new("No address found which matches the created #{address}")
     end
     
     # Overrides +CaRuby::Database.create_from_template+ as follows:
@@ -887,7 +887,7 @@ module CaTissue
       if Annotation::Proxy === obj then
         hook = obj.hook
         if hook.identifier.nil? then
-          Jinx.fail(CaRuby::DatabaseError, "Annotation proxy #{obj.qp} hook owner #{hook.qp} does not have an identifier")
+          raise CaRuby::DatabaseError.new("Annotation proxy #{obj.qp} hook owner #{hook.qp} does not have an identifier")
         end
         obj.identifier = hook.identifier
         obj.take_snapshot

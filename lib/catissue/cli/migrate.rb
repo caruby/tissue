@@ -62,7 +62,7 @@ module CaTissue
           # Resolve the class in the CaTissue context.
           CaTissue.module_for_name(cnm)
         rescue Exception => e
-          Jinx.fail(NameError, "Could not load migration target class #{name}", e)
+          raise NameError.new("Could not load migration target class #{name} - " + $!)
         end
       end
     end

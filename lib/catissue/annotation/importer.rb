@@ -136,7 +136,7 @@ module CaTissue
         begin
           klass = const_get(name.to_sym)
         rescue NameError => e
-          Jinx.fail(AnnotationError, "#{hook.qp} annotation #{qp} does not have a hook proxy class", e)
+          raise AnnotationError.new("#{hook.qp} annotation #{qp} does not have a hook proxy class - " + $!)
         end
         klass.extend(Annotation::ProxyClass)
         klass.hook = hook
