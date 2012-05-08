@@ -3,13 +3,9 @@ require 'jinx/helpers/validation'
 module CaTissue
   # The SpecimenRequirement domain class.
   class SpecimenRequirement
-    # @quirk caTissue Bug #64: Some domain collection properties not initialized.
-    #   Initialize specimens if necessary. 
-    #
-    # @return [Java::JavaUtil::Set] the specimens
-   def specimens
-      getSpecimenCollection or (self.specimens = Java::JavaUtil::LinkedHashSet.new)
-    end
+    # @quirk caTissue SpecimenRequirement specimens property is unnecessary and prohibitively
+    #   expensive to load on demand. 
+    remove_attribute(:specimens)
 
     add_attribute_aliases(:collection_event => :collection_protocol_event)
 
@@ -68,15 +64,6 @@ module CaTissue
     end
 
     public
-
-    # @quirk caTissue Bug #64 - consent tier responses is not initialized to an empty set
-    #    in the Java constructor. Initialize it to a +LinkedHashSet+ in caRuby.
-    def initialize
-      super
-      # @quirk JRuby specimens property method is not accessible until respond_to? is called.
-      respond_to?(:specimens)
-      self.specimens ||= Java::JavaUtil::LinkedHashSet.new
-    end
 
     # Creates a SpecimenRequirement of the given subclass type for the given CollectionProtocolEvent event.
     # The type is a SpecimenRequirement subclass name without the +SpecimenRequirement+ suffix, e.g.
