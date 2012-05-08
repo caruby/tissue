@@ -1,8 +1,10 @@
 PATH
   remote: .
   specs:
-    galena (2.1.1-java)
-      caruby-tissue (>= 2.1.1)
+    caruby-tissue (2.1.4)
+      bundler
+      caruby-core (>= 2.1.1)
+      uom (>= 1.2.2)
 
 PATH
   remote: /Users/loneyf/workspace/caruby/core
@@ -13,14 +15,6 @@ PATH
       jinx-json (~> 2.1.1)
       jinx-migrate (>= 2.1.1)
       rdbi
-
-PATH
-  remote: /Users/loneyf/workspace/caruby/tissue
-  specs:
-    caruby-tissue (2.1.4)
-      bundler
-      caruby-core (>= 2.1.1)
-      uom (>= 1.2.2)
 
 PATH
   remote: /Users/loneyf/workspace/jinx/core
@@ -44,6 +38,12 @@ PATH
       fastercsv
       rack
 
+PATH
+  remote: examples/galena
+  specs:
+    galena (2.1.1-java)
+      caruby-tissue (>= 2.1.1)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -54,6 +54,7 @@ GEM
     json_pure (1.6.6)
     methlab (0.1.0)
     rack (1.4.1)
+    rake (0.9.2.2)
     rdbi (0.9.1)
       epoxy (>= 0.3.1)
       methlab (>= 0.0.9)
@@ -69,16 +70,18 @@ GEM
     typelib (0.1.0)
     uom (1.2.2)
       extensional
+    yard (0.7.5)
 
 PLATFORMS
   java
 
 DEPENDENCIES
-  bundler
   caruby-core!
   caruby-tissue!
   galena!
   jinx!
   jinx-json!
   jinx-migrate!
+  rake
   rspec (>= 2.6)
+  yard
