@@ -775,7 +775,7 @@ module CaTissue
       prop = obj.class.proxy_property
       # Ignore the proxy attribute if it is defined by caRuby rather than caTissue.
       return unless prop and prop.java_property?
-      rdr, wtr = prop.property_accessors
+      rdr, wtr = prop.java_accessors
       pxy = obj.send(rdr)
       logger.debug { "Setting #{obj.qp} template #{template.qp} proxy owner to #{pxy}..." }
       template.send(wtr, pxy)
