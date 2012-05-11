@@ -31,17 +31,10 @@ module CaTissue
       setCollectionStatus(value)
     end
 
-    # Converts an Integer SPN value to a String.
-    #
-    # @param [Numeric, String] value the SPN value
-    def surgical_pathology_number=(value)
-      value = value.to_s if Numeric === value
-      setSurgicalPathologyNumber(value)
-    end
-
     add_attribute_aliases(:collection_event => :collection_protocol_event,
       :event => :collection_protocol_event,
       :event_parameters => :specimen_event_parameters,
+      :spn => :surgical_pathology_number,
       :registration => :collection_protocol_registration
     )
 

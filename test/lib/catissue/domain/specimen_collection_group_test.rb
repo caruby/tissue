@@ -24,6 +24,11 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     end
     assert_not_nil(@scg.collection_event_parameters, "#{@scg} default CEP not created")
   end
+  
+  def test_spn_conversion
+    assert_nothing_raised('Cannot set a SCG SPN to a numeric value') { @scg.spn = 123 }
+    assert_equal('123', @scg.spn, "#{@scg} SPN writer did not correctly convert the numeric value")
+  end
 
   def test_default_collection_event
     collection_event = @scg.collection_event
