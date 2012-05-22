@@ -10,6 +10,8 @@ module CaTissue
       setMedicalRecordNumber(value)
     end
     
+    add_attribute_aliases(:mrn => :medical_record_number)
+    
     # @quirk caTissue 1.2 PMI method signature is corrupted. Work-around is to explicitly set the attribute type.
     #   Cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewtopic.php?f=19&t=984&sid=773ad8f0bbbfc6e9c9b45ec1bf43a6e9.
     set_attribute_type(:site, CaTissue::Site)

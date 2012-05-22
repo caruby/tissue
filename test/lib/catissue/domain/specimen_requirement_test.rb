@@ -24,19 +24,19 @@ class SpecimenRequirementTest < Test::Unit::TestCase
   # Tests whether the child_specimens domain type is overridden in the configuration from the
   # inferred Java parameterized generic type property.
   def test_child_specimens_type
-    assert_equal(CaTissue::SpecimenRequirement, @rqmt.class.domain_type(:child_specimens), "child_specimens domain type not overridden in configuration to non-abstract SpecimenRequirement")
+    msg = "The #{@rqmt} child_specimens property type was not reset to the non-abstract SpecimenRequirement"
+    assert_equal(CaTissue::SpecimenRequirement, @rqmt.class.domain_type(:child_specimens), msg)
   end
-
-   def test_derivative_validation
-     @rqmt.derive(:count => 2, :specimen_type => (@rqmt.specimen_type + ' Block'))
-     assert_equal(2, @rqmt.children.size, "Derived requirement count incorrect")
-     @rqmt.add_defaults
-     assert_raise(Jinx::ValidationError, "Multiple derivatives incorrectly succeeds validation") { @rqmt.validate }
-   end
-
+  
+  def test_derivative_validation
+    @rqmt.derive(:count => 2, :specimen_type => (@rqmt.specimen_type + ' Block'))
+    assert_equal(2, @rqmt.children.size, "Derived requirement count incorrect")
+    @rqmt.add_defaults
+    assert_raise(Jinx::ValidationError, "Multiple derivatives incorrectly succeeds validation") { @rqmt.validate }
+  end
+  
   def test_save
     verify_save(@rqmt)
-
     # query the CPE
     cpe = @rqmt.collection_protocol_event
     tmpl = CaTissue::SpecimenRequirement.new(:collection_protocol_event => cpe)
@@ -46,13 +46,13 @@ class SpecimenRequirementTest < Test::Unit::TestCase
       assert_equal(@rqmt.identifier, result.first.identifier, "Requirement event query result identifier incorrect")
     end
   end
-
+  
   def test_derived_store
     child = @rqmt.derive
     verify_save(@rqmt)
     assert_equal(1, @rqmt.children.size, "Requirment children size incorrect")
     assert_same(child, @rqmt.children.first, "Requirment child incorrect")
-
+  
     # query the derived Requirement
     tmpl = child.class.new(:parent => @rqmt.copy(:identifier))
     logger.debug { "Verifying the derived Requirement query #{tmpl}..." }

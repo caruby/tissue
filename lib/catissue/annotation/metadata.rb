@@ -238,7 +238,7 @@ module CaTissue
             aliaz = name.pluralize.to_sym
             if aliaz != name then
               logger.debug { "Adding annotation #{qp} alias #{aliaz} to the misnamed collection property #{prop}..." }
-              delegate_to_attribute(aliaz, prop.attribute)
+              delegate_to_property(aliaz, prop)
             end
           end
         end
