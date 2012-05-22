@@ -7,6 +7,11 @@ module CaTissue
     #   mechanism, is to query on a concrete SCG subclass template which references the target Site.
     remove_attribute(:abstract_specimen_collection_groups)
 
+    # @quirk caTissue the Site CP collection is ignored, since it is has limited value but high
+    # fetch cost, esp. in the case of the default +In Transit+ site. The work-around is to query
+    # on a CP template which references the target Site.
+    remove_attribute(:collection_protocols)
+
     # @quirk caTissue caTissue 1.2 Site has a facility_id Java property, but caTissue throws an
     #   UnsupportedOperationException if they are called.
     if property_defined?(:facility_id) then remove_attribute(:facility_id) end
