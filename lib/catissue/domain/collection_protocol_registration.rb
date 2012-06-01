@@ -36,11 +36,13 @@ module CaTissue
 
     set_secondary_key_attributes(:collection_protocol, :protocol_participant_identifier)
 
+    set_alternate_key_attributes(:collection_protocol, :participant)
+
     add_attribute_defaults(:activity_status => 'Active')
 
     add_mandatory_attributes(:registration_date)
 
-    # The CPR-CP association is bi-directional.
+    # The CPR-Protocol association is bi-directional.
     set_attribute_inverse(:collection_protocol, :collection_protocol_registrations)
 
     # The CPR-Participant association is bi-directional.
@@ -63,7 +65,7 @@ module CaTissue
     # must exist. This is checked in the special purpose {#validate_local} method.
     qualify_attribute(:protocol_participant_identifier, :optional)
 
-    # @quirk caTissue  Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
+    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
     #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:registration_date, :update_only)
 
