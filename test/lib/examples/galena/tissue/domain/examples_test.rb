@@ -19,30 +19,26 @@ class ExamplesTest < Test::Unit::TestCase
     @pcl.consent_tiers << ct = CaTissue::ConsentTier.new(:statement => 'Test Consent'.uniquify)
     # add a CPR consent tier response
     @scg.registration.consent_tier_responses << CaTissue::ConsentTierResponse.new(:consent_tier => ct)
-    # the MRN
+    # make the PMI
     mrn = Jinx::Uniquifier.qualifier
     pnt = @scg.registration.participant
     pmi = CaTissue::ParticipantMedicalIdentifier.new(:participant => pnt, :medical_record_number => mrn)
-    # create the specimen
-    verify_save(@spc)
-    logger.debug { "Verifying #{@spc} consent withdrawal..." }
-    # Withdraw consent and update the specimen.
+    # save the SCG
+    verify_save(@scg)
+    # SCG save adds consent statuses
+    assert(!@scg.consent_tier_statuses.empty?, "No #{@spc} SCG constent status.")
+    logger.debug { "Verifying #{pmi} consent withdrawal..." }
+    # Withdraw consent and update each specimen.
     pmi.copy(:medical_record_number).query(:participant, :registrations, :specimen_collection_groups, :specimens).each do |spc|
       spc.withdraw_consent
       spc.save
     end
-    cts = @spc.consent_tier_statuses.first
-    assert_not_nil(cts, "#{@spc} does not have a consent tier status")
-    assert_not_nil(cts.identifier, "#{@spc} consent tier status was not created")
-    assert_equal('Withdrawn', cts.status, "#{@spc} consent was not withdrawn")
-  end
-
-  # Verifies the specimen relabel example.
-  def test_relabel
-    verify_save(@spc)
-    @pcl.copy(:title).find.specimens.each do |spc|
-      spc.label = 'CP-' + spc.label
-      verify_save(spc)
+    # Refetch the SCG and verify the specimen consents.
+    @scg.copy(:identifier).find.specimens.each do |spc|
+      cts = spc.consent_tier_statuses.first
+      assert_not_nil(cts, "#{spc} does not have a consent tier status")
+      assert_not_nil(cts.identifier, "#{spc} consent tier status was not created")
+      assert_equal('Withdrawn', cts.status, "#{spc} consent was not withdrawn")
     end
   end
 

@@ -59,7 +59,7 @@ module CaTissue
     #   SCG status record, which is malformed in a different way which results in
     #   a severe display error, as described in Bug #156. The malformed Specimen
     #   status record results in displaying null field values in the Specimen Consent
-    #   page, but otherwise no adverse effects.
+    #   page, but otherwise has no adverse effects.
     add_dependent_attribute(:consent_tier_statuses, :unfetched)
 
     add_dependent_attribute(:external_identifiers)
@@ -300,8 +300,13 @@ module CaTissue
       
       # add a default available quantity to a Specimen but not a SpecimenRequirement
       params[:available_quantity] ||= params[:initial_quantity] if klass <= self
+      # gather the characteristic parameters
+      chr_params, spc_params = params.split { |pa, value| CaTissue::SpecimenCharacteristics.property_defined?(pa) }
+      unless chr_params.empty? then
+        spc_params[:specimen_characteristics] = CaTissue::SpecimenCharacteristics.new(chr_params)
+      end  
       # make the specimen
-      klass.new(params)
+      klass.new(spc_params)
     end
 
     # Convenience method which returns the SCG collection protocol.
@@ -319,22 +324,14 @@ module CaTissue
     # @param [CaTissue::ConsentTier, nil] consent_tier the optional consent tier to withdraw
     # @raise [Jinx::ValidationError] if there is no SCG consent status for the given consent tier
     def withdraw_consent(consent_tier=nil)
-      scg_ctss = specimen_collection_group.consent_tier_statuses
       if consent_tier.nil? then
-        scg_ctss.each { |cts| withdraw_consent(cts.consent_tier) }
-        return
+        return specimen_collection_group.consent_tier_statuses.each { |cts| withdraw_consent(cts.consent_tier) }
       end
-      scg_cts = scg_ctss.detect { |cts| cts.consent_tier.identifier == consent_tier.identifier }
-      if scg_cts.nil? then
-        raise Jinx::ValidationError.new("SCG #{specimen_collection_group} consent status not found for consent '#{consent_tier.statement}'")
+      tgt = consent_tier_statuses.detect { |cts| cts.consent_tier.matches?(consent_tier) }
+      if tgt.nil? then
+        consent_tier_statuses << tgt = ConsentTierStatus.new(:consent_tier => ct)
       end
-      ct = scg_cts.consent_tier 
-      spc_ctss = consent_tier_statuses
-      spc_cts = spc_ctss.detect { |cts| cts.consent_tier == ct }
-      if spc_cts.nil? then
-        spc_ctss << spc_cts = ConsentTierStatus.new(:consent_tier => ct)
-      end
-      spc_cts.status = 'Withdrawn'
+      tgt.status = 'Withdrawn'
     end
     
     # @return [Boolean] whether this specimen includes a {CaTissue::DisposalEventParameters}
