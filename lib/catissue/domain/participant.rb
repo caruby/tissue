@@ -3,6 +3,10 @@ require 'catissue/helpers/person'
 
 module CaTissue
   # The Participant domain class.
+  #
+  # @quirk caTissue The Participant +collection_protocol_registrations+ cannot be inferred as the
+  #   CPR +participant+ inverse since the +collectionProtocolRegistrations+ Java reader method is
+  #   untyped. The inverse is manually established in {CollectionProtocolRegistration}.
   class Participant
     include Person
 
@@ -27,8 +31,8 @@ module CaTissue
     add_attribute_defaults(:activity_status => 'Active', :ethnicity => 'Unknown', :gender => 'Unspecified',
       :sex_genotype => 'Unknown', :vital_status => 'Unknown')
 
-    # @quirk caTissue Bug #154: Participant gender is specified by caTissue as optional, but if it is not set then
-    #   it appears as Female in the GUI even though it is null in the database.
+    # @quirk caTissue Bug #154: Participant gender is specified by caTissue as optional, but if it is
+    #   not set then it appears as Female in the GUI even though it is null in the database.
     add_mandatory_attributes(:activity_status, :gender)
 
     # @quirk caTissue Participant CPR cascade is simulated in the bizlogic.
