@@ -81,11 +81,14 @@ module CaTissue
     # Filters +CaRuby::Propertied#loadable_attributes} to exclude the {.annotation_attributes+
     # since annotation lazy-loading is not supported.
     #
+    # @quirk JRuby - Copied {CaRuby::Persistable#loadable_attributes} to avoid infinite loop.
+    #
+    # @see #const_missing
     # @return (see CaRuby::Propertied#loadable_attributes)
     def loadable_attributes
       @antbl_ld_attrs ||= unfetched_attributes.compose do |prop|
-        # JRuby bug - Copied super body to avoid infinite loop. See const_missing.
-        prop.java_property? and not prop.type.abstract? and not prop.type < Annotation
+        # JRuby bug - Copied the super body to avoid infinite loop.
+        prop.java_property? and not prop.type.abstract? and not prop.transient? and not prop.type < Annotation
       end
     end
   
@@ -146,7 +149,7 @@ module CaTissue
         logger.debug { "Ignored the missing caTissue #{qp} proxy class name #{name}, presumably unsupported in this caTissue release." }
       end
     end
-  
+
     # Loads the annotation modules in the class hierarchy.
     #
     # @return [<AnnotationModule>] an Enumerable on the loaded annotation modules
