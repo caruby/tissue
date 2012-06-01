@@ -5,7 +5,11 @@ module CaTissue
   # The CollectionProtocol domain class.
   #
   # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
-  #   Create CollectionProtocol in API ignores startDate.
+  #   Create CollectionProtocol in API ignores +startDate+.
+  #
+  # @quirk caTissue The CP +collection_protocol_registrations+ cannot be inferred as the CPR +collection_protocol+
+  #   inverse since the +collectionProtocolRegistrations+ Java reader method is untyped.
+  #   The inverse is manually established in {CollectionProtocolRegistration}.
   class CollectionProtocol
     include HashCode
     
@@ -18,6 +22,12 @@ module CaTissue
     end
 
     add_attribute_aliases(:events => :collection_protocol_events, :registrations => :collection_protocol_registrations)
+    
+    # @quirk caTissue The CP +collection_protocol_registrations+ is unnecessary and expensive to maintain
+    #   inverse integrity with lazy-loading. The CP registrations is more properly obtained by a query.
+    #   However, it is useful to retain the property as a house-keeping convenience. Therefore, the
+    #   work-around is to mark the property as transient to forego lazy loading.
+    qualify_attribute(:collection_protocol_registrations, :transient)
 
     add_attribute_defaults(:consents_waived => false, :aliquot_in_same_container => false)
 
@@ -48,33 +58,15 @@ module CaTissue
       self.consent_tiers ||= Java::JavaUtil::LinkedHashSet.new
     end
 
-    # Returns all participants registered in this protocol.
-    def participants
-      registrations.nil? ? [] : registrations.map { |reg| reg.participant }
-    end
-
     # Returns a new CollectionProtocolRegistration for the specified participant in this CollectionProtocol with
     # optional +protocol_participant_identifier+ ppi.
     def register(participant, ppi=nil)
       CollectionProtocolRegistration.new(:participant => participant, :protocol => self, :protocol_participant_identifier => ppi)
     end
 
-    # Returns the CollectionProtocolRegistration for the specified participant in this CollectionProtocol,
-    def registration(participant)
-      registrations.detect { |registration| registration.participant == participant }
-    end
-
     # Returns this protocol's events sorted by study calendar event point.
     def sorted_events
       events.sort_by { |ev| ev.event_point || CollectionProtocolEvent::DEFAULT_EVENT_POINT }
-    end
-
-    # Returns the specimens collected from the given participant for this CollectionProtocol,
-    # or all specimens in this protocol if participant is nil.
-    def specimens(participant=nil)
-      if participant.nil? then return registrations.map { |reg| reg.specimens }.flatten end
-      reg = registration(participant)
-      reg.nil? ? Array::EMPTY_ARRAY : reg.specimens
     end
 
     # Adds specimens to this protocol. The argumentes includes the
@@ -131,7 +123,17 @@ module CaTissue
     end
 
     private
-
+    
+    # This method only checks the transient registrations. Database registrations are not
+    # fetched.
+    #
+    # @param [CaTissue::Participant] participant the participant to check
+    # @return [CaTissue::CollectionProtocolRegistration, nil] the registration for the
+    #   given participant in this protocol
+    def registration(participant)
+      registrations.detect { |registration| registration.participant == participant }
+    end
+    
     # Sets the defaults as follows:
     # * The start date is set to now.
     # * The title is set to the short title.

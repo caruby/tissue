@@ -45,9 +45,6 @@ class CollectionProtocolTest < Test::Unit::TestCase
     assert_equal(2, scg.size, "Specimen group size incorrect")
     assert_equal(2, scg.specimen_event_parameters.size, "Specimen event parameters size incorrect")
     assert_not_nil(scg.registration, "Specimen not registered")
-    assert_equal(2, @pcl.specimens(pnt).size, "Protocol specimens size incorrect")
-    assert(@pcl.specimens(pnt).include?(spc1), 'Specimen not found')
-    assert(@pcl.specimens(pnt).include?(spc2), 'Specimen not found')
   end
 
   def test_events
@@ -63,9 +60,6 @@ class CollectionProtocolTest < Test::Unit::TestCase
   end
 
   def test_save
-    # ignore registrations
-    @pcl.collection_protocol_registrations.clear
-    # create the protocol
    verify_save(@pcl)
   end
 end

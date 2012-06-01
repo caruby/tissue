@@ -48,6 +48,11 @@ module CaTissue
     def delete
       protocol.events.delete(self) if protocol
     end
+    
+    # @return [Boolean] false
+    def updatable?
+      false
+    end
 
     # Overrides +Jinx::Resource.references+ in the case of the _specimen_requirements_ attribute to select
     # only top-level SpecimenRequirements not derived from another SpecimenRequirement.

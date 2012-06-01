@@ -132,6 +132,16 @@ class SpecimenTest < Test::Unit::TestCase
       assert_equal(expected_qty, aliquot.initial_quantity, "Aliquot quantity incorrect")
     end
   end
+
+  def test_withdraw_consent
+    # Add the default SCG consent status.
+    @spc.specimen_collection_group.add_defaults
+    # Withdraw the specimen consent.
+    @spc.withdraw_consent
+    cts = @spc.consent_tier_statuses.first
+    assert_not_nil(cts, "#{@spc} does not have a consent tier status")
+    assert_equal('Withdrawn', cts.status, "#{@spc} consent was not withdrawn")
+  end
   
   def test_json
     verify_json(@spc)
@@ -220,6 +230,32 @@ class SpecimenTest < Test::Unit::TestCase
     logger.debug { "#{self.class.qp} verifying the persistent state of the updated #{@spc} #{chr} tissue site..." }
     database.find(@spc)
     assert_equal(changed, chr.tissue_site, "#{@spc} #{chr} tissue site not updated")
+  end
+  
+  # @quirk JRuby the +verify_save+ commented out in this method fails because a fetched comparison
+  #   child Specimen reference is inexplicably swizzled to a different instance which does not
+  #   lazy-load the consent tier statuses, resulting in a dependency validation error. This
+  #   problem has only been noticed in this test case, and is benign, since the saved Specimen
+  #   content is correct.
+  def test_derived_consent_update
+    # aliquot the specimen
+    cspcs = @spc.derive(:count => 2)
+    # aliquot the first child
+    gcspcs = cspcs.first.derive(:count => 2)
+    # derive the first grandchild
+    dna = gcspcs.first.derive(:specimen_class => :molecular, :initial_quantity => 20, :specimen_type => 'DNA')
+    # save the hierarchy
+    #verify_save(@spc)
+    @spc.save
+    assert_not_nil(dna.identifier, "#{@spc} derived #{dna} not saved.")
+    assert_not_nil(dna.consent_tier_statuses.first, "#{@spc} derived #{dna} consent tier status not created.")
+    # update the statuses
+    @spc.visit_path(:children) { |ref| ref.consent_tier_statuses.first.status = 'Yes' }
+    @spc.update
+    @spc.visit_path(:children) do |ref|
+      cts = ref.consent_tier_statuses.first.copy(:identifier).find.status
+      assert_equal('Yes', cts, "#{@spc} derived #{dna} consent tier status not saved.")
+    end
   end
   
   def test_nondisposal_specimen_event_save

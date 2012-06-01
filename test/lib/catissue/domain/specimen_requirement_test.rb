@@ -35,6 +35,11 @@ class SpecimenRequirementTest < Test::Unit::TestCase
     assert_raise(Jinx::ValidationError, "Multiple derivatives incorrectly succeeds validation") { @rqmt.validate }
   end
   
+  def test_not_updatable
+    @rqmt.identifier = 1
+    assert_raises(CaRuby::DatabaseError, "#{@rqmt} update was submitted to caTissue") { @rqmt.update }
+  end
+  
   def test_save
     verify_save(@rqmt)
     # query the CPE
