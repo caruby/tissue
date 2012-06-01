@@ -164,14 +164,14 @@ module CaTissue
     # Verifies that the given subject matches the database content.
     def verify_saved_content(subject)
       assert_not_nil(subject.identifier, "Saved #{subject.qp} is missing an identifier")
-      tmpl = subject.copy(:identifier)
       # TODO - remove restriction below when annotation query is supported.
       return if Annotation === subject
+      fetched = subject.copy(:identifier)
       # find the template in the database
-      logger.debug  { "Verifying #{subject.qp} by finding and comparing template #{tmpl.pp_s}..." }
-      assert_not_nil(tmpl.find, "#{subject} not found in database")
+      logger.debug { "Verifying #{subject.qp} by finding and comparing template #{fetched.pp_s}..." }
+      assert_not_nil(fetched.find, "#{subject} not found in database")
       # compare the subject to the fetched template
-      verify_that_saved_matches_fetched(subject, tmpl)
+      verify_that_saved_matches_fetched(subject, fetched)
     end
 
     # Verifies that the given expected domain object has the same content as actual,
@@ -229,7 +229,7 @@ module CaTissue
         if prop.collection? then
           edeps.each do |edep|
             adep = edep.match_in_owner_scope(adeps)
-            assert_not_nil(adep, "#{expected} #{pa} dependent #{edep} not found in fetched #{adeps.pp_s}")
+            assert_not_nil(adep, "#{expected} #{pa} dependent #{edep} not found in fetched #{actual} #{pa} #{adeps.pp_s}")
             verify_that_saved_matches_fetched(edep, adep)
           end
         else
