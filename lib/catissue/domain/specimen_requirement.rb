@@ -36,6 +36,11 @@ module CaTissue
     # The preferred owner attribute evaluation order is the parent specimen, then the CPE.
     order_owner_attributes(:parent_specimen, :collection_protocol_event)
     
+    # @return [Boolean] false
+    def updatable?
+      false
+    end
+    
     # Returns the SpecimenRequirement in _others_ which matches this SpecimenRequirement
     # in the scope of an owner CollectionProtocolEvent. This method relaxes
     # +Jinx::Resource.match_in_owner_scope+ for a SpecimenRequirement that matches any

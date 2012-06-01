@@ -10,6 +10,6 @@ class CaTissueTestDefaultsTest < Test::Unit::TestCase
 
   # Saves the #{CaTissue::TestCase::Seed} data.
   def test_save
-    defaults.domain_objects.each { |obj| verify_save(obj) }
+    defaults.domain_objects.each { |obj| verify_save(obj) if obj.identifier.nil? or obj.updatable? }
   end
 end
