@@ -329,7 +329,7 @@ module CaTissue
       end
       tgt = consent_tier_statuses.detect { |cts| cts.consent_tier.matches?(consent_tier) }
       if tgt.nil? then
-        consent_tier_statuses << tgt = ConsentTierStatus.new(:consent_tier => ct)
+        consent_tier_statuses << tgt = ConsentTierStatus.new(:consent_tier => consent_tier)
       end
       tgt.status = 'Withdrawn'
     end
