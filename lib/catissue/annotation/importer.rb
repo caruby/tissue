@@ -101,13 +101,14 @@ module CaTissue
         klass.add_annotation_metadata(self)
         # Register the annotation class.
         annotation_classes << klass
-
+        
+        # TODO - uncomment and confirm that the test_biopsy_target works.
         # # Annotation classes are introspected, but the annotation constant is not set properly
         # # in the annotation module. This occurs sporadically, e.g. in the PSBIN migration_test
         # # test_biopsy_target test case the NewDiagnosisHealthAnnotation class is introspected
         # # but when subsequently referenced by the migrator, the NewDiagnosisHealthAnnotation
-        # # class is not introspected and the class object id differs from the original class
-        # # object id. However, the analogous test_surgery_target does not exhibit this defect.
+        # # class object id differs from the original class object id. However, the analogous
+        # # test_surgery_target does not exhibit this defect.
         # #
         # # The cause of this bug is a complete mystery. The work-around is to get the constant.
         # # below. This is a seemingly unnecessary action to take, but was the most reasonable
@@ -136,7 +137,8 @@ module CaTissue
         begin
           klass = const_get(name.to_sym)
         rescue NameError => e
-          raise AnnotationError.new("#{hook.qp} annotation #{qp} does not have a hook proxy class - " + $!)
+          logger.error("#{hook.qp} annotation #{qp} does not have a hook proxy class - " + $!)
+          raise
         end
         klass.extend(Annotation::ProxyClass)
         klass.hook = hook
