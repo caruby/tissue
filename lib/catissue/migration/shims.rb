@@ -89,8 +89,10 @@ module CaTissue
   end
 
   module CollectibleEventParameters
-    #@param [SpecimenCollectionGroup] scg the migrated owner SCG
-    # @return [SpecimenCollectionGroup] scg
+    # Migrates the given SCG.
+    #
+    # @param [SpecimenCollectionGroup] scg the migrated owner SCG
+    # @return [SpecimenCollectionGroup] the SCG
     # @see SpecimenEventParameters#migrate_specimen_collection_group
     def migrate_specimen_collection_group(scg, row)
       # unset the specimen parent if necessary
@@ -98,7 +100,7 @@ module CaTissue
       scg
     end
     
-    # Returns the given Specimen spc unless this CollectibleEventParameters already has a SCG owner.
+    # Returns the given Specimen unless this CollectibleEventParameters already has a SCG owner.
     # A CollectibleEventParameters is preferentially set to a migrated SCG rather than a migrated
     # Specimen.
     #
