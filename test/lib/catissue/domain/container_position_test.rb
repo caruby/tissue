@@ -6,8 +6,8 @@ class SpecimenPositionTest < Test::Unit::TestCase
   def setup
     super
     site = defaults.tissue_bank
-    frz_type = CaTissue::StorageType.new(:name => 'Freezer'.uniquify, :columns => 2, :rows => 1)
-    rack_type = CaTissue::StorageType.new(:name => 'Rack'.uniquify, :columns => 1, :rows => 2)
+    frz_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Freezer'), :columns => 2, :rows => 1)
+    rack_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Rack'), :columns => 1, :rows => 2)
     frz_type << rack_type
     freezer = CaTissue::StorageContainer.new(:site => site, :container_type => frz_type)
     rack = CaTissue::StorageContainer.new(:site => site, :container_type => rack_type)
