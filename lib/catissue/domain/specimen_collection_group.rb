@@ -322,6 +322,9 @@ module CaTissue
     #
     # @return [CaTissue::User] the default receiver
     def default_receiver
+      cep = collection_event_parameters
+      cltr = cep.user if cep
+      return cltr if cltr
       cp = collection_protocol || return
       rcv = cp.coordinators.first
       return rcv if rcv or cp.fetched?
