@@ -11,7 +11,7 @@ class StorageContainerTest < Test::Unit::TestCase
     frz_type = CaTissue::StorageType.new(:name => 'Test Freezer'.uniquify, :columns => 1, :rows => 2)
     rack_type = CaTissue::StorageType.new(:name => 'Test Rack'.uniquify, :columns => 2, :rows => 1)
     box_type = CaTissue::StorageType.new(:name => 'Test Box'.uniquify, :columns => 1, :rows => 2)
-    array_type = CaTissue::SpecimenArrayType.new(:name => 'SpecimenArray'.uniquify,
+    array_type = CaTissue::SpecimenArrayType.new(:name => Jinx::Uniquifier.instance.uniquify('SpecimenArray'),
       :specimen_class => @spc.specimen_class, :specimen_types => [@spc.specimen_type],
       :columns => 5, :rows => 5)
     frz_type << rack_type

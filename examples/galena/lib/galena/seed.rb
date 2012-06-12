@@ -50,7 +50,7 @@ module Galena
     #
     # @return [Seed] this fixture
     def uniquify
-      @protocol.title = @protocol.title.uniquify
+      @protocol.title = Jinx::Uniquifier.instance.uniquify(@protocol.title)
       self
     end
 

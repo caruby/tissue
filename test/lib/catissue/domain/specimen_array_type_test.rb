@@ -6,7 +6,7 @@ class SpecimenArrayTypeTest < Test::Unit::TestCase
 
   def setup
     super
-    @type = CaTissue::SpecimenArrayType.new(:name => 'SpecimenArrayType'.uniquify,
+    @type = CaTissue::SpecimenArrayType.new(:name => Jinx::Uniquifier.instance.uniquify('SpecimenArrayType'),
       :specimen_class => 'Frozen Tissue', :columns => 5, :rows => 5)
     @type.specimen_types << 'Tissue'
   end

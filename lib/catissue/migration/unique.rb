@@ -25,7 +25,7 @@ module CaTissue
     # Makes this Container and all of its subcontainers unique.
     def uniquify
       super
-      subcontainers.each { |ctr| ctr.uniquify }
+      subcontainers.each { |ctr| Jinx::Uniquifier.instance.uniquify(ctr) }
     end
   end
 
@@ -36,7 +36,7 @@ module CaTissue
   class StorageType
     def uniquify
       super
-      child_container_types.each { |type| type.uniquify } 
+      child_container_types.each { |type| Jinx::Uniquifier.instance.uniquify(type) } 
     end
   end
 
