@@ -2,6 +2,10 @@ module CaTissue
   # A CollectibleEventParameters is a SpecimenEventParameters which pertains to Specimen
   # or SpecimenCollectionGroup collection at the point of tissue acquisition from the participant
   # or receival at the tissue bank.
+  #
+  # @quirk caTissue Although the +specimenCollectionGroup+ property is defined for all
+  #   {SpecimenEventParameters}, only the {CollectibleEventParameters} classes can reference
+  #   a SCG.
   module CollectibleEventParameters
     # Returns the SpecimenEventParameters in others which matches this CollectibleEventParameters
     # in the scope of an owner Specimen or SCG. This method relaxes +Jinx::Resource.match_in_owner_scope+

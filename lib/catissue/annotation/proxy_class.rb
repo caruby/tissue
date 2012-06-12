@@ -44,8 +44,8 @@ module CaTissue
       #
       # This method defines a proxy attribute in each primary annotation class
       # for each {#non_proxy_annotation_classes} class hierarchy.
-      def build_annotation_dependency_hierarchy
-        logger.debug { "Building annotation dependency hierarchy..." }
+      def build_annotation_dependency_hierarchy 
+        logger.debug { "Building the #{annotation_module.qp} annotation proxy #{self} dependency hierarchy..." }
         non_proxy_annotation_classes.each do |klass|
           ensure_primary_references_proxy(klass)
         end

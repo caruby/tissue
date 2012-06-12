@@ -37,30 +37,18 @@ module CaTissue
       def tertiary?
         not (primary? or secondary?)
       end
-  
+
       # Adds metadata to this annotation class.
-      # This method is intended for the sole use of {Metadata}.
+      # This method is intended for the sole use of the Annotation {Importer}.
       #
-      # @param [Module] mod (see AnnotationModule.extend_class)
+      # @param [Module] mod the module which scopes this annotation 
       def add_annotation_metadata(mod)
+        logger.debug { "Adding #{mod.qp} annotation #{qp} metadata..." }
         # Set the primary key.
         property :identifier, :primary_key
-        # The entity facade determines various caTissue DE arcana.
-        efcd = Annotation::EntityFacade.instance
-        @annotation_module = mod
-        logger.debug { "Annotatable #{qp} annotation module is set to #{mod}." }
-        @entity_id = efcd.annotation_entity_id(self, false)
-        @is_primary = efcd.primary?(@entity_id) if @entity_id
-        # A primary entity has a container id.
-        if primary? then
-          @container_id = efcd.container_id(@entity_id)
-          if @container_id.nil? then
-            raise AnnotationError.new("Primary annotation #{self} is missing a container id")
-          end
-          logger.debug { "Primary annotation #{self} has container id #{@container_id}." }
-          pxy = @annotation_module.proxy
-          if pxy then pxy.ensure_primary_references_proxy(self) end
-        end
+        self.annotation_module = mod
+        infer_entity_id
+        logger.debug { "#{mod.qp} annotation #{qp} metadata is complete." }
       end
   
       # @return [Symbol] the domain attributes which include {Annotation}
@@ -122,6 +110,16 @@ module CaTissue
       end
   
       protected
+      
+      # Sets this {Annotation} class's scoping module. If this class's superclass is also an
+      # {Annotation}, then the superclass annotation module is set as well. The superclass
+      # annotation module must be set before this class's entity id is inferred.
+      #
+      # @param [Module] mod the module which scopes this annotation 
+      def annotation_module=(mod)
+        superclass.annotation_module ||= mod if superclass < Annotation
+        @annotation_module = mod
+      end
   
       # @return [Symbol => ReferenceWriter] this class's attribute => writer hash
       def attribute_writer_hash
@@ -219,6 +217,26 @@ module CaTissue
       end
   
       private
+
+      # Determines this annotation's entity id. 
+      def infer_entity_id
+        # The entity facade determines various caTissue DE arcana, including the entity id,
+        # primary status and the container id.
+        efcd = Annotation::EntityFacade.instance
+        @entity_id = efcd.annotation_entity_id(self, false)
+        @is_primary = efcd.primary?(@entity_id) if @entity_id
+        # A primary entity has a container id.
+        if primary? then
+          @container_id = efcd.container_id(@entity_id)
+          if @container_id.nil? then
+            raise AnnotationError.new("Primary annotation #{self} is missing a container id")
+          end
+          logger.debug { "Primary annotation #{self} has container id #{@container_id}." }
+          pxy = @annotation_module.proxy
+          pxy.ensure_primary_references_proxy(self) if pxy
+        end
+        logger.debug { "#{annotation_module.qp} annotation #{qp} metadata is complete." }
+      end
     
       # Augments +Jinx::Introspector.add_java_attribute+ to accomodate the
       # following caTissue anomaly:

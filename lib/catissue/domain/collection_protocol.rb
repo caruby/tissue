@@ -41,12 +41,8 @@ module CaTissue
     #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:start_date, :update_only)
 
-    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
     set_attribute_type(:coordinators, CaTissue::User)
 
-    # @quirk caTissue Augment the standard metadata savable reference attributes to work around caTissue Bug #150:
-    #   Create CollectionProtocol in API ignores startDate.
     qualify_attribute(:coordinators, :fetched)
 
     # @quirk caTissue Bug #64 - consent tiers collection property is not initialized to an empty set in the Java constructor.
@@ -109,14 +105,21 @@ module CaTissue
     end
     
     # Returns the default protocol site, determined as follows:
-    # * If there is exactly one authorized site for this protocol, then that is the default site.
-    # * If there is exactly two authorized sites for this protocol, then the site other than the
+    # * If there is exactly one coordinator with one site, then the coordinator's site is the default.
+    # * Otherwise, if there is exactly one authorized site for this protocol, then that is the default site.
+    # * Otherwise, if there is exactly two authorized sites for this protocol, then the site other than the
     #   {CaTissue::Site.default_site} is returned.
     # * Otherwise, this method returns nil.
     #
     # @return [CaTissue::Site, nil] the default site
     def default_site
-     case sites.size
+      coord = coordinators.first if coordinators.size == 1
+      site = coord.sites.first if coord and coord.sites.size == 1
+      return site if site
+      # If this CP's identifier was set by the client but the CP was not fetched, then do so now
+      # in order to enable lazy-loading the sites.
+      find if sites.empty? and identifier and not fetched?
+      case sites.size
       when 1 then sites.first
       when 2 then sites.select { |site| site.name != CaTissue::Site.default_site.name }
       end

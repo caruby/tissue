@@ -83,7 +83,7 @@ class ParticipantTest < Test::Unit::TestCase
   # Tests making a participant lab annotation. 
   def test_lab_annotation
     lab = CaTissue::Participant::Clinical::LabAnnotation.new
-    lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => @pnt)
+    lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => @pnt, :result => '4', :result_units => 'mg')
     cln = @pnt.clinical.first
     assert_not_nil(cln, "Clinical annotation not added to participant")
     labs = cln.lab_annotations
@@ -140,7 +140,7 @@ class ParticipantTest < Test::Unit::TestCase
   def test_save_lab_annotation
     date = DateTime.new(2010, 10, 10)
     lab = CaTissue::Participant::Clinical::LabAnnotation.new
-    lab.merge_attributes(:other_lab_test_name => 'Test Lab', :test_date => date, :participant => @pnt)
+    lab.merge_attributes(:other_lab_test_name => 'Test Lab', :test_date => date, :participant => @pnt, :result => '4', :result_units => 'mg')
     verify_save(lab)
     assert_not_nil(lab.identifier, "Lab not saved")
   end

@@ -1,8 +1,7 @@
 require 'jinx/helpers/validation'
 
 module CaTissue
-  # A Collectible mix-in instance can hold a #{CaTissue::ReceivedEventParameters} and a
-  # #{CaTissue::CollectedEventParameters}.
+  # A Collectible mix-in instance can hold CollectibleEventParameters}.
   module Collectible
     # Augments +Jinx::Resource#merge_attributes+ to builds this collectible domain object's
     # SpecimenEventParameters. If the other source object is a Hash, then it includes

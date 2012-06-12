@@ -179,6 +179,8 @@ module CaTissue
         pkg, base = Java.split_class_name(jname)
         # A wustl domain class is in the core group.
         # Others are in an annotation module with a designated group.
+        mod = klass.annotation_module
+        if mod.nil? then raise AnnotationError.new("Annotation class #{klass} does not have an annotation module.") end
         pkg == CORE_PKG ? [CORE_GROUP, jname] : [klass.annotation_module.group, base]
       end
       
