@@ -8,9 +8,9 @@ class StorageContainerTest < Test::Unit::TestCase
     super
     @spc = defaults.specimen
     site = defaults.tissue_bank
-    frz_type = CaTissue::StorageType.new(:name => 'Test Freezer'.uniquify, :columns => 1, :rows => 2)
-    rack_type = CaTissue::StorageType.new(:name => 'Test Rack'.uniquify, :columns => 2, :rows => 1)
-    box_type = CaTissue::StorageType.new(:name => 'Test Box'.uniquify, :columns => 1, :rows => 2)
+    frz_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Test Freezer'), :columns => 1, :rows => 2)
+    rack_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Test Rack'), :columns => 2, :rows => 1)
+    box_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Test Box'), :columns => 1, :rows => 2)
     array_type = CaTissue::SpecimenArrayType.new(:name => Jinx::Uniquifier.instance.uniquify('SpecimenArray'),
       :specimen_class => @spc.specimen_class, :specimen_types => [@spc.specimen_type],
       :columns => 5, :rows => 5)
@@ -116,7 +116,7 @@ class StorageContainerTest < Test::Unit::TestCase
     assert_not_nil(box, "Box missing")
 
     # verify that the box name can be set
-    box.name = 'Test Box'.uniquify
+    box.name = Jinx::Uniquifier.instance.uniquify('Test Box')
     verify_save(box)
     assert_not_nil(@frz.identifier, "#{@frz.qp} not saved")
 

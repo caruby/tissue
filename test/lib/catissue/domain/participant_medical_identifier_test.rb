@@ -17,7 +17,7 @@ class ParticipantMedicalIdentifierTest < Test::Unit::TestCase
   def test_save
     @pmi.medical_record_number = Jinx::Uniquifier.qualifier
     @pmi.site = defaults.tissue_bank
-    @pmi.participant = CaTissue::Participant.new(:name => 'Test Participant'.uniquify)
+    @pmi.participant = CaTissue::Participant.new(:name => Jinx::Uniquifier.instance.uniquify('Test Participant'))
     verify_save(@pmi)
     # update the PMI
     @pmi.medical_record_number = Jinx::Uniquifier.qualifier

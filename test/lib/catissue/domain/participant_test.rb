@@ -6,7 +6,7 @@ class ParticipantTest < Test::Unit::TestCase
 
   def setup
     super
-    @pnt = CaTissue::Participant.new(:name => 'Test Participant'.uniquify)
+    @pnt = CaTissue::Participant.new(:name => Jinx::Uniquifier.instance.uniquify('Test Participant'))
   end
 
   def test_defaults
