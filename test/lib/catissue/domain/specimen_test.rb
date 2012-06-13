@@ -311,11 +311,11 @@ class SpecimenTest < Test::Unit::TestCase
   def test_eid_save
     verify_save(@spc)
     # add an EID
-    CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :value => 'Test Value'.uniquify, :specimen => @spc)
+    CaTissue::ExternalIdentifier.new(:name => Jinx::Uniquifier.instance.uniquify(Jinx::Uniquifier.instance.uniquify('Test Name'), :value => 'Test Value'), :specimen => @spc)
     # make a new specimen in the same SCG
     spc2 = @spc.copy(:specimen_class, :specimen_type, :initial_quantity, :specimen_collection_group)
     # add an EID
-    eid2 = CaTissue::ExternalIdentifier.new(:name => 'Test Name'.uniquify, :value => 'Test Value'.uniquify, :specimen => spc2)
+    eid2 = CaTissue::ExternalIdentifier.new(:name => Jinx::Uniquifier.instance.uniquify(Jinx::Uniquifier.instance.uniquify('Test Name'), :value => 'Test Value'), :specimen => spc2)
     # create the new specimen
     logger.debug { "#{self} creating second EID specimen #{spc2}..." }
     verify_save(spc2)

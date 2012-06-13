@@ -16,7 +16,7 @@ class ExamplesTest < Test::Unit::TestCase
   # Verifies the consent withdrawal example.
   def test_withdraw_consent
     # add a protocol consent tier
-    @pcl.consent_tiers << ct = CaTissue::ConsentTier.new(:statement => 'Test Consent'.uniquify)
+    @pcl.consent_tiers << ct = CaTissue::ConsentTier.new(:statement => Jinx::Uniquifier.instance.uniquify('Test Consent'))
     # add a CPR consent tier response
     @scg.registration.consent_tier_responses << CaTissue::ConsentTierResponse.new(:consent_tier => ct)
     # make the PMI
@@ -45,11 +45,11 @@ class ExamplesTest < Test::Unit::TestCase
   # Verifies the specimen move example.
   def test_move
     # the source box
-    src = defaults.box_type.new_container(:site => defaults.hospital, :name => 'Test Box'.uniquify)
+    src = defaults.box_type.new_container(:site => defaults.hospital, :name => Jinx::Uniquifier.instance.uniquify('Test Box'))
     src << @spc
     verify_save(@spc)
     # the target box
-    tgt = defaults.box_type.new_container(:site => defaults.hospital, :name => 'Test Box'.uniquify)
+    tgt = defaults.box_type.new_container(:site => defaults.hospital, :name => Jinx::Uniquifier.instance.uniquify('Test Box'))
     verify_save(tgt)
     # move the specimen
     logger.debug { "#{self} moving #{@spc} from #{src} to #{tgt}..." }

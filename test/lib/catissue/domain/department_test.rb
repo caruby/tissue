@@ -6,7 +6,7 @@ class CaTissueDepartmentTest < Test::Unit::TestCase
 
   def setup
     super
-    @dept = CaTissue::Department.new(:name => 'Test Department'.uniquify)
+    @dept = CaTissue::Department.new(:name => Jinx::Uniquifier.instance.uniquify('Test Department'))
   end
 
   def test_defaults
