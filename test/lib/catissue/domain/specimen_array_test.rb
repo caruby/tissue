@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 
 class SpecimenArrayTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -7,7 +6,7 @@ class SpecimenArrayTest < Test::Unit::TestCase
   def setup
     super
     @spc = defaults.specimen
-    array_type = CaTissue::SpecimenArrayType.new(:name => Jinx::Uniquifier.instance.uniquify('SpecimenArray'), :specimen_class => @spc.specimen_class,
+    array_type = CaTissue::SpecimenArrayType.new(:name => Jinx::StringUniquifier.uniquify('SpecimenArray'), :specimen_class => @spc.specimen_class,
       :specimen_types => [@spc.specimen_type], :columns => 5, :rows => 5)
     @array = CaTissue::SpecimenArray.new(:container_type => array_type)
   end

@@ -1,7 +1,8 @@
 require File.dirname(__FILE__) + '/../helper'
 require 'test/unit'
 require 'jinx/helpers/collections'
-
+require 'jinx/helpers/uid'
+require 'jinx/helpers/string_uniquifier'
 require 'caruby/database/writer_template_builder'
 
 module CaTissue

@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 require 'catissue/database/controlled_values'
 
 class ControlledValuesTest < Test::Unit::TestCase
@@ -33,7 +32,7 @@ class ControlledValuesTest < Test::Unit::TestCase
   def test_create_delete
     cv = CaTissue::ControlledValue.new
     cv.public_id = :tissue_site
-    cv.value = Jinx::Uniquifier.instance.uniquify('Test Tissue Site')
+    cv.value = Jinx::StringUniquifier.uniquify('Test Tissue Site')
     assert_same(cv, CaTissue::ControlledValues.instance.create(cv), "CV not created")
     assert_same(cv, CaTissue::ControlledValues.instance.find(cv.public_id, cv.value), "Created CV not found")
     assert_nothing_raised("CV not deleted") { CaTissue::ControlledValues.instance.delete(cv) }

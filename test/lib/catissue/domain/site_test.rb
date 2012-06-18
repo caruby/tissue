@@ -6,7 +6,6 @@ class SiteTest < Test::Unit::TestCase
   def setup
     super
     @site = defaults.tissue_bank
-    @site.name = Jinx::Uniquifier.instance.uniquify(@site.name)
   end
 
   def test_defaults
