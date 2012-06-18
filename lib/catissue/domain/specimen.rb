@@ -1,6 +1,5 @@
 require 'jinx/helpers/hashable'
 require 'jinx/helpers/inflector'
-require 'jinx/helpers/uniquifier'
 require 'jinx/helpers/validation'
 require 'catissue/helpers/storable'
 require 'catissue/helpers/collectible'
