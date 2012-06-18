@@ -16,7 +16,7 @@ module CaTissue
       # @param (see CaRuby::CLI::Command#initialize)
       def initialize(specs=[])
         specs << VERSION_OPT
-        specs.concat(CaRuby::Database::ACCESS_OPTS)
+        specs.concat(CaRuby::Database::ACCESS_OPTS).concat(CaRuby::SQLExecutor::ACCESS_OPTS)
         super
       end
       
@@ -35,7 +35,8 @@ module CaTissue
           puts "#{CaTissue::VERSION} for caTissue v#{CaTissue::CATISSUE_VERSIONS}"
           exit 0
         else
-          CaRuby::Database::ACCESS_OPTS.each do |opt, *spec|
+          opts = CaRuby::Database::ACCESS_OPTS + CaRuby::SQLExecutor::ACCESS_OPTS
+          opts.each do |opt, *spec|
             value = opts.delete(opt)
             CaTissue.properties[opt] = value if value
           end
