@@ -1,5 +1,4 @@
 # This file is the entry point included by applications which use a CaTissue application service.
-require 'uom'
 require 'jinx'
 require 'caruby'
 require 'catissue/resource'
@@ -10,9 +9,9 @@ require 'catissue/helpers/properties_loader'
 # The caTissue domain package metadata mix-in. Each domain class automatically
 # includes this CaTissue module when it is referenced.
 #
-# The CaTissue API client must set the application properties defined in
-# +CaRuby::Database::ACCESS_OPTS+. Application configuration is described in the
-# +README.md+ file.
+# The CaTissue API client must set the application properties described in
+# +CaRuby::Database::ACCESS_OPTS+ and +CaRuby::SQLExecutor::ACCESS_OPTS+.
+# The application configuration is described in the +README.md+ file.
 module CaTissue
   include Annotatable, Resource
   

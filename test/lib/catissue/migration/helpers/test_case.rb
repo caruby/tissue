@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/../../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 require 'catissue/migration/migrator'
+require 'jinx/helpers/uniquifier_cache'
 
 module CaTissue
   module MigrationTestCase
@@ -11,7 +11,7 @@ module CaTissue
       super()
       @fixtures = fixtures
       # Clear the uniquifier for this migration.
-      Jinx::Uniquifier.instance.clear
+      Jinx::UniquifierCache.instance.clear
     end
 
     private

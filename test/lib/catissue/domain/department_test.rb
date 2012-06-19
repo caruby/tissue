@@ -1,12 +1,11 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 
 class CaTissueDepartmentTest < Test::Unit::TestCase
   include CaTissue::TestCase
 
   def setup
     super
-    @dept = CaTissue::Department.new(:name => Jinx::Uniquifier.instance.uniquify('Test Department'))
+    @dept = CaTissue::Department.new(:name => Jinx::StringUniquifier.uniquify('Test Department'))
   end
 
   def test_defaults

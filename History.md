@@ -1,6 +1,10 @@
 This history lists major release themes. See the GitHub commits (https://github.com/caruby/tissue)
 for change details.
 
+2.1.5 / 2012-06-18
+------------------
+* Infer the application properties.
+
 2.1.4 / 2012-04-17
 ------------------
 * Clean up rubydoc.

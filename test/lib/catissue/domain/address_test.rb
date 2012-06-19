@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 
 class AddressTest < Test::Unit::TestCase
   include CaTissue::TestCase

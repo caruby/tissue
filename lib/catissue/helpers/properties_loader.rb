@@ -1,14 +1,44 @@
+require "rexml/document"
+
 module CaTissue
-  # The caTissue classpath and connection parameters properties loader mix-in.
+  # PropertiesLoader is a mix-in which loads the caTissue application, classpath
+  # and database properties.
+  #
+  # The default properties file is determined as follows:
+  #   * +./.catissue+, if it exists
+  #   * +~/.catissue+, otherwise
   module PropertiesLoader
     class ConfigurationError < StandardError; end
     
+    # The CaTissue properties include the following:
+    # * the +CaRuby::Database::ACCESS_OPTS+
+    # * the +CaRuby::SQLExecutor::ACCESS_OPTS+
+    # * the application Java classpath
+    #
+    # If the +CATISSUE_CLIENT_HOME+ environment variable is set to the caTissue client
+    # installation directory or the caRuby Tissue client is started in that directory,
+    # then the classpath can be inferred by this loader.
+    #
+    # The +host+ and +port+ can be inferred from the first +remoteServices.xml+ file
+    # in the classpath.
+    #
+    # The required application connection properties include +user+ and +password+. 
+    # 
+    # The required database properties include the following:
+    # * +database_host+
+    # * +database_port+
+    # * +database+
+    # * +database_user+
+    # * +database_password+
+    #
     # @return [{Symbol => [String, <String>]}] the application properties
     def properties
       @properties ||= load_properties
     end
     
     private
+    
+    AUTH_XML = "policy/application_policy[@name = 'catissuecore']/authentication/login-module/module-option"
 
     # Loads the caTissue classpath and connection properties.
     def load_properties
@@ -28,7 +58,30 @@ module CaTissue
           props[:port] = port
         end
       end
+      unless props.has_key?(:database) then
+        props.merge(infer_database_properties)
+      end
       props
+    end
+    
+    def infer_database_properties
+      jboss = ENV['JBOSS_HOME'] || return
+      path = jboss + '/server/default/conf/login-config.xml'
+      return unless File.readable?(path)
+      file = File.new(path)
+      doc = REXML::Document.new(file)
+      props = {}
+      doc.elements.each(AUTH_XML) do |elt|
+        case elt.attributes['name']
+        when 'url' then props[:database_url] = elt.text
+        when 'user' then props[:database_user] = elt.text
+        when 'pswd' then props[:database_password] = elt.text
+        end
+      end
+      unless props.empty? then
+        logger.debug { "The database connection options #{props.keys.to_series} were inferred from #{path}." }
+      end
+      props  
     end
     
     def remote_service_url
@@ -73,13 +126,22 @@ module CaTissue
     #   # host: jacardi
     # The captures are the trimmed property and value.
     PROP_DEF_REGEX = /^(\w+)(?:\s*[:=]\s*)([^#]+)/
+    
+    # The default properties file name.
+    DEF_PROP_FILE_NM = '.catissue'
   
-    # @return [String] the default application properties file, given by +~/.+_name_,
-    #   where _name_ is the underscore unqualified module name, e.g. +~/.catissue+
-    #   for module +CaTissue+
+    # The default application properties file is determined as follows:
+    #   * +./.catissue+, if it exists
+    #   * +~/.catissue+, otherwise
+    #
+    # @return [String, nil] the default application properties file
     def default_properties_file
+      # try the current directory
+      file = File.expand_path(DEF_PROP_FILE_NM)
+      return file if File.exists?(file)
+      # try home
       home = ENV['HOME'] || ENV['USERPROFILE'] || '~'
-      file = File.expand_path('.catissue', home)
+      file = File.expand_path(DEF_PROP_FILE_NM, home)
       file if File.exists?(file)
     end
   
@@ -111,11 +173,6 @@ module CaTissue
     #   should not be included in the client class path, even though it is in the client lib
     #   directory.
     def infer_classpath
-      
-      
-      ENV['CATISSUE_CLIENT_HOME'] = '/usr/local/src/catissue/build/caTissue_Suite_API_Client_v1.2_Installable'
-      
-      
       dir = ENV['CATISSUE_CLIENT_HOME'] || '.'
       logger.info("Inferring the class path from directory #{dir}...")
       # Hunt for the client directories
@@ -126,9 +183,11 @@ module CaTissue
         client_subdirectory(clt_dir, 'lib'),
         client_subdirectory(de_dir, 'lib')
       ]
+      
       # caTissue 1.1.2 has an extra directory.
       clt_lib = File.expand_path('lib', dir)
       dirs << clt_lib if File.directory?(clt_lib)
+      
       # Make a semi-colon separated path string.
       path = dirs.join(';')
       logger.info("Inferred the class path #{path}.")

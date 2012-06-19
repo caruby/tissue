@@ -79,7 +79,13 @@ module CaTissue
     # is no use case for its access.
     remove_attribute(:passwords)
 
-    set_attribute_inverse(:protocols, :assigned_protocol_users)
+    set_attribute_inverse(:coordinated_protocols, :coordinators)
+
+    qualify_attribute(:coordinated_protocols, :saved)
+
+    set_attribute_inverse(:assigned_protocols, :assigned_protocol_users)
+
+    qualify_attribute(:assigned_protocols, :saved, :fetched)
 
     set_attribute_inverse(:sites, :assigned_site_users)
     
@@ -88,8 +94,6 @@ module CaTissue
     qualify_attribute(:department, :fetched)
 
     qualify_attribute(:institution, :fetched)
-
-    qualify_attribute(:protocols, :saved, :fetched)
 
     qualify_attribute(:sites, :saved)
 

@@ -38,14 +38,14 @@ class UserTest < Test::Unit::TestCase
     # Create the user with a unique email.
     email = @user.email_address
     at_ndx = email.index('@')
-    modifier = "_#{Jinx::Uniquifier.qualifier}"
+    modifier = "_#{Jinx::UID.generate}"
     @user.email_address = email.insert(at_ndx, modifier)
     @user.login_name = nil
     verify_save(@user)
     
     # Update the address.
     logger.debug { "#{self} updating the #{@user} address..." }
-    @user.address.street = "#{Jinx::Uniquifier.qualifier} Elm St."
+    @user.address.street = "#{Jinx::UID.generate} Elm St."
     verify_save(@user)
   end
 end

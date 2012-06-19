@@ -7,8 +7,8 @@ class ExternalIdentifierTest < Test::Unit::TestCase
     super
     @spc = defaults.specimen
     @eid = CaTissue::ExternalIdentifier.new(
-      :name => Jinx::Uniquifier.instance.uniquify('Test Name'),
-      :value => Jinx::Uniquifier.instance.uniquify('Test Value'),
+      :name => Jinx::StringUniquifier.uniquify('Test Name'),
+      :value => Jinx::StringUniquifier.uniquify('Test Value'),
       :specimen => @spc
     )
   end
@@ -23,7 +23,7 @@ class ExternalIdentifierTest < Test::Unit::TestCase
     verify_save(@eid)
     # update the EID
     oldval = @eid.value
-    newval = @eid.value = Jinx::Uniquifier.instance.uniquify('Test Value')
+    newval = @eid.value = Jinx::StringUniquifier.uniquify('Test Value')
     logger.debug { "#{self} verifying #{@eid} update of value from #{oldval} to #{newval}..." }
     verify_save(@eid)
   end

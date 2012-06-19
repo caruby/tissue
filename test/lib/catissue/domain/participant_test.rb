@@ -1,12 +1,11 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 
 class ParticipantTest < Test::Unit::TestCase
   include CaTissue::TestCase
 
   def setup
     super
-    @pnt = CaTissue::Participant.new(:name => Jinx::Uniquifier.instance.uniquify('Test Participant'))
+    @pnt = CaTissue::Participant.new(:name => Jinx::StringUniquifier.uniquify('Test Participant'))
   end
 
   def test_defaults
@@ -119,7 +118,7 @@ class ParticipantTest < Test::Unit::TestCase
   def test_find_phantom_mrn_filter
     # add an MRN
     site = defaults.registration.participant.participant_medical_identifiers.first.site
-    @pnt.add_mrn(site, Jinx::Uniquifier.qualifier)
+    @pnt.add_mrn(site, Jinx::UID.generate.to_s)
     # save the patient
     verify_save(@pnt)
     # fetch the saved patient

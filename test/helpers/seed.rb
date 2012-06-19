@@ -1,6 +1,6 @@
 require 'singleton'
 require 'jinx/helpers/validation'
-require 'jinx/helpers/uniquifier'
+require 'jinx/helpers/string_uniquifier'
 
 module CaTissue
   module TestCase
@@ -55,8 +55,8 @@ module CaTissue
       def uniquify
         # make the CP and MRN unique; these values will ripple through the SCG, CPR, et al.
         # to make them unique as well
-        @protocol.title = Jinx::Uniquifier.instance.uniquify(@protocol.title)
-        @registration.participant.medical_identifiers.each { |mid| mid.medical_record_number = Jinx::Uniquifier.qualifier }
+        @protocol.title = Jinx::StringUniquifier.uniquify(@protocol.title)
+        @registration.participant.medical_identifiers.each { |mid| mid.medical_record_number = Jinx::UID.generate.to_s }
         # unset the SCG name and specimen label so the default is set to a new unique value
         @specimen_collection_group.name = @specimen.label = nil
         self

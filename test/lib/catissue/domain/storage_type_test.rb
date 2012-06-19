@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 
 class StorageTypeTest < Test::Unit::TestCase
   include CaTissue::TestCase
@@ -7,10 +6,10 @@ class StorageTypeTest < Test::Unit::TestCase
   def setup
     super
     @spc = defaults.specimen
-    @frz_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Freezer'), :columns => 5, :rows => 5)
-    @rack_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Rack'), :columns => 1, :rows => 1)
-    @box_type = CaTissue::StorageType.new(:name => Jinx::Uniquifier.instance.uniquify('Box'), :columns => 1, :rows => 1)
-    @array_type = CaTissue::SpecimenArrayType.new(:name => Jinx::Uniquifier.instance.uniquify('SpecimenArray'),
+    @frz_type = CaTissue::StorageType.new(:name => Jinx::StringUniquifier.uniquify('Freezer'), :columns => 5, :rows => 5)
+    @rack_type = CaTissue::StorageType.new(:name => Jinx::StringUniquifier.uniquify('Rack'), :columns => 1, :rows => 1)
+    @box_type = CaTissue::StorageType.new(:name => Jinx::StringUniquifier.uniquify('Box'), :columns => 1, :rows => 1)
+    @array_type = CaTissue::SpecimenArrayType.new(:name => Jinx::StringUniquifier.uniquify('SpecimenArray'),
       :specimen_class => @spc.specimen_class, :specimen_types => [@spc.specimen_type],
       :columns => 5, :rows => 5)
     @frz_type << @rack_type

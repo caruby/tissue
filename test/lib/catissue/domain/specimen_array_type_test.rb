@@ -1,12 +1,11 @@
 require File.dirname(__FILE__) + '/../../../helpers/test_case'
-require 'jinx/helpers/uniquifier'
 
 class SpecimenArrayTypeTest < Test::Unit::TestCase
   include CaTissue::TestCase
 
   def setup
     super
-    @type = CaTissue::SpecimenArrayType.new(:name => Jinx::Uniquifier.instance.uniquify('SpecimenArrayType'),
+    @type = CaTissue::SpecimenArrayType.new(:name => Jinx::StringUniquifier.uniquify('SpecimenArrayType'),
       :specimen_class => 'Frozen Tissue', :columns => 5, :rows => 5)
     @type.specimen_types << 'Tissue'
   end

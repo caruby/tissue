@@ -105,7 +105,7 @@ module CaTissue
     def add_defaults_local
       super
       self.registration_date ||= Java.now
-      self.protocol_participant_identifier ||= Jinx::Uniquifier.qualifier.to_s
+      self.protocol_participant_identifier ||= Jinx::UID.generate.to_s
     end
   end
 end
