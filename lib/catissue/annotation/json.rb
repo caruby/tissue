@@ -4,11 +4,15 @@ module CaTissue
       private
       
       # The JSON class name must be scoped by the Resource package module, not the
-      # Java package, in order to recognize the Jinx::Resource JSON hooks.
+      # Java package, in order to recognize the Jinx::Resource JSON hooks. For example,
+      # the +Participant+ +LabAnnotation+ class name is
+      # +CaTissue::Participant::Clinical::LabAnnotation+. 
       #
-      # @return [String] the class name qualified by the Resource package module name context
+      # @return [String] the class name qualified by the Resource package module name
+      #   context
       def json_class_name
-        [hook.class.domain_module, hook.class.qp, self.class.annotation_module.qp, self.class.qp].join('::')
+        mod = self.class.annotation_module
+        [mod.hook.domain_module, mod.hook, mod, self.class].map { |m| m.name.demodulize }.join('::')
       end
     end
   end
