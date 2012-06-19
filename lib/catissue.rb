@@ -1,5 +1,4 @@
 # This file is the entry point included by applications which use a CaTissue application service.
-require 'uom'
 require 'jinx'
 require 'caruby'
 require 'catissue/resource'
