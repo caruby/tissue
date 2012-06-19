@@ -7,6 +7,8 @@ require 'catissue/annotation/de_integration'
 
 module CaTissue
   module Annotation
+    # This Annotation Importer module extends the standard +Jinx::Importer+ to import annotation
+    # classes. 
     module Importer
       include Jinx::Importer
       
