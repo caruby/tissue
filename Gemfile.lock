@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    caruby-tissue (2.1.4)
+    caruby-tissue (2.1.5)
       bundler
       caruby-core (>= 2.1.1)
       uom (>= 1.2.2)
