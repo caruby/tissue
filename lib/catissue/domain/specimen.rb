@@ -27,7 +27,7 @@ module CaTissue
 
     add_attribute_defaults(:activity_status => 'Active', :collection_status => 'Collected')
 
-    add_mandatory_attributes(:initial_quantity, :available_quantity)
+    add_mandatory_attributes(:specimen_collection_group, :initial_quantity, :available_quantity)
 
     set_secondary_key_attributes(:label)
     
@@ -188,23 +188,23 @@ module CaTissue
 #    end
 
     # Override default +Jinx::Resource.merge_attributes+ to ignore a source SpecimenRequirement parent_specimen.
-    def merge_attributes(other, attributes=nil)
+    def merge_attributes(other, attributes=nil, matches=nil, &filter)
       case other
-        when SpecimenRequirement then
-          # merge with the default requirement merge attributes if necessary
-          attributes ||= MERGEABLE_RQMT_ATTRS
-          super(other, attributes)
-          # copy the requirement characteristics
-          sc = other.specimen_characteristics
-          self.specimen_characteristics ||= sc.copy(MERGEABLE_SPC_CHR_ATTRS) if sc
-        when Jinx::Hashable then
-          # the requirement template
-          rqmt = other[:specimen_requirement] || other[:requirement]
-          # merge the attribute => value hash
-          super
-          # merge the SpecimenRequirement after the hash
-          merge_attributes(rqmt) if rqmt
-        else super
+      when SpecimenRequirement then
+        # merge with the default requirement merge attributes if necessary
+        attributes ||= MERGEABLE_RQMT_ATTRS
+        super(other, attributes)
+        # copy the requirement characteristics
+        sc = other.specimen_characteristics
+        self.specimen_characteristics ||= sc.copy(MERGEABLE_SPC_CHR_ATTRS) if sc
+      when Jinx::Hashable then
+        # the requirement template
+        rqmt = other[:specimen_requirement] || other[:requirement]
+        # merge the attribute => value hash
+        super
+        # merge the SpecimenRequirement after the hash
+        merge_attributes(rqmt) if rqmt
+      else super
       end
       self
     end

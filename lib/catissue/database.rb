@@ -584,7 +584,13 @@ module CaTissue
     # @raise DatabaseError if the object to save is an {Annotation::Proxy}, which is not supported
     def save_with_template(obj, template)
       # special cases to work around caTissue bugs
-      if CaTissue::CollectionProtocolRegistration === obj  and template.collection_protocol then
+
+      # Protocol create doesn't add the coordinators to the save template.
+      # TODO - find out why
+      if CaTissue::CollectionProtocol === obj and obj.identifier.nil? and template.coordinators.empty? and not obj.coordinators.empty? then
+        ensure_exists(obj.coordinators)
+        template.coordinators.merge(obj.coordinators)
+      elsif CaTissue::CollectionProtocolRegistration === obj  and template.collection_protocol then
         template.collection_protocol.collection_protocol_events.clear
       elsif CaTissue::Specimen === obj then
         if obj.position and obj.position.identifier then

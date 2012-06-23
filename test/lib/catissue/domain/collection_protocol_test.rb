@@ -69,6 +69,7 @@ class CollectionProtocolTest < Test::Unit::TestCase
    verify_save(@pcl)
    coord = @pcl.coordinators.first
    assert_not_nil(coord, "#{@pcl} does not have a default coordinator.")
+   assert_not_nil(coord.identifier, "#{@pcl} coordinator #{coord} was not saved.")
    tmpl = @pcl.copy(:identifier).find
    actual = tmpl.coordinators.first
    assert_not_nil(actual, "#{tmpl} coordinator was not fetched.")

@@ -51,7 +51,7 @@ module CaTissue
     end
     
     # @raise [Jinx::ValidationError] if the holder cannot hold the occupant type
-    def validate
+    def validate_local
       super
       logger.debug { "Validating that #{holder} can hold #{occupant}..." }
       curr_occ = holder[column, row]

@@ -2,7 +2,8 @@ module CaTissue
   class SpecimenPosition
     add_mandatory_attributes(:storage_container)
 
-    add_attribute_aliases(:holder => :storage_container, :container => :storage_container, :occupant => :specimen)
+    add_attribute_aliases(:holder => :storage_container, :container => :storage_container, :from => :storage_container,
+      :occupant => :specimen, :to => :specimen)
 
     # Each SpecimenPosition has a specimen and there is only one position per specimen.
     set_secondary_key_attributes(:specimen)
