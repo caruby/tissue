@@ -19,7 +19,7 @@ module CaTissue
     # @option other [CaTissue::User] :collector the user who acquired the tissue
     #   (defaults to the receiver)
     # @option opts [Date] :collected_date the collection date (defaults to the received date)
-    def merge_attributes(other, attributes=nil)
+    def merge_attributes(other, attributes=nil, matches=nil, &filter)
       if Hash === other then
         # extract the event parameters
         other[:specimen_event_parameters] = extract_event_parameters(other)
