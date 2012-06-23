@@ -143,7 +143,7 @@ module CaTissue
     #
     # @param (see CaTissue::Collectible#merge_attributes)
     # @option (see CaTissue::Collectible#merge_attributes)
-    def merge_attributes(other, attributes=nil)
+    def merge_attributes(other, attributes=nil, matches=nil, &filter)
       if Hash === other then
         # take the transitive closure of the specimens
         spcs = other.delete(:specimens)
