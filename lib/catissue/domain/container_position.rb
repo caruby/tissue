@@ -4,7 +4,8 @@ module CaTissue
   class ContainerPosition
     add_mandatory_attributes(:parent_container)
 
-    add_attribute_aliases(:parent => :parent_container, :holder => :parent_container, :occupant => :occupied_container)
+    add_attribute_aliases(:parent => :parent_container, :from => :parent_container, :holder => :parent_container,
+      :occupant => :occupied_container, :to => :occupied_container)
 
     # Each ContainerPosition has a container and there is only one position per container.
     set_secondary_key_attributes(:occupied_container)
