@@ -211,6 +211,15 @@ class SpecimenTest < Test::Unit::TestCase
      verify_save(@spc)
   end
   
+  def test_created_on_save
+    crd = @spc.created_on = Date.today << 12 
+    @spc.save
+    assert_equal(crd.ld, @spc.copy(:identifier).find.created_on.ld, "Created on date was not set in create.")
+    crd = @spc.created_on = crd >> 6 
+    @spc.save
+    assert_equal(crd.ld, @spc.copy(:identifier).find.created_on.ld, "Created on date was not updated.")
+  end
+  
   def test_characteristics_save
     chr = @spc.specimen_characteristics
     original = chr.tissue_site = 'Lymph node, NOS'
