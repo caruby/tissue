@@ -63,6 +63,16 @@ class CollectionProtocolTest < Test::Unit::TestCase
    verify_save(@pcl)
   end
 
+  def test_register_save
+   @pcl.save
+   pnt = CaTissue::Participant.new.create
+   reg = @pcl.register(pnt).save
+   fetched = CaTissue::Participant.new(:identifier => pnt.identifier).find
+   actual = fetched.registrations.first
+   assert_not_nil(actual, "#{pnt} registration not saved.")
+   assert_equal(@pcl.identifier, actual.protocol.identifier, "#{pnt} registration #{actual} protocol id incorrect.")
+  end
+
   def test_fetch_coordinators
    # Don't bother saving registrations.
    @pcl.registrations.clear

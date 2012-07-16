@@ -51,6 +51,11 @@ module CaTissue
 
     # @quirk caTissue Specimen consent_tier_statuses is cascaded but not fetched.
     #
+    # @quirk caTissue 2.0 a Specimen consent change is propagated in the UI to children
+    #   but not grandchildren. The change is not propagated to the children in the
+    #   API (cf. https://cabig-kc.nci.nih.gov/Biospecimen/forums/viewforum.php?f=19).
+    #   This behavior does not occur in 1.2.
+    #
     # @quirk caTissue When a Specimen is auto-generated or created, a consent tier
     #   status is created for each registration consent. A created Specimen has a
     #   a well-formed status record. An auto-generated status record is malformed,

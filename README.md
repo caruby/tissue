@@ -1,21 +1,18 @@
 caRuby Tissue: Simplifying caTissue
 ===================================
-
 **Home**:         [http://caruby.rubyforge.org/catissue.html](http://caruby.rubyforge.org/catissue.html)    
 **Git**:          [http://github.com/caruby/tissue](http://github.com/caruby/tissue)       
 **Author**:       OHSU Knight Cancer Institute    
-**Copyright**:    2010, 2011, 2012    
+**Copyright**:    2012    
 **License**:      MIT License    
 
 Synopsis
 --------
-
 caRuby Tissue presents a JRuby facade that simplifies interaction with the
 [caTissue](https://cabig-kc.nci.nih.gov/Biospecimen/KC/index.php/CaTissue_Suite) application.
 
 Feature List
 ------------
-
 1. Declarative JRuby API that reduces caTissue API complexity.
 
 2. Data migration and extraction.
@@ -32,7 +29,6 @@ configure caRuby to access your caTissue instance.
 
 Usage
 -----
-
 The [Galena Example](https://github.com/caruby/tissue/blob/master/examples/galena/README.md) presents
 a migration use case.
 
@@ -40,7 +36,5 @@ The caRuby Tissue [FAQ](https://caruby.tenderapp.com/dashboard/sections/tissue) 
 
 Copyright
 ---------
-
-caRuby &copy; 2010, 2011, 2012 by [Oregon Health & Science University](http://www.ohsu.edu/xd/health/services/cancer/index.cfm).
-caRuby is licensed under the MIT license. Please see the LICENSE and LEGAL
-files for more information.
+caRuby &copy; 2012 by [Oregon Health & Science University](http://www.ohsu.edu/xd/health/services/cancer).
+caRuby is licensed under the MIT license. Please see the LICENSE and LEGAL files for more information.
