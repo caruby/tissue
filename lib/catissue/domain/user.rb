@@ -1,5 +1,6 @@
 require 'jinx/helpers/validation'
 require 'catissue/helpers/person'
+require 'catissue/helpers/role'
 
 module CaTissue
   # The User domain class.
@@ -45,6 +46,7 @@ module CaTissue
     # Make the convenience {CaRuby::Person::Name} name a first-class attribute.
     add_attribute(:name, CaRuby::Person::Name)
 
+    # @quirk caTissue 1.2 The useless User +clinical_studies+ attribute is removed in caTissue 1.2.
     if property_defined?(:clinical_studies) then remove_attribute(:clinical_studies) end
 
     # Clarify that collection_protocols is a coordinator -> protocol association.
@@ -61,12 +63,33 @@ module CaTissue
     # * page_of is the value set when creating a User in the GUI
     # * role id is 7 = Scientist (public)
     # * initial password is 'changeMe1'
-    add_attribute_defaults(:activity_status => 'Active', :page_of => 'pageOfUserAdmin', :role_id => 7, :new_password => 'changeMe1')
+    add_attribute_defaults(:activity_status => 'Active')
+
+    add_attribute_defaults(:role_id => 7)
+    add_mandatory_attributes(:role_id)
+    qualify_attribute(:role_id, :unfetched)
+    
+    # @quirk caTissue 2.0 The User start date is required in caTissue 2.0.
+    add_attribute_defaults(:start_date => DateTime.now)
+    add_mandatory_attributes(:start_date)
+
+    # @quirk caTissue 2.0 The User +page_of+ property is discontinued in caTissue 2.0.
+    if property_defined?(:page_of) then
+      add_attribute_defaults(:page_of => 'pageOfUserAdmin')
+      add_mandatory_attributes(:page_of)
+      qualify_attribute(:page_of, :unfetched)
+    end
+    
+    # @quirk caTissue 2.0 The User +new_password+ property is discontinued in caTissue 2.0.
+    if property_defined?(:new_password) then
+      add_attribute_defaults(:new_password => 'changeMe1')
+      qualify_attribute(:new_password, :unfetched)
+    end
 
     # @quirk caTissue obscure GUI artifact User page_of attribute pollutes the data layer as a
     #   required attribute. Work-around is to simulate the GUI with a default value.
     add_mandatory_attributes(:activity_status, :address, :cancer_research_group, :department,
-      :email_address, :first_name, :institution, :last_name, :page_of, :role_id)
+      :email_address, :first_name, :institution, :last_name)
 
     # @quirk caTissue 1.2 User address can be updated in 1.1.2, but not 1.2. This difference is handled
     #   by the caRuby {CaTissue::Database} update case logic.
@@ -75,9 +98,11 @@ module CaTissue
     #   handled by the caRuby {CaTissue::Database} create case logic.
     add_dependent_attribute(:address)
 
-    # Password is removed as a visible caRuby attribute, since it is immutable in 1.2 and there
-    # is no use case for its access.
-    remove_attribute(:passwords)
+    # @quirk caTissue 2.0 the User new_password property is discontinued in caTissue 2.0.
+    #
+    # @quirk caTissue Password is removed as a visible pre-2.0 attribute, since it is immutable in 1.2
+    #  and there is no use case for its access.
+    remove_attribute(:passwords) if property_defined?(:passwords) 
 
     set_attribute_inverse(:coordinated_protocols, :coordinators)
 
@@ -96,12 +121,11 @@ module CaTissue
     qualify_attribute(:institution, :fetched)
 
     qualify_attribute(:sites, :saved)
-
-    qualify_attribute(:page_of, :unfetched)
-
-    qualify_attribute(:new_password, :unfetched)
-
-    qualify_attribute(:role_id, :unfetched)
+    
+    # @param [String] name the role to set
+    def role_name=(name)
+      self.role_id = name.nil? ? nil : Role.for(name).identifier
+    end
 
     private
 

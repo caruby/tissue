@@ -45,14 +45,14 @@ class ParticipantTest < Test::Unit::TestCase
     trt.merge_attributes(:agent => 'ACACIA', :participant => @pnt)
     dur = CaTissue::Participant::Clinical::Duration.new
     dur.merge_attributes(:start_date => DateTime.new(2010, 10, 10), :end_date => DateTime.new(2010, 12, 10), :treatment => trt)
+    assert_not_nil(trt.durations.first, "Duration not added to treatment annotation")
+    assert_same(dur, trt.durations.first, "Treatment duration incorrect")
     cln = @pnt.clinical.first
     assert_not_nil(cln, "Clinical annotation not added to participant")
     trts = cln.treatment_annotations
     assert_not_nil(trts.first, "Treatment not added to participant annotations")
     assert_same(trt, trts.first, "Treatment incorrect")
     assert_same(@pnt, trt.hook, "Treatment proxy hook not set")
-    assert_not_nil(trt.durations.first, "Duration not added to treatment annotation")
-    assert_same(dur, trt.durations.first, "Treatment duration incorrect")
   end
 
   def test_exposure_annotation
@@ -79,7 +79,6 @@ class ParticipantTest < Test::Unit::TestCase
     assert_same(@pnt, alc.hook, "Alcohol health proxy hook not set")
   end
   
-  # Tests making a participant lab annotation. 
   def test_lab_annotation
     lab = CaTissue::Participant::Clinical::LabAnnotation.new
     lab.merge_attributes(:lab_test_name => 'Test Lab', :participant => @pnt, :result => '4', :result_units => 'mg')
@@ -112,6 +111,23 @@ class ParticipantTest < Test::Unit::TestCase
    # Tests creating a participant.
    def test_save
      verify_save(@pnt)
+   end
+   
+   def test_update_races
+     @pnt.add_races('White', 'Asian')
+     @pnt.save
+     svd = @pnt.copy(:identifier).find
+     assert_equal(2, svd.races.size, "Saved races size incorrect")
+     assert(svd.races.any? { |r| r.name == 'White' }, "White race not found")
+     assert(svd.races.any? { |r| r.name == 'Asian' }, "Asian race not found")
+     @pnt.remove_race('White')
+     assert_equal(1, @pnt.races.size, "Race not removed")
+     assert(@pnt.changed?(:races), "Race change not detected")
+     @pnt.save
+     svd = @pnt.copy(:identifier).find
+     assert_equal(1, svd.races.size, "Race size incorrect after removal")
+     assert(svd.races.any? { |r| r.name == 'Asian' }, "Asian race not found")
+     assert(!svd.races.any? { |r| r.name == 'White' }, "White race not removed")
    end
   
   # Exercises the phantom PMI fetch filter on a patient with an MRN.

@@ -1,7 +1,7 @@
 module CaTissue
   class Participant
     module Clinical
-          class Duration
+      class Duration
         add_attribute_aliases(:treatment => :treatment_annotation)
       end
     end

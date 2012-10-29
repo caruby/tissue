@@ -57,7 +57,6 @@ module CaTissue
     def verify_save(subject)
       logger.debug{ "Verifying #{subject.qp} save with content:\n#{dump(subject)}" }
       # capture the save operation time
-      @database.clear
       st = Jinx::Stopwatch.measure { @database.open { |db| db.save(subject) } }.elapsed
       # the database execution time
       dt = @database.execution_time
@@ -185,6 +184,9 @@ module CaTissue
     #   initial quantity 3 to work around a different caTissue bug. Thus, the bug work-around
     #   is broken by a different caTissue bug.
     #
+    # @quirk caTissue 2.0 caTissue 2.0 SCG save does not set the +is_to_insert_anticipatory_specimens+
+    #   flag
+    #
     # @param [Resource] expected the saved value
     # @param [Resource] actual the fetched value
     def verify_that_saved_matches_fetched(expected, actual)
@@ -198,7 +200,7 @@ module CaTissue
           aval = actual.send(pa)
           if eval.nil? then
             assert_nil(aval, "#{expected.qp} was saved without a #{pa} value, but was stored in the database with value #{actual.qp}")
-          else
+          elsif pa != :is_to_insert_anticipatory_specimens then
             assert_not_nil(aval, "#{expected.qp} was saved with #{pa} value #{eval.qp}, but this value was not found in the database.")
             if pa == :available_quantity and expected.specimen_type == 'Not Specified' and eval != aval then
               logger.warn("Skipped broken caTissue unspecified specimen type available comparison.")
@@ -220,9 +222,7 @@ module CaTissue
     # Verifies that each expected dependent matches an actual dependent and has the same content.
     def verify_dependents_match(expected, actual)
       expected.class.dependent_attributes.each_pair do |pa, prop|
-        # annotation query not supported
-        # TODO - enable when supported
-        next if prop.type < Annotation
+        next unless verify_saved_references_exist?(expected, prop)
         edeps = expected.database.lazy_loader.suspend { expected.send(pa) }
         next if edeps.nil_or_empty?
         adeps = actual.send(pa)
@@ -238,6 +238,21 @@ module CaTissue
           assert_not_nil(adep, "#{expected} #{pa} dependent #{edep} not found in database")
           verify_that_saved_matches_fetched(edep, adep)
         end
+      end
+    end
+    
+    # Returns whether the given object property references are saved when the referencing object is saved
+    # and the saved references can be fetched for verification. The references can be verified unless at
+    # least one of the following conditions hold:
+    # * The reference type is a pre-2.0 annotation, which is not queryable.
+    # * The reference is a SCG action application, which caTissue ignores.
+    def verify_saved_references_exist?(obj, property)
+      if property.type < Annotation then
+        false
+      elsif property.declarer == CaTissue::SpecimenCollectionGroup then
+        property.attribute != :action_applications
+      else
+        true
       end
     end
   end

@@ -30,13 +30,11 @@ module CaTissue
       # proxy => hook attribute with the given hook => proxy inverse.
       #
       # @param [Metadata] klass the annotated domain object class
+      # @return [Class] the given hook class
       def hook=(klass)
-        # Make a new hook reference attribute.
-        pa = klass.name.demodulize.underscore
-        attr_accessor(pa)
-        # The attribute type is the given hook class.
-        @hook_property = add_attribute(pa, klass)
-        logger.debug { "Added #{klass.qp} annotation proxy => hook attribute #{pa}." }
+        @hook_property = obtain_hook_property(klass)
+        logger.debug { "#{self} -> #{klass.qp} annotation proxy => hook attribute: #{@hook_property}." }
+        klass
       end
       
       # Adds each proxy => annotation reference as a dependent attribute.
@@ -45,14 +43,48 @@ module CaTissue
       # This method defines a proxy attribute in each primary annotation class
       # for each {#non_proxy_annotation_classes} class hierarchy.
       def build_annotation_dependency_hierarchy 
+        # Each primary must reference this proxy.
         logger.debug { "Building the #{annotation_module.qp} annotation proxy #{self} dependency hierarchy..." }
-        non_proxy_annotation_classes.each do |klass|
-          ensure_primary_references_proxy(klass)
-        end
+        ensure_primary_annotations_reference_proxy
         set_inverses
         add_dependent_attributes
         add_dependent_attribute_closure
       end
+      
+      # Defines a proxy attribute in each primary annotation class for each
+      # {#non_proxy_annotation_classes} class hierarchy.
+      def ensure_primary_annotations_reference_proxy
+        non_proxy_annotation_classes.each do |klass|
+          ensure_primary_references_proxy(klass)
+        end
+      end
+      
+      # Creates a reference property from this proxy to the given primary {Annotation} class. 
+      #
+      # @param [Class] klass the target annotation class
+      # @return [Symbol] the new annotation reference attribute
+      def create_annotation_property(klass)
+        # the new attribute symbol
+        pa = klass.name.demodulize.underscore.pluralize.to_sym
+        logger.debug { "Creating the annotation proxy #{qp} attribute #{pa} to hold the primary annotation #{klass.qp} instances..." }
+        # Define the access methods: the reader creates a new set on demand to hold the annotations.
+        attr_create_on_demand_accessor(pa) { Set.new }
+        # add the annotation collection attribute
+        add_attribute(pa, klass, :collection)
+        logger.debug { "Created the #{self} -> #{klass} annotation proxy dependent attribute #{pa}." }
+        pa
+      end
+      
+      # @quirk caTissue 2.0 The RecordEntry annotation proxy classes in 2.0 added
+      #   a reference property to the form context, which further pollutes the data
+      #   layer with presentation artifacts. caRuby excludes this property
+      #   from the {#annotation_attributes} since it interferes with determining
+      #   the true annotation data hierarchy.
+      def annotation_attributes
+        @pxy_ann_attrs ||= super.compose { |prop| prop.attribute != :form_context }
+      end
+      
+      private
       
       # Ensures that the given primary class references this proxy.
       #
@@ -60,31 +92,11 @@ module CaTissue
       def ensure_primary_references_proxy(klass)
         # Define the superclass proxy attributes, starting with the most general class.
         klass.annotation_hierarchy.to_a.reverse_each do |anc|
-          if anc.primary? and anc.proxy_attribute.nil? then
-            anc.define_proxy_attribute(self)
+          if anc.entity_primary? and not anc.primary? then
+            anc.proxy_property_for(self)
           end
         end
       end
-      
-      # Creates a reference attribute from this proxy to the given primary {Annotation} class. 
-      #
-      # @param [Class] klass the target annotation class
-      # @return [Symbol] the new annotation reference attribute
-      def create_annotation_attribute(klass)
-        # the new attribute symbol
-        pa = klass.name.demodulize.underscore.pluralize.to_sym
-        logger.debug { "Creating annotation proxy #{qp} attribute #{pa} to hold primary annotation #{klass.qp} instances..." }
-        # Define the access methods: the reader creates a new set on demand to hold the annotations.
-        attr_create_on_demand_accessor(pa) { Set.new }
-        # add the annotation collection attribute
-        add_attribute(pa, klass, :collection)
-        # The annotation is dependent.
-        add_dependent_attribute(pa, :logical)
-        logger.debug { "Created annotation proxy #{qp} dependent attribute #{pa}." }
-        pa
-      end
-      
-      private
     
       # Sets each annotation reference attribute inverse to the direct, unwrapped proxy
       # reference named by the annotation module. E.g. the caTissue +Participant+
@@ -92,15 +104,24 @@ module CaTissue
       # inverse is set to the +NewDiagnosisAnnotation+ -> +ParticipantRecordEntry+
       # +clinical+ reference attribute.
       def set_inverses
-        # The inverse is the direct, unwrapped proxy reference named by the annotation module.
-        inv = annotation_module.name.demodulize.underscore.to_sym
-        # The attributes in class hierarchy general-to-specific order
+        return if annotation_attributes.empty?
+        # The primary annotation properties in class hierarchy general-to-specific order.
         props = annotation_attributes.properties.partial_sort_by { |prop| prop.type }.reverse
-        logger.debug { "Setting #{self} inverses for annotation attributes #{props.to_series}." }
+        logger.debug { "Setting the #{self} inverses for annotation attributes #{props.to_series}." }
         props.each do |prop|
-          prop.type.define_proxy_attribute(self)
-          set_attribute_inverse(prop.to_sym, inv)
+          # The inverse property is the proxy reference. Create one, if necessary.
+          ip = prop.type.proxy_property_for(self)
+          set_attribute_inverse(prop.to_sym, ip.attribute)
         end
+      end
+      
+      def obtain_hook_property(klass)
+        prop = domain_properties.detect { |p| klass == p.type }
+        return prop if prop
+        # Make the hook class reference property.
+        pa = klass.name.demodulize.underscore
+        attr_accessor(pa)
+        add_attribute(pa, klass)
       end
       
       # @return <Metadata> the non-proxy annotation classes

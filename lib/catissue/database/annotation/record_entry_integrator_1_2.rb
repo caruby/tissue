@@ -2,8 +2,8 @@ module CaTissue
   module Annotation
     java_import Java::edu.wustl.catissuecore.domain.StudyFormContext
     
-    # A RecordEntryIntegrator uses the post-1.1.2 mechanism to save caTissue hook-annotation associations.
-    class RecordEntryIntegrator
+    # A RecordEntryIntegrator uses the caTissue 1.2 mechanism to save hook-annotation associations.
+    class RecordEntryIntegrator_1_2
       # @param [AnnotationModule] mod the annotation module
       def initialize(mod)
         @mod = mod
@@ -33,21 +33,19 @@ module CaTissue
       # @return [Object] yet another association record which associates the hook to the annotation
       def create_record_entry(hook, annotation)
         # the DE integration record entry class
-        klass = hook.class.de_integration_proxy_class
-        if klass.nil? then
-          # Should not be nil by construction, but doesn't hurt to check.
-          raise AnnotationError.new("Cannot create a #{hook} annotation record entry, since #{hook.class.qp} does not have a DE Integration proxy class")
-        end
-        # the DE integration record entry object
-        re = klass.new
-        # the form context
+        re = annotation.proxy
+        # set the form context
         re.form_context = form_context(hook, annotation)
         # set the hook
-        re.send(@mod.record_entry_hook_writer, hook)
+        re.set_property_value(re.class.hook_property, hook)
+        logger.debug { "The #{hook} is associated with the annotation #{annotation} through the record entry #{re.class} #{re}." }
         # dispatch to the application service
         toxic = hook.persistence_service.create(re)
         # copy the created identifier
-        re.setId(toxic.getId)
+        re.identifier = toxic.getId
+        # set the proxy proxy identifier
+        re.proxy_proxy.identifier = re.identifier
+        logger.debug { "The #{hook} annotation #{annotation} record entry #{re.class} #{re} proxy proxy is #{re.proxy_proxy.class} #{re.proxy_proxy}." }
         re
       end
       

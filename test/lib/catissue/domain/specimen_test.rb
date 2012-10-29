@@ -97,6 +97,22 @@ class SpecimenTest < Test::Unit::TestCase
     assert_equal(@spc.specimen_type, child.specimen_type, "Derived specimen type incorrect")
     assert_equal(@spc.pathological_status, child.pathological_status, "Derived specimen pathological status incorrect")
   end
+  
+  def test_delete_static_event_parameters
+    # add a static event to the specimen
+    dsp = CaTissue::DisposalEventParameters.new(:specimen => @spc)
+    assert(@spc.all_event_parameters.include?(dsp), "#{dsp} was not added to #{@spc}")
+    @spc.delete_event_parameters(dsp)
+    assert(!@spc.all_event_parameters.include?(dsp), "#{dsp} was not removed from #{@spc}")
+  end
+  
+  def test_delete_action_event_parameters
+    # add an action event to the specimen
+    frz = CaTissue::FrozenEventParameters.new(:specimen => @spc)
+    assert(@spc.all_event_parameters.include?(frz), "#{frz} was not added to #{@spc}")
+    @spc.delete_event_parameters(frz)
+    assert(!@spc.all_event_parameters.include?(frz), "#{frz} was not removed from #{@spc}")
+  end
 
   def test_aliquot
     start_qty = @spc.available_quantity
@@ -174,6 +190,27 @@ class SpecimenTest < Test::Unit::TestCase
     assert_same(gleason, pst.gleason_score, "Prostate annotation gleason score incorrect")
     assert_same(grade, pst.histologic_grades.first, "Prostate annotation histologic grades incorrect")
     assert_same(htype, pst.histologic_types.first, "Prostate annotation histologic types incorrect")
+    assert_not_nil(pst.hook, "Pathology annotation hook not set")
+  end
+  
+  def test_action_application_inverse
+    if CaTissue::SpecimenCollectionGroup.property_defined?(:action_applications) then
+      aa = CaTissue::ActionApplication.new(:specimen => @spc)
+      assert_not_nil(aa.specimen, "Action application specimen owner not set")
+      assert_equal(@spc, aa.specimen, "Action application specimen owner incorrect")
+    end
+  end
+  
+  def test_merge_action_applications
+    if CaTissue::Specimen.property_defined?(:action_applications) then
+      src = @spc.copy
+      src.action_applications << aa = CaTissue::ActionApplication.new
+      tgt = src.copy(:action_applications)
+      copy = tgt.action_applications.first
+      assert_not_nil(copy, "Action application not copied")
+      assert_not_nil(copy.specimen, "Action application specimen owner not set in copy")
+      assert_equal(tgt, copy.specimen, "Action application specimen owner incorrect in copy")
+    end
   end
 
   # Verifies that caRuby Tissue is compatible with both the caTissue 1.1.2 and 1.2 Specimen annotation class names. 
@@ -281,6 +318,13 @@ class SpecimenTest < Test::Unit::TestCase
     # Save the new specimen
     verify_save(spc2)
     assert_not_nil(ev.identifier, "#{spc2} event #{ev2} not saved")
+  end
+  
+  def test_fetch_receiver
+    @spc.create
+    assert_not_nil(@spc.receiver, "#{@spc} receiver not set.")
+    s = fetched = CaTissue::Specimen.new(:identifier => @spc.identifier).find
+    assert_not_nil(fetched.receiver, "#{fetched} receiver not fetched.")
   end
   
   def test_dispose_save

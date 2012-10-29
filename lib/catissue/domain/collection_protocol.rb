@@ -45,13 +45,19 @@ module CaTissue
 
     qualify_attribute(:coordinators, :fetched)
 
-    # @quirk caTissue Bug #64 - consent tiers collection property is not initialized to an empty set in the Java constructor.
-    #   Initialize it to a +LinkedHashSet+ in caRuby.
+    # @quirk caTissue Bug #64 - the CP consent tiers collection property is not initialized to an empty set in the
+    # Java constructor.
+    #
+    # @quirk caTissue 2.0 The CP coordinators collection property is not initialized to an empty set in the Java constructor.
+    #
+    # @quirk caTissue 2.0 The CP registrations collection property is not initialized to an empty set in the Java constructor.
     def initialize
       super
       # @quirk JRuby consent_tiers property method is not accessible until respond_to? is called.
       respond_to?(:consent_tiers)
       self.consent_tiers ||= Java::JavaUtil::LinkedHashSet.new
+      self.coordinators ||= Java::JavaUtil::LinkedHashSet.new
+      self.registrations ||= Java::JavaUtil::LinkedHashSet.new
     end
 
     # Returns a new CollectionProtocolRegistration for the specified participant in this CollectionProtocol with

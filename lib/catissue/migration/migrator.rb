@@ -90,8 +90,8 @@ module CaTissue
         klass = super
         # the 1.1.2 hack described in the rubydoc
         if klass < Annotation::Proxy then
-          if klass.name.demodulize == @target_class.hook.name.demodulize then
-             klass = @target_class.hook
+          if klass.name.demodulize == @target_class.hook_type.name.demodulize then
+             klass = @target_class.hook_type
           else
             raise Jinx::MigrationError.new("Migration configuration class #{name} resolves to the unsupported hidden caTissue 1.1.2 annotation proxy class #{klass}")
           end

@@ -1,7 +1,7 @@
 require 'jinx/helpers/validation'
 require 'jinx/helpers/uid'
 require 'caruby/database'
-require 'catissue/database/annotation/annotator'
+require 'catissue/database/annotation/annotator_1_2'
 require 'catissue/helpers/collectible_event_parameters'
 require 'catissue/helpers/collectible'
 
@@ -35,19 +35,23 @@ module CaTissue
       @executor ||= create_executor
     end
 
-    # @return [Annotator] the annotator utility
+    # @return [Annotator_1_2, nil] the pre-2.0 annotator utility, if the active caTissue version
+    #   is prior to 2.0, nil otherwise
     def annotator
-      @annotator ||= Annotator.new(self)
+      unless uniform_application_service? then
+        @annotator ||= Annotator_1_2.new(self)
+      end
     end
 
-    # If the given domain object is an {Annotation}, then this method returns the +CaRuby::AnnotationService+
-    # for the object {AnnotationModule}, otherwise this method returns the standard {CaTissue::Database}
+    # If the given domain object is an {Annotation} and this database does not have a uniform
+    # application service, then this method returns the +CaRuby::AnnotationService+ for the
+    # annotation's {AnnotationModule}, otherwise this method returns the standard {CaTissue::Database}
     # service.
     #
     # @param (see CaRuby::Database#persistence_service)
     # @return (see CaRuby::Database#persistence_service)
     def persistence_service(klass)
-      klass < Annotation ? klass.annotation_module.persistence_service : super
+      klass < Annotation && !uniform_application_service? ? klass.annotation_module.persistence_service : super
     end
     
     # @quirk caTissue caTissue Address create succeeds but does not set the result identifier, rendering
@@ -85,7 +89,15 @@ module CaTissue
     
     UPD_CTR_SQL = 'update catissue_consent_tier_response set response = ? where identifier = ?'
     
-    MAX_ADDR_ID_SQL = "select max(identifier) from catissue_address"
+    MAX_ADDR_ID_SQL = 'select max(identifier) from catissue_address'
+    
+    UPD_USER_SQL = 'update catissue_user set csm_user_id = ? where identifier = ?'
+    
+    INS_CSM_USER_SQL = <<EOS
+    INSERT INTO csm_user (USER_ID, LOGIN_NAME, FIRST_NAME, LAST_NAME, PASSWORD, EMAIL_ID, START_DATE, UPDATE_DATE, MIGRATED_FLAG)
+    VALUES
+    	(?, ?, ?, ?, 'Zb0/8Pa+iCY=', ?, ?, ?, 0);
+EOS
     
     # @quirk caTissue The database connection properties cannot be inferred from the caTissue
     #   +HibernateUtil+ class. The class is found, but class load results in the following error:
@@ -203,7 +215,9 @@ module CaTissue
     #   to the Specimen owner.
     #
     # @quirk caTissue caTissue Specimen update ignores the available quantity. Unlike the
-    #   auto-generated Specimen update, there is no known work-around
+    #   auto-generated Specimen update, there is no known work-around.
+    #
+    # @quirk caTissue 2.0 caTissue 2.0 User update now requires a +csmUserId+.
     #
     # @param (see CaRuby::Database#update_object)
     def update_object(obj)
@@ -232,6 +246,9 @@ module CaTissue
       if CaTissue::User === obj then
         if obj.address.identifier.nil? or obj.address.changed? then
           return update_user_address(obj, obj.address)
+        elsif obj.csm_user_id.nil? then
+          logger.debug { "Work around a caTissue 2.0 regression by fetching the #{obj} csmUserId..." }
+          obj.find
         end
       end
       if CaTissue::CollectibleEventParameters === obj then
@@ -250,6 +267,10 @@ module CaTissue
       
       # Delegate to the standard update.
       super
+    end
+    
+    def has_action_applications?(obj)
+      obj.class.property_defined?(:action_applications) and not obj.action_applications.empty?
     end
     
     # Updates the given dependent.
@@ -288,14 +309,32 @@ module CaTissue
       end
     end
       
+    def creatable_references(obj)
+      refs = super
+      if CaTissue::SpecimenCollectionGroup === obj and obj.class.property_defined?(:action_applications) then
+        refs.reject { |ref| CaTissue::ActionApplication === ref }
+      else
+        refs
+      end
+    end
+     
+    # Overrides +CaRuby#detoxify_save_result+ to capture {CaTissue::Collectible} consent tier
+    # statuses before detoxification and merge them back in afterwords.
+    #
+    # @quirk caTissue Although the Specimen and SCG consent tier statuses are lazy-loaded,
+    #   and therefore toxic, they can be referenced in a save result, unlike other lazy-
+    #   loaded properties. caRuby works around this inconsistency by capturing the save
+    #   result statuses prior to detoxification and merging them back into the cleared
+    #   result statuses after detoxification. 
     def detoxify_save_result(source)
-      if CaTissue::SpecimenCollectionGroup === source or CaTissue::Specimen === source and not source.consent_tier_statuses.empty? then
-        ctss = source.consent_tier_statuses.dup
+      # Capture the statuses, which will be erased upon detox.
+      if CaTissue::Collectible === source and not source.consent_tier_statuses.empty? then
+        ctss = Set.new(source.consent_tier_statuses)
       end
-      detoxify(source)
-      if ctss then
-        source.merge_attribute(:consent_tier_statuses, ctss)
-      end
+      # Delegate to the standard detox.
+      super
+      # Restore the statuses.
+      source.merge_attribute(:consent_tier_statuses, ctss) if ctss
     end
   
     def prepare_specimen_for_update(obj)
@@ -318,14 +357,16 @@ module CaTissue
       end
       cep = obj.collection_event_parameters
       rep = obj.received_event_parameters
-      if (cep and cep.identifier.nil?) or (rep and rep.identifier.nil?) then
+      if (cep and cep.identifier.nil?) or (rep and rep.identifier.nil?) and not obj.class.property_defined?(:action_applications) then
         logger.debug { "Fetching #{obj} collectible event parameters identifiers for update..." }
-        eps = fetch_association(obj, :specimen_event_parameters)
+        eps = fetch_association(obj, :event_parameters)
+        # the fetched CEP
         fcep = eps.detect { |ep| CaTissue::CollectionEventParameters === ep }
         if fcep then
           cep.merge(fcep)
           logger.debug { "Set #{obj} #{cep} identifier." }
         end
+        # the fetched REP
         frep = eps.detect { |ep| CaTissue::ReceivedEventParameters === ep }
         if frep then
           rep.merge(frep)
@@ -361,12 +402,12 @@ module CaTissue
       # Is there a nesting operation?
       return false unless last
       # Is the nesting operation subject a CEP?
-      return false unless CaTissue::CollectibleEventParameters === last.subject
-      # Is the nesting operation subject owned by the current object?
-      return false unless last.subject.owner == obj
+      return false unless CaTissue::CollectibleEventParameters === last.subject.owner
+      # Is the nesting operation owner owned by the current object?
+      return false unless last.subject.owner.owner == obj
       prev = penultimate_save_operation
       # Is the outer save operation subject the current object?
-      prev and prev.subject == obj
+      prev and prev.owner == obj
     end
     
     def penultimate_save_operation
@@ -450,9 +491,9 @@ module CaTissue
         dsp = obj.specimen_events.detect { |ep| CaTissue::DisposalEventParameters === ep }
       end
       if dsp then
-        obj.specimen_events.delete(dsp)
+        obj.delete_event_parameters(dsp)
         logger.debug { "Work around a caTissue #{obj.qp} event parameters save order dependency by deferring the #{dsp.qp} save..." }
-        obj.specimen_events.delete(dsp)
+        obj.delete_event_parameters(dsp)
       end
       
       # Delegate to the standard save_changed_dependents.
@@ -465,13 +506,41 @@ module CaTissue
       # Save the deferred disposal, if any.
       if dsp then
         logger.debug { "Creating deferred #{obj.qp} dependent #{dsp.qp}..." }
-        save_dependent_if_changed(obj, :specimen_events, dsp)
+        save_dependent_if_changed(obj, obj.class.property(:specimen_events), dsp)
         if obj.activity_status != 'Closed' then
           logger.debug { "Refetching the disposed #{obj.qp} to reflect the modified activity status..." }
           obj.activity_status = nil
           obj.find
         end
       end
+    end
+    
+    # @quirk caTissue 2.0 SCG action applications are ignored.
+    #
+    # @quirk caTissue 2.0 Specimen action applications are cascade updated, but the event parameters
+    #   ids are not set. Work-around is to fetch the Specimen.
+    def save_dependent_if_changed(owner, property, dependent)
+      if Annotation === dependent and dependent.identifier.nil? then
+        logger.warn("caTissue #{owner} save doesn't set the saved DE id: #{dependent.qp}.")
+        return
+      elsif CaTissue::SpecimenCollectionGroup === owner and property.attribute == :action_applications and dependent.identifier.nil? then
+        logger.warn("caTissue ignores SCG action applications: #{owner} #{dependent} was not saved.")
+        return
+      elsif CaTissue::Specimen === owner and property.attribute == :action_applications then
+        eps = unchanged_action_event_parameters(dependent)
+        unless eps.empty? then
+          logger.warn("caTissue #{owner} save doesn't set the saved event parameter ids: #{eps.qp}.")
+        end
+        if dependent.identifier.nil? then
+          logger.warn("caTissue #{owner} save doesn't set the saved action application id: #{dependent.qp}.")
+        end
+        return
+      end
+      super
+    end
+    
+    def unchanged_action_event_parameters(obj)
+      obj.application_record_entry.dependents.select { |dep| dep.identifier.nil? }
     end
     
     # Overrides +CaRuby::Database.build_save_template+ to return obj itself if
@@ -579,12 +648,15 @@ module CaTissue
     #   specimen status is not updated from Pending to Collected. Event parameters are not added to
     #   child specimens.
     #
+    # @quirk caTissue caTissue Specimen update with a disposal event clears the consent tier statuses in the
+    #   database as a side-effect. caRuby reflects this change by also clearing the disposal events in the
+    #   Specimen submitted for update in order to reflect the database state. 
+    #
     # @param obj [Resource] obj the object to save
     # @param [Resource] template the template to submit to caCORE
     # @raise DatabaseError if the object to save is an {Annotation::Proxy}, which is not supported
     def save_with_template(obj, template)
       # special cases to work around caTissue bugs
-
       # Protocol create doesn't add the coordinators to the save template.
       # TODO - find out why
       if CaTissue::CollectionProtocol === obj and obj.identifier.nil? and template.coordinators.empty? and not obj.coordinators.empty? then
@@ -596,8 +668,7 @@ module CaTissue
         if obj.position and obj.position.identifier then
           add_position_to_specimen_template(obj, template)
         end
-        # Anticipate the caTissue disposed Specimen update side-effect by removing
-        # the consent tier statuses.
+        # Anticipate the caTissue disposed Specimen update side-effect by removing the consent tier statuses.
         if obj.disposed? then
           unless obj.consent_tier_statuses.empty? then
             obj.consent_tier_statuses.clear
@@ -617,9 +688,9 @@ module CaTissue
       #   end
       #   logger.debug { "Work around caTissue ExternalIdentifier create bug by updating the phantom caTissue auto-generated empty #{obj.specimen} EID directly with SQL..." }
       #   # app service is broken; fetch the identifier and set directly via SQL
-      #   tmpl = obj.class.new
-      #   tmpl.setSpecimen(obj.specimen)
-      #   eids = query(tmpl).select { |eid| eid.name.nil? }
+      #   template = obj.class.new
+      #   template.setSpecimen(obj.specimen)
+      #   eids = query(template).select { |eid| eid.name.nil? }
       #   if eids.size > 1 then
       #     raise DatabaseError.new("#{spc} has more than external identifier without a name: #{eids}")
       #   end
@@ -629,17 +700,18 @@ module CaTissue
       #   @executor.transact(UPD_EID_SQL, obj.name, obj.value, obj.specimen.identifier, obj.identifier)
       #   logger.debug { "caTissue #{obj} create work-around completed." }
       #   return
-      elsif obj.identifier and CaTissue::SpecimenEventParameters === obj then
-        # TODO - this case occurs in the simple_test migration; fix it there and remove this check.
-        # TODO - KLUDGE!!!! FIX AT SOURCE AND REMOVE SEP KLUDGE AS WELL!!!!
-        # Fix this with an auto-gen add_defaults?
-        if template.user.nil? then template.user = query(template, :user).first end
-        if template.specimen.nil? and template.specimen_collection_group.nil? then
-           template.specimen = query(template, :specimen).first
-           template.specimen_collection_group = query(template, :specimen_collection_group).first
-        end
+      # TODO - remove below if this problem no longer occurs:
+      # elsif obj.identifier and CaTissue::SpecimenEventParameters === obj then
+      #   # TODO - this case occurs in the simple_test migration; fix it there and remove this check.
+      #   # TODO - KLUDGE!!!! FIX AT SOURCE AND REMOVE SEP KLUDGE AS WELL!!!!
+      #   # Fix this with an auto-gen add_defaults?
+      #   if template.user.nil? then template.user = query(template, :user).first end
+      #   if template.specimen.nil? and template.specimen_collection_group.nil? then
+      #      template.specimen = query(template, :specimen).first
+      #      template.specimen_collection_group = query(template, :specimen_collection_group).first
+      #   end
       elsif obj.identifier and CaTissue::SpecimenCollectionGroup === obj then
-        # add the extraneous SCG template CPR protocol and PPI, if necessary 
+        # Add the extraneous SCG template CPR protocol and PPI required by caTissue.
         cpr = obj.collection_protocol_registration
         if cpr.nil? then raise Jinx::ValidationError.new("#{obj} cannot be updated since it is missing a CPR") end
         tcpr = template.collection_protocol_registration
@@ -649,7 +721,14 @@ module CaTissue
           if pcl.nil? then raise Jinx::ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} protocol") end
           tpcl = pcl.copy(:identifier)
           logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} protocol #{tpcl}..." }
-          tmpl.collection_protocol = tpcl
+          tcpr.collection_protocol = tpcl
+        end
+        if tcpr.participant.nil? then
+          pnt = lazy_loader.enable { cpr.participant }
+          if pnt.nil? then raise Jinx::ValidationError.new("#{obj} cannot be updated since it is missing a referenced CPR #{cpr} participant") end
+          tpnt = pnt.copy(:identifier)
+          logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} participant #{tpnt}..." }
+          tcpr.participant = tpnt
         end
         if tcpr.protocol_participant_identifier.nil? then
           ppi = lazy_loader.enable { cpr.protocol_participant_identifier }
@@ -658,21 +737,23 @@ module CaTissue
           end
           tppi = ppi.copy(:identifier)
           logger.debug { "Work around caTissue bug by adding extraneous #{template} #{tcpr} PPI #{tppi}..." }
-          tmpl.protocol_participant_identifier = tppi
+          tcpr.protocol_participant_identifier = tppi
         end
+        # Add a default received event, if necessary.
         unless obj.received? then
           rep = obj.instance_eval { create_default_received_event_parameters }
           if rep.nil? then raise CaRuby::DatabaseError.new("Default received event parameters were not added to #{obj}.") end
           rep.copy.merge_attributes(:user => rep.user, :specimen_collection_group => template)
         end
+        # Add a default collection event, if necessary.
         unless obj.collected? then
           cep = obj.instance_eval { create_default_collection_event_parameters }
           if cep.nil? then raise CaRuby::DatabaseError.new("Default collection event parameters were not added to #{obj}.") end
           cep.copy.merge_attributes(:user => cep.user, :specimen_collection_group => template)
         end
-      elsif Annotation::Proxy === obj then
+      elsif Annotation::Proxy === obj and not uniform_application_service? then
         raise CaRuby::DatabaseError.new("Annotation proxy direct database save is not supported: #{obj}")
-      elsif Annotation === obj and obj.class.primary? then
+      elsif Annotation === obj and not uniform_application_service? and obj.class.primary? then
         copy_annotation_proxy_owner_to_template(obj, template)
       end
 
@@ -684,37 +765,32 @@ module CaTissue
 
       # post-process the deferred CEPs
       if ceps and not ceps.empty? then
-        # the owner => target CEP hash
-        hash = LazyHash.new { Array.new }
-        ceps.each { |cep| hash[cep.owner] << cep }
-        hash.each do |owner, teps|
-          logger.debug { "Refetch the #{owner} event parameters to work around a caTissue bug..." }
-          fetched = fetch_association(owner, :specimen_event_parameters)
-          teps.each do |tep|
-            match = fetched.detect { |fep| tep.class === fep }
-            if match then
-              logger.debug { "Matched the #{owner} event parameter #{tep} to the fetched #{fep}." }
-              tep.merge(fep)
-            else
-              logger.debug { "#{owner} event parameter #{tep} does not match a fetched event parameters object." }
-            end
+        logger.debug { "Refetching the #{obj} event parameters to work around a caTissue bug..." }
+        fetched = fetch_association(obj, :specimen_event_parameters)
+        ceps.each do |cep|
+          match = fetched.detect { |fep| cep.class === fep }
+          if match then
+            logger.debug { "Matched the #{obj} event parameter #{cep} to the fetched #{match}." }
+            cep.merge(match)
+          else
+            logger.debug { "The #{obj} event parameter #{cep} does not match a fetched event parameters object." }
           end
         end
       end
     end
     
-    # Removes the unsaved {CollectibleEventParameters} from the given template to work around the
-    # caTissue bug described in {#save_with_template}.
+    # Removes the unsaved {CollectibleEventParameters} from the given template to work
+    # around the caTissue bug described in {#save_with_template}.
     #
-    # The CollectibleEventParameters are required if and only if one of the following is true:
+    # The CollectibleEventParameters are required if and only if one of the following
+    # is true:
     # * the operation is a SCG save and the collected status is not pending
     # * the operation is an update to a previously collected Specimen
     # In all other cases, the CollectibleEventParameters are removed.
     #
-    # This method is applied recursively to Specimen children.
-    #
-    # @param [Collectible] the Specimen or SCG template
-    # @return [<CollectibleEventParameters>] the removed event parameters
+    # @param [Collectible] obj the Specimen or SCG to save
+    # @param [Collectible] template the Specimen or SCG template
+    # @return [<CollectibleEventParameters>, nil] the removed event parameters, or nil if none
     def strip_collectible_event_parameters(obj, template)
       if obj.collected? then
         return if CaTissue::SpecimenCollectionGroup === obj
@@ -738,23 +814,35 @@ module CaTissue
         ceps.each { |cep| template.specimen_event_parameters.delete(cep) }
         logger.debug { "Worked around caTissue bug by stripping the following collectible event parameters from the #{template} template: #{ceps.pp_s}." }
       end
-      if CaTissue::Specimen === template then
-        obj.children.each do |spc|
-          tmpl = spc.match_in(template.children)
-          ceps.concat(strip_collectible_event_parameters(spc, tmpl)) if tmpl
-        end
-      end
       ceps
     end
     
-    #
-    # @quirk caTissue When caTissue updates a pending Specimen to status Complete, an auto-generated
+    # @quirk caTissue 1.2 When caTissue updates a pending Specimen to status Complete, an auto-generated
     #   collection and received event parameters is added to the Specimen even if the Specimen already
     #   has a collection and received event parameters. The redundant event parameters corrupts the
     #   database content and sporadically results in a GUI Severe Server Error with no trace-back.
     #   Work around this bug by deleting the extraneous CollectibleEventParameters.
     #   Hammer the database directly to back out this insidious caTissue-generated corruption.
+    #
+    # @quirk caTissue 2.0 SCG update does not create referenced action applications, even though the
+    #   SCG action applications property is cascaded in Hibernate. By contrast, Specimen update does
+    #   create referenced action applications. Work around this bug by creating the action applications
+    #   directly after the SCG update.
+    #
+    # @quirk caTissue caTissue Participant update ignores a removed race. caRuby works around
+    #   this bug by setting the race participant to nil, adding it back to the races collection,
+    #   updating the Participant, then removing the race.
     def submit_save_template(obj, template)
+      if CaTissue::Participant === obj and obj.identifier and obj.changed?(:races) then
+        rmvd_races = obj.snapshot[:races] - obj.races
+        rmvd_races.each do |race|
+          logger.debug { "Working around caTissue bug by disconnecting the removed #{obj} race #{race.pp_s}..." }
+          race.setParticipant(nil)
+          template.races << race
+        end
+      end
+      
+      # Delegate to the standard update.
       result = super
       
       if CaTissue::Specimen === obj and obj.identifier and obj.collected? and obj.changed?(:collection_status) then
@@ -775,7 +863,6 @@ module CaTissue
           logger.debug { "Worked around caTissue event parameters auto-corruption bug by deleting the bogus #{bogus}." }
         end
       end
-      
       result
     end
     
@@ -829,12 +916,24 @@ module CaTissue
     #   caTissue bug work-around bug work-around bug is to fetch addresses until one matches, then set the
     #   created address identifier to that fetched record identifier.
     #
-    # @param [Resource] obj the dependent domain object to save
+    # @quirk caTissue 2.0 A caTissue 2.0 User create regression does not set the +csm_user+ record. Work
+    #   around this bug by inserting the record manually.  
+    #
+    # @param [Resource] obj the domain object to create
     def create_object(obj)
       if CaTissue::Address === obj then
         return create_address(obj)
-      elsif CollectibleEventParameters === obj and obj.specimen_collection_group then
+      elsif CaTissue::CollectibleEventParameters === obj and obj.specimen_collection_group then
         return save_collectible_scg_event_parameters(obj)
+      elsif uniform_application_service? and CaTissue::Annotation === obj then
+        if obj.proxy.nil? then
+          raise Jinx::DatabaseError.new("Cannot create an annotation #{obj} in caTissue since it is missing an owner proxy.")
+        end
+        update_from_template(obj.proxy)
+        if obj.identifier.nil? then
+          raise Jinx::DatabaseError.new("Annotation #{obj} proxy #{obj.proxy} save did not create the annotation.")
+        end
+        return obj
       elsif CaTissue::Specimen === obj then
         obj.add_defaults
         # Work around aliquot bug
@@ -856,7 +955,7 @@ module CaTissue
       # standard create
       super
 
-      # replicate caTissue create side-effects in the submitted object
+      # Replicate caTissue create side-effects in the submitted object.
       if CaTissue::DisposalEventParameters === obj then
         obj.specimen.activity_status = 'Closed'
         logger.debug { "Set the created DisposalEventParameters #{obj.qp} owner #{obj.specimen.qp} activity status to Closed." }
@@ -864,8 +963,14 @@ module CaTissue
           obj.specimen.consent_tier_statuses.clear
           logger.debug { "Cleared the created DisposalEventParameters #{obj.qp} owner #{obj.specimen.qp} consent tier statuses." }
         end
+      elsif CaTissue::User === obj and not obj.class.property_defined?(:page_of) then
+        # The absence of the page_of attribute above signifies a caTissue 2+ implementation.
+        # Work around the caTissue 2.0 bug by manually inserting a csm_user record.
+        executor.transact(INS_CSM_USER_SQL, obj.identifier, obj.login_name, obj.first_name, obj.last_name, obj.email_address, DateTime.now, DateTime.now)
+        executor.transact(UPD_USER_SQL, obj.identifier, obj.identifier)
+        obj.csm_user_id = obj.identifier
+        logger.debug { "Worked around a caTissue 2.0 user create bug by inserting a csm_user record." }
       end
-      
       # An annotation snapshot is not updated, since the annotation is not persisted.
       # If the annotation has been changed, then it might be subsequently updated, which
       # is disallowed. Therefore, refresh the snapshot here.
@@ -906,14 +1011,10 @@ module CaTissue
     #
     # @param (CaRuby::Database#create_from_template)
     def create_from_template(obj)
-      if Annotation::Proxy === obj then
-        hook = obj.hook
-        if hook.identifier.nil? then
-          raise CaRuby::DatabaseError.new("Annotation proxy #{obj.qp} hook owner #{hook.qp} does not have an identifier")
-        end
-        obj.identifier = hook.identifier
+      if Annotation::Proxy === obj and obj.hook.identifier then
+        obj.identifier = obj.hook.identifier
         obj.take_snapshot
-        logger.debug { "Marked annotation proxy #{obj} as created by setting the identifier to that of the hook owner #{hook}." }
+        logger.debug { "Marked annotation proxy #{obj} as created by setting the identifier to that of the hook owner #{obj.hook}." }
         logger.debug { "Creating annotation proxy #{obj} dependent primary annotations..." }
         save_changed_dependents(obj)
         persistify(obj)
@@ -956,7 +1057,7 @@ module CaTissue
       # Cannot reset a disposed Specimen quantity, so postpone disposal until
       # quantities are reset. 
       dsp = specimen.specimen_events.detect { |sep| CaTissue::DisposalEventParameters === sep }
-      if dsp then specimen.specimen_events.delete(dsp) end
+      if dsp then specimen.delete_event_parameters(dsp) end
 
       # Delegate to the standard create.
       self.class.superclass.instance_method(:create_object).bind(self).call(specimen)
@@ -1003,7 +1104,7 @@ module CaTissue
     end
     
     # @see #detoxify
-    def clear_toxic_attributes(toxic)
+    def clear_toxic_attributes(toxic, lineage)
       super
       case toxic
       when CaTissue::Specimen then
@@ -1063,29 +1164,74 @@ module CaTissue
     # @param [CaRuby::Property] prop the candidate attribute metadata
     # @return [Boolean] whether the attribute should not be included in the create template
     def exclude_pending_create_attribute?(obj, prop)
-      prop.type < Annotation or super
+      super or (prop.type < Annotation and not uniform_application_service?)
     end
 
     # @quirk caTissue Bug #147: SpecimenRequirement query ignores CPE.
     #   Work around this bug by an inverted query on the referenced CPE.
     #
-    # @quirk caTissue Accessing an annotation hook DE proxy attribute uses a separate mechanism.
-    #   Redirect the query to the annotation integration service in that case.
+    # @quirk caTissue 1.2 Accessing an annotation hook DE proxy attribute uses a separate
+    #   mechanism. Redirect the query to the annotation integration service in that case.
+    #
+    # @quirk caTissue 2.0 Accessing an annotation integration non-hook attribute uses a
+    #   separate mechanism. Reformulate the query as an annotation integration hook fetch
+    #   followed by accessing the target attribute.
     #
     # @quirk caTissue Bug #169: ContainerPosition occupied container query returns parent
     #   container instead. Substitute a hard-coded HQL search for this case.
     #
-    # @see CaRuby::Database#query_object
+    # @quirk caTissue 1.2 Annotation query is not supported prior to caTissue 2.0.
+    #
+    # @quirk caTissue 2.0 Annotation query in caTissue 2.0 results in a ORMDAOImpl DAOException
+    #   exception. The work-around is to query on the integration object and then navigate
+    #   to the target annotation object.
+    #
+    # @CaRuby::Reader#query_object
     def query_object(obj, attribute=nil)
-      if hook_proxy_attribute?(obj, attribute) then
+      if annotation_integration_nonhook_query?(obj, attribute) then
+        query_annotation_integration_object(obj, attribute)
+      elsif hook_proxy_query?(obj, attribute) then
         query_hook_proxies(obj, attribute)
       elsif CaTissue::SpecimenRequirement === obj and not obj.identifier and obj.collection_protocol_event then
         query_requirement_using_cpe_inversion(obj, attribute)
       elsif CaTissue::ContainerPosition === obj and obj.identifier and attribute == :occupied_container then
         query_container_position_occupied_container(obj, attribute)
+      elsif Annotation === obj then
+        if uniform_application_service? then
+          query_annotation_nonintegration_object(obj, attribute)
+        else
+          raise CaRuby::DatabaseError.new("Annotation query is not supported by the caTissue API: #{obj}.")
+        end
       else
         super
       end
+    end
+    
+    def query_annotation_nonintegration_object(obj, attribute)
+      op, ownr = obj.effective_owner_property_value
+      if ownr.nil? then
+        raise CaRuby::DatabaseError.new("Annotation query without an integration reference is not supported by the caTissue API: #{obj}.")
+      end
+      logger.debug { "Work around a caTissue query limitation by querying on the annotation #{obj} owner #{ownr} #{op} references instead..." }
+      anns = query(ownr, op.inverse)
+      logger.debug { "Fetched the annotation #{obj} owner #{ownr} #{op.inverse} references #{anns.pp_s}." }
+      attribute ? anns.map { |ann| ann.send(attribute) }.flatten : anns
+    end
+      
+    
+    def query_annotation_integration_object(obj, attribute)
+      if obj.identifier.nil? then
+        raise CaRuby::DatabaseError.new("Cannot query on the #{obj.hook} annotation integration proxy #{obj} without an identifier.")
+      end
+      hp = obj.class.hook_property
+      if hp.nil? then
+        raise CaRuby::DatabaseError.new("Cannot query on the #{obj.hook} annotation integration proxy #{obj} without a hook property.")
+      end
+      logger.debug { "Converting the annotation proxy query #{obj} into a query on the hook #{hp}..." }
+      hook = query_object(obj, hp.attribute).first
+      proxies = hook.send(hp.inverse).to_enum
+      logger.debug { "Fetched the annotation proxy #{obj} hook #{hp} #{hook} with proxies #{proxies.pp_s}." }
+      attribute ? proxies.map { |pxy| pxy.send(attribute) }.flatten : proxies
     end
     
     def query_container_position_occupied_container(obj, attribute)
@@ -1095,11 +1241,16 @@ module CaTissue
     end
     
     # @param (see #query_object)
+    # @return [Boolean] whether the given attribute is a reference from an #{Annotation::Integration} proxy
+    #   to a dependent {Annotation}
+    def annotation_integration_nonhook_query?(obj, attribute)
+      Annotation::Integration === obj and (attribute.nil? or obj.class.property(attribute).type < Annotation)
+    end
+    
+    # @param (see #query_object)
     # @return [Boolean] whether the given attribute is a reference from an {Annotatable} to a #{Annotation::Proxy}
-    def hook_proxy_attribute?(obj, attribute)
-      return false if attribute.nil?
-      prop = obj.class.property(attribute)
-      prop.declarer < Annotatable and prop.type < Annotation::Proxy
+    def hook_proxy_query?(obj, attribute)
+      Annotatable === obj and attribute and obj.class.property(attribute).type < Annotation::Proxy
     end
     
     # Queries on the given object attribute using the {Annotation::IntegrationService}.
@@ -1142,6 +1293,14 @@ module CaTissue
     def invertible_query?(obj, attribute)
       super and not (hook_proxy_attribute?(obj, attribute) or
         (CaTissue::CollectionProtocolEvent === obj and attribute == :specimen_requirements))
+    end
+    
+    # @param (see #query_object)
+    # @return [Boolean] whether the given attribute is a reference from an {Annotatable} to a #{Annotation::Proxy}
+    def hook_proxy_attribute?(obj, attribute)
+      return false if attribute.nil?
+      prop = obj.class.property(attribute)
+      prop.declarer < Annotatable and prop.type < Annotation::Proxy
     end
 
     def fetch_participant_alternative(pnt)

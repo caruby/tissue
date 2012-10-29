@@ -23,7 +23,7 @@ class CollectionEventParametersTest < Test::Unit::TestCase
   end
   
   def test_owner_conflict
-    cep = CaTissue::SpecimenEventParameters.create_parameters(:collection, @scg)
+    cep = CaTissue::Collectible.create_parameters(:collection, @scg)
     assert_raises(Jinx::ValidationError, "Conflict allowed") { cep.specimen = @spc }
   end
   

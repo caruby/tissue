@@ -1,5 +1,6 @@
 module CaTissue
   class CheckInCheckOutEventParameter
+    
     # The check-in/check-out status permissible values.
     module Status
       CHECKED_OUT = 'CHECK OUT'

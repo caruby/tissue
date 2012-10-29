@@ -1,3 +1,5 @@
+require 'catissue/helpers/action_event_parameters'
+
 module CaTissue
   # A CollectibleEventParameters is a SpecimenEventParameters which pertains to Specimen
   # or SpecimenCollectionGroup collection at the point of tissue acquisition from the participant
@@ -24,16 +26,17 @@ module CaTissue
     # @param [Class] klass the including class
     def self.included(klass)
       klass.class_eval do
-        [:specimenCollectionGroup, :specimen].each do |pa|
+        [:specimen_collection_group, :specimen].each do |pa|
           wtr = "#{pa}=".to_sym
           redefine_method(wtr) do |base|
             lambda do |obj|
               validate_no_owner_confict(pa, obj)
               validate_exclusivity(pa, obj)
-              send(base, obj)
+              # If this is an action EP, then call the redefined method.
+              # Otherwise, delegate to the SpecimenEventParameters writer.
+              ActionEventParameters === self ? send(base, obj) : super
             end
           end
-          logger.debug { "Redefined the #{qp} #{pa} method to ensure the owner exclusivity constraints." }
         end
       end
     end
@@ -43,7 +46,7 @@ module CaTissue
     # @raise [Jinx::ValidationError] if this event parameters object already has a different owner attribute referent
     def validate_no_owner_confict(attribute, obj)
       return if obj.nil?
-      self.class.owner_attributes.each do |oa|
+      [:specimen_collection_group, :specimen].each do |oa|
         next if oa == attribute
         other = send(oa)
         if other then
@@ -54,7 +57,7 @@ module CaTissue
     
     def validate_exclusivity(attribute, obj)
       return if obj.nil?
-      inv = self.class.property(attribute).inverse
+      inv = self.class.property(attribute).inverse || return
       other = obj.send(inv).detect { |ep| self.class === ep }
       if other and other != self then
         raise Jinx::ValidationError.new("Cannot add #{self} to #{attribute} #{obj}, since #{obj} already includes #{other}")

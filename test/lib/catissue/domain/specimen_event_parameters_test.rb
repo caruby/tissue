@@ -6,7 +6,7 @@ class SpecimenEventParametersTest < Test::Unit::TestCase
   def setup
     super
     specimen = defaults.specimen
-    @sep = CaTissue::SpecimenEventParameters.create_parameters(:frozen, specimen, :user => specimen.specimen_collection_group.receiver, :freeze_method => 'Cryobath')
+    @sep = CaTissue::Collectible.create_parameters(:frozen, specimen, :user => specimen.specimen_collection_group.receiver, :freeze_method => 'Cryobath')
   end
 
   def test_defaults

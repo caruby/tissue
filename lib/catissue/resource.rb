@@ -1,11 +1,12 @@
 require 'jinx/metadata/id_alias'
 require 'caruby/resource'
+require 'catissue/helpers/initializer'
 require 'catissue/database'
 
 # The caTissue-specific Resource mix-in.
 module CaTissue
   module Resource
-    include Jinx::IdAlias, CaRuby::Resource
+    include Jinx::IdAlias, Initializer, CaRuby::Resource
 
     # Returns whether each of the given attribute values either equals the
     # respective other attribute value or one of the values is nil or 'Not Specified'.
@@ -21,6 +22,27 @@ module CaTissue
     # @return [Database] the database which stores this object
     def database
       Database.current
+    end
+
+    # Post-processes the +CaRuby#merge_attribute+ result to work around the following
+    # caTissue bug:
+    #
+    # @quirk caTissue The caTissue domain object hashCode is often poorly chosen as
+    #   the database identifier. Consequently, a Java Set can no longer detect set
+    #   membership of a member after the identifier property is set. caRuby works
+    #   around this bug by rehashing a Set property value after content is merged
+    #   into this domain object from a fetched domain object.
+    #
+    # @param (see Jinx::Mergeable#merge_attribute)
+    def merge_attribute(attribute, newval, matches=nil)
+      mgdval = super
+      if Java::JavaUtil::Set === mgdval and not mgdval.empty? then
+        content = mgdval.to_a
+        mgdval.clear
+        content.each { |item| mgdval << item }
+        logger.debug { "Worked around a caTissue bug by rebuilding the #{self} #{attribute} value." }
+      end
+      mgdval
     end
 
     protected

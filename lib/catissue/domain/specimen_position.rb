@@ -21,7 +21,7 @@ module CaTissue
     #   SpecimenPosition save is accomplished by creating a proxy TransferEventParameters instead.
     def saver_proxy
       # Look for a transfer event that matches the position.
-      xfr = specimen.event_parameters.detect do |sep|
+      xfr = specimen.all_event_parameters.detect do |sep|
         CaTissue::TransferEventParameters === sep and sep.to == location
       end
       # Create a new transfer event, if necessary.

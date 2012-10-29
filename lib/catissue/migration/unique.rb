@@ -64,13 +64,13 @@ module CaTissue
     include Jinx::Unique
     
     # Makes this User's login id and email address unique.
-    # The result is in the form _name___suffix_+@test.com+
+    # The result is in the form _name___suffix_+@example.edu+
     # where:
     # * _name_ is the name prefix portion of the original email address
     # * _suffix_ is a unique number
     def uniquify
       email = email_address ||= self.login_name || return
-      self.login_name = self.email_address = uniquify_value(email[/[^@]+/]) + '@test.com'
+      self.login_name = self.email_address = uniquify_value(email[/[^@]+/]) + '@example.edu'
     end
   end
 end

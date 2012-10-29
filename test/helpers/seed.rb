@@ -97,17 +97,8 @@ module CaTissue
         coord.institution = inst
         coord.department = dept
         coord.cancer_research_group = cc
+        coord.role_name = 'Coordinator'
         coord.add_defaults
-
-        # the test surgeon
-        surgeon = CaTissue::User.new
-        surgeon.loginName = surgeon.emailAddress = 'test_surgeon@example.edu'
-        surgeon.lastName = 'Scientist'
-        surgeon.firstName = 'Test'
-        surgeon.address = addr.copy
-        surgeon.institution = inst
-        surgeon.department = dept
-        surgeon.cancer_research_group = cc
 
         # the test PI
         pi = CaTissue::User.new
@@ -118,6 +109,17 @@ module CaTissue
         pi.institution = inst
         pi.department = dept
         pi.cancer_research_group = cc
+        pi.role_name = 'PI'
+
+        # the test surgeon
+        surgeon = CaTissue::User.new
+        surgeon.loginName = surgeon.emailAddress = 'test_surgeon@example.edu'
+        surgeon.lastName = 'Scientist'
+        surgeon.firstName = 'Test'
+        surgeon.address = addr.copy
+        surgeon.institution = inst
+        surgeon.department = dept
+        surgeon.cancer_research_group = cc
 
         # the test hospital
         hospital = CaTissue::Site.new(

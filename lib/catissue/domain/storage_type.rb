@@ -13,22 +13,32 @@ module CaTissue
 
     qualify_attribute(:holds_specimen_array_types, :fetched)
 
-    set_attribute_type(:holds_specimen_array_types, CaTissue::SpecimenArrayType)
+    set_attribute_type(:holds_storage_types, CaTissue::StorageType)
 
     set_attribute_type(:holds_specimen_classes, String)
 
-    set_attribute_type(:holds_storage_types, CaTissue::StorageType)
-
-    # @return StorageContainer
-    def container_class
-      CaTissue::StorageContainer
-    end
+    set_attribute_type(:holds_specimen_array_types, CaTissue::SpecimenArrayType)
     
     alias :add_child :add_child_type
     
     alias :add :add_child_type
     
     alias :<< :add_child_type
+
+    # @quirk caTissue 2.0 caTissue 2.0 introduces a StorageType regression by not initializing
+    #  the child storage types to an empty set. Work-around is to initialize the child types
+    #  to a Java LinkedHashSet in the constructor. 
+    def initialize
+      super
+      self.holds_storage_types ||= Java::JavaUtil::LinkedHashSet.new
+      self.holds_specimen_array_types ||= Java::JavaUtil::LinkedHashSet.new
+      self.holds_specimen_classes ||= Java::JavaUtil::LinkedHashSet.new
+    end
+
+    # @return StorageContainer
+    def container_class
+      CaTissue::StorageContainer
+    end
 
     # @return [Boolean] whether this StorageType can hold a child of the given Storable storable type
     def can_hold_child?(storable)

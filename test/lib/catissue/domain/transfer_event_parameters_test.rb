@@ -20,7 +20,7 @@ class TransferEventParametersTest < Test::Unit::TestCase
   end
 
   def test_inverse_setter
-    assert(@xfr.specimen.event_parameters.include?(@xfr), "#{@xfr} not found in specimen")
+    assert(@xfr.specimen.specimen_event_parameters.include?(@xfr), "#{@xfr} not found in specimen")
   end
 
   def test_move

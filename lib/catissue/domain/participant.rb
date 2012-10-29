@@ -53,14 +53,24 @@ module CaTissue
     # SSN is a key, if present, but is not required.
     qualify_attribute(:social_security_number, :optional)
     
-    # The clinicial annotation.
-    add_annotation('Clinical', :package => 'clinical_annotation', :service => 'CA')
+    # Define the clinicial annotation.
+    #
+    # @quirk caTissue 2.0 The Participant clinical annotation package changed from +clinical_annotation+
+    #   to +gov.nih.nci.dynext.clinical_annotation+.
+    begin
+      Java::gov.nih.nci.dynext.clinical_annotation.LabAnnotation
+      add_annotation('Clinical', :packages => ['gov.nih.nci.dynext.clinical_annotation'])
+    rescue NameError
+      add_annotation('Clinical', :packages => ['clinical_annotation'], :service => 'CA')
+    end
     
-    # Overrides +CaRuby::Mergable.merge_attribute+ to work around the caTissue
+    # Overrides +Jinx::Mergeable.merge_attribute+ to work around the caTissue
     #  bugs described in {CaTissue::Participant.remove_phantom_medical_identifier}.
+    #
+    # @param (see Jinx::Mergeable#merge_attribute)
     def merge_attribute(attribute, newval, matches=nil)
       if attribute == :participant_medical_identifiers and newval then
-        CaTissue::Participant.remove_phantom_medical_identifier(newval)
+        newval = newval.select { |pmi| pmi.medical_record_number }
       end
       super
     end
@@ -69,6 +79,30 @@ module CaTissue
     def key
       super or medical_identifiers.first
     end
+    
+    # @param [<String>] races the race names to add
+    def add_races(*names)
+      names.each do |name|
+        raise ArgumentError.new("The race argument is not a string: #{name}") unless String === name
+        CaTissue::Race.new(:name => name, :participant => self)
+      end
+      # Clear the n/a races.
+      if races.size > names.size then
+        remove_races('Unknown', 'Not Reported')
+      end
+    end
+    
+    alias :add_race :add_races
+    
+    # @param [<String>] races the race names to remove
+    def remove_races(*names)
+      names.each do |name|
+        race = races.detect { |r| r.name == name }
+        races.delete(race) if race
+      end
+    end
+    
+    alias :remove_race :remove_races
 
     # @param [CaTissue::Site] the registration site
     # @param [String] mrn the registration MRN

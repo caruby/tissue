@@ -16,6 +16,10 @@ module CaTissue
 
       # @return [Module] the module which imported this annotation class 
       attr_reader :annotation_module
+      
+      # @return [Jinx::Property, nil] the attribute metadata which references
+      #   the hook proxy, or nil if this is not a primary annotation class
+      attr_reader :proxy_property
   
       # @return [<Class>] the annotation class hierarchy, including this class
       def annotation_hierarchy
@@ -24,7 +28,12 @@ module CaTissue
   
       # @return [Boolean] whether this annotation class references a hook proxy
       def primary?
-        @is_primary
+        !!@proxy_property
+      end
+      
+      # @return [Boolean] whether this annotation has a primary entity
+      def entity_primary?
+        !!@is_entity_primary
       end
   
       # @return [Boolean] whether this annotation refers to a {#primary?} annotation
@@ -44,8 +53,7 @@ module CaTissue
       # @param [Module] mod the module which scopes this annotation 
       def add_annotation_metadata(mod)
         logger.debug { "Adding #{mod.qp} annotation #{qp} metadata..." }
-        # Set the primary key.
-        property :identifier, :primary_key
+        property(:identifier, :primary_key)
         self.annotation_module = mod
         infer_entity_id
         logger.debug { "#{mod.qp} annotation #{qp} metadata is complete." }
@@ -70,43 +78,91 @@ module CaTissue
       def save_dependent_attributes(annotation)
         dependent_attributes.each { |pa| save_dependent_attribute(annotation, pa) }
       end
+      
+      # Defines a convenience annotation -> hook reference property which delegates
+      # to the owner -> hook property.
+      #
+      # @raise [AnnotationError] if this primary annotation class does not have an ower
+      #   reference property
+      def define_hook_property
+        if @proxy_property.nil? then
+          raise AnnotationError.new("Primary annotation #{qp} does not have the required proxy property")
+        end
+        # the proxy -> hook reference attribute
+        pha = @proxy_property.type.hook_property.attribute
+        # Make the annotation -> hook property by composing the annotation -> proxy -> hook properties.
+        compose_property(@proxy_property, @proxy_property.type.hook_property) do |tgt|
+          # Make a new proxy on demand that references the target hook object.
+          @proxy_property.type.new(pha => tgt)
+        end
+      end
   
       # @return [ProxyClass] the annotation proxy class
-      def proxy_class
+      def proxy_type
         annotation_module.proxy
       end
   
-      alias :proxy :proxy_class
+      alias :proxy :proxy_type
   
       # @return [Metadata] the annotated domain object class
-      def hook_class
-        proxy.hook
+      def hook_type
+        proxy.hook_type
       end
   
-      alias :hook :hook_class
-  
-      # @return [Jinx::Property, nil] the attribute metadata which references
-      #   the hook proxy, or nil if this is not a primary annotation class
-      def proxy_property
-        @pxy_prop
-      end
+      alias :hook :hook_type
   
       # @return [Symbol, nil] the attribute symbol which references the hook proxy,
       #   or nil if this is not a primary annotation class
       def proxy_attribute
-        @pxy_prop.to_sym if @pxy_prop
-      end
-  
-      # @return [Symbol, nil] the hook proxy class attribute which references this annotation class,
-      #   or nil if this is not a primary annotation class
-      def hook_proxy_attribute
-        # The hook => primary attribute symbol is the same as the proxy => primary attribute symbol.
-        @pxy_prop.inverse if @pxy_prop
+        @proxy_property.attribute if primary?
       end
   
       # @return [Array] an empty array, since no annotation reference is lazy-loaded by caTissue.
       def toxic_attributes
         Array::EMPTY_ARRAY
+      end
+
+      # Returns the property that references the given proxy class. This method creates a reference
+      # property if it is not already defined.
+      #
+      # @param [Annotation::ProxyClass] klass the annotation module proxy class
+      # @return [Jinx::Property] the proxy property
+      # @raise [AnnotationError] if this annotation is not {#primary?}
+      # @raise [AnnotationError] if the proxy attribute is already set and references a
+      #   different proxy class
+      def proxy_property_for(klass)
+        # If the proxy is already set, then confirm that this call is redundant, which is tolerated
+        # as a no-op, as opposed to conflicting, which is not allowed.
+        if @proxy_property then
+          return @proxy_property if klass <= @proxy_property.type
+          raise AnnotationError.new("Can't reset #{self} proxy from #{@proxy_property.type} to #{klass}")
+        end
+        logger.debug { "Setting annotation #{qp} proxy to #{klass}..." }
+        # the annotation => proxy reference attribute
+        prop = obtain_proxy_property(klass)
+        # The canonical proxy attribute is named after the annotation module, e.g. clinical.
+        # caTissue 1.1.x confusingly names the proxy the same as the hook. Correct this by repurposing
+        # the proxy as the hook attribute and making a separate proxy attribute named by the annotation
+        # module.
+        hook = klass.hook_type
+        if hook.nil? then
+          raise AnnotationError.new("Annotation #{self} proxy class #{klass} does not reference the hook type.")
+        end
+        hook_attr = klass.hook_type.name.demodulize.underscore.to_sym
+        if prop.to_sym == hook_attr then
+          wrap_1_1_proxy_attribute(prop)
+        else
+          set_proxy_property(prop, hook_attr)
+        end
+        logger.debug { "Annotation #{qp} proxy reference attribute is #{@proxy_property}." }
+
+        # Alias 'proxy' to the proxy attribute.
+        alias_attribute(:proxy, @proxy_property.to_sym)
+        logger.debug { "Aliased annotation #{qp} :proxy to :#{@proxy_property}." }
+        # Alias 'hook' to the hook attribute.
+        alias_attribute(:hook, hook_attr)
+        logger.debug { "Aliased annotation #{qp} :hook to :#{hook_attr}." }
+        prop
       end
   
       protected
@@ -115,10 +171,19 @@ module CaTissue
       # {Annotation}, then the superclass annotation module is set as well. The superclass
       # annotation module must be set before this class's entity id is inferred.
       #
+      # If this class is not abstract and the scoping module has a {Metadata#mixin}, then
+      # the mix-in is included in this class. Only concrete classes include the mix-in,
+      # since an abstract class might be common to other annotations.
+      #
       # @param [Module] mod the module which scopes this annotation 
       def annotation_module=(mod)
         superclass.annotation_module ||= mod if superclass < Annotation
         @annotation_module = mod
+        if mod.mixin and not abstract? then
+          include mod.mixin
+          logger.debug { "Added mix-in #{mod.mixin} to #{mod} annotation #{self}." }
+        end
+        mod
       end
   
       # @return [Symbol => ReferenceWriter] this class's attribute => writer hash
@@ -131,14 +196,16 @@ module CaTissue
         # First infer the attribute inverses.
         infer_inverses
         # Select the annotation attributes to make dependent.
-        pa = domain_attributes.compose do |prop|
-          prop != @pxy_prop and prop.type < Annotation and not (prop.dependent? or prop.owner?) and prop.declarer == self
+        dps = domain_properties.select do |p|
+          p != @proxy_property and p.type < Annotation and not (p.dependent? or p.owner?) and p.declarer == self
         end
         # Copy the attributes to an array before iteration, since adding a dependent attribute
         # might also add another attribute in the case of a proxy.
-        pa.to_a.each do |pa|
-          logger.debug { "Adding annotation #{qp} #{pa} attribute as a logical dependent..." }
-          add_dependent_attribute(pa, :logical, :unsaved)
+        dps.each do |dp|
+          logger.debug { "Adding annotation #{qp} #{dp} attribute as a dependent..." }
+          add_dependent_attribute(dp.attribute)
+          # The caTissue 1.2 proxy is a logical dependent.
+          dp.qualify(:logical, :unsaved) unless CaTissue::Database.current.uniform_application_service?
         end
       end
   
@@ -175,47 +242,6 @@ module CaTissue
         path.pop
       end
   
-      # Creates the proxy attribute that references the given proxy class, if it is not
-      # already defined.
-      #
-      # @param [Annotation::ProxyClass] klass the annotation module proxy class
-      # @raise [AnnotationError] if this annotation is not {#primary?}
-      # @raise [AnnotationError] if the proxy attribute is already set and references a
-      #   different proxy class
-      def define_proxy_attribute(klass)
-        # Only a primary annotation class can have a proxy.
-        unless primary? then
-          raise AnnotationError.new("Can't set proxy for non-primary annotation class #{qp}")
-        end
-        # If the proxy is already set, then confirm that this call is redundant, which is tolerated
-        # as a no-op, as opposed to conflicting, which is not allowed.
-        if @pxy_prop then
-          return if @pxy_prop.type == klass
-          raise AnnotationError.new("Can't reset #{self} proxy from #{@pxy_prop.type} to #{klass}")
-        end
-        logger.debug { "Setting annotation #{qp} proxy to #{klass}..." }
-        # the annotation => proxy reference attribute
-        prop = obtain_proxy_property(klass)
-        # The canonical proxy attribute is named after the annotation module, e.g. clinical.
-        # caTissue 1.1.x confusingly names the proxy the same as the hook. Correct this by repurposing
-        # the proxy as the hook attribute and making a separate proxy attribute named by the annotation
-        # module.
-        hook_attr = klass.hook.name.demodulize.underscore.to_sym
-        if prop.to_sym == hook_attr then
-          wrap_1_1_proxy_attribute(prop)
-        else
-          set_proxy_property(prop, hook_attr)
-        end
-        logger.debug { "Annotation #{qp} proxy reference attribute is #{@pxy_prop}." }
-    
-        # Alias 'proxy' to the proxy attribute.
-        logger.debug { "Aliased annotation #{qp} :proxy to #{@pxy_prop}." }
-        alias_attribute(:proxy, @pxy_prop.to_sym)
-        # Alias 'hook' to the hook attribute.
-        logger.debug { "Aliased annotation #{qp} :hook to #{hook_attr}." }
-        alias_attribute(:hook, hook_attr)
-      end
-  
       private
 
       # Determines this annotation's entity id. 
@@ -224,18 +250,15 @@ module CaTissue
         # primary status and the container id.
         efcd = Annotation::EntityFacade.instance
         @entity_id = efcd.annotation_entity_id(self, false)
-        @is_primary = efcd.primary?(@entity_id) if @entity_id
+        @is_entity_primary = efcd.primary?(@entity_id) if @entity_id
         # A primary entity has a container id.
-        if primary? then
+        if entity_primary? then
           @container_id = efcd.container_id(@entity_id)
           if @container_id.nil? then
             raise AnnotationError.new("Primary annotation #{self} is missing a container id")
           end
           logger.debug { "Primary annotation #{self} has container id #{@container_id}." }
-          pxy = @annotation_module.proxy
-          pxy.ensure_primary_references_proxy(self) if pxy
         end
-        logger.debug { "#{annotation_module.qp} annotation #{qp} metadata is complete." }
       end
     
       # Augments +Jinx::Introspector.add_java_attribute+ to accomodate the
@@ -262,31 +285,38 @@ module CaTissue
         end
         prop
       end
+    
+      # Override +Inverse.detect_inverse_attribute_from_candidates+ to look for the
+      # attribute with name given by the referenced proxy class name joined to this
+      # class name, e.g. +scg_record_entry_radical_prostatectomy_pathology_annotation+.
+      def detect_inverse_attribute_from_candidates(klass, candidates)
+        inv = super
+        return inv if inv
+        tgt = [klass.name.demodulize.underscore, name.demodulize.underscore].join('_').to_sym 
+        tgt if candidates.detect { |pa| pa == tgt }
+      end
   
       # Sets the caTissue 1.2 and higher proxy attribute. The attribute is aliased
       # to the demodulized annotation module name, e.g. +clinical+. A hook attribute
-      # is created that is a shortcut for the annotation => proxy => hook reference.
+      # is created that is a shortcut for the annotation -> proxy -> hook reference
+      # path.
       #
-      # @param [Jinx::Property] prop the proxy attribute
+      # @param [Jinx::Property] prop the annotation -> proxy property
       # @param [Symbol, nil] the proxy => hook attribute (default is the underscore demodulized hook class name)
       def set_proxy_property(prop, hook_attr=nil)
-        hook_attr ||= prop.type.hook.name.demodulize.underscore.to_sym
-        @pxy_prop = prop
-    
+        hook_attr ||= prop.type.hook_type.name.demodulize.underscore.to_sym
+        @proxy_property = prop
         # Alias the attribute with the proxy hook name, e.g. the
         # Participant::Clinical::AlcoholAnnotation -> Participant::Clinical::ParticipantRecordEntry
         # proxy reference attribute participant_record_entry is aliased by clinical.
         aliaz = annotation_module.name.demodulize.underscore.to_sym
         if aliaz != prop.to_sym then
-          alias_attribute(aliaz, prop.to_sym)
-          logger.debug { "Aliased #{qp} #{aliaz} to #{prop}." }
+          alias_attribute(aliaz, prop.attribute)
+          logger.debug { "Aliased #{qp}.#{aliaz} to the annotation proxy attribute #{prop}." }
         end
-    
-        # Make the hook attribute.
-        define_method(hook_attr) { pxy = send(aliaz); pxy.hook if pxy }
-        define_method("#{hook_attr}=".to_sym) { |obj| pxy = obj.proxy_for(aliaz, self) if obj; send(prop.writer, pxy) }
-        add_attribute(hook_attr, prop.type.hook)
-        logger.debug { "Defined #{qp} => #{prop.type.hook.qp} hook attribute #{hook_attr}." }
+        # Make the hook reader attribute.
+        define_hook_property
+        logger.debug { "Defined the #{qp} -> #{prop.type.hook_type.qp} hook attribute #{hook_attr}." }
       end
   
       # Wraps the caTissue 1.1.x proxy attribute with a hook argument and return value.
@@ -323,15 +353,14 @@ module CaTissue
 
         # Add the proxy reference attribute.
         pxy_attr = annotation_module.name.demodulize.underscore.to_sym
-        @pxy_prop = add_attribute(pxy_attr, annotation_module.proxy, :saved)
-        logger.debug { "Added #{qp} => #{@pxy_prop.type} proxy attribute #{@pxy_prop}." }
+        @proxy_property = add_attribute(pxy_attr, annotation_module.proxy, :saved)
+        logger.debug { "Added #{qp} => #{@proxy_property.type} proxy attribute #{@proxy_property}." }
       end
   
       # @param [ProxyClass] klass the proxy class
       # @return [Jinx::Property] the annotation -> proxy attribute
       def obtain_proxy_property(klass)
         prop = infer_proxy_property(klass) || create_proxy_property(klass)
-        if prop.nil? then raise AnnotationError.new("Annotation #{qp} proxy attribute could not be found or created") end
         logger.debug { "Annotation class #{qp} has proxy reference attribute #{prop}." }
         prop
       end
@@ -339,7 +368,13 @@ module CaTissue
       # @param [ProxyClass] klass the proxy class
       # @return [Jinx::Property] the existing annotation -> proxy attribute
       def infer_proxy_property(klass)
-        domain_attributes.each_property { |prop| return prop if prop.type == klass and prop.declarer == self }
+        candidates = domain_properties.select { |prop| klass <= prop.type and prop.declarer == self }
+        return candidates.first if candidates.size == 1  
+        if candidates.empty? then  
+          logger.debug { "There is no #{self} property which references the proxy class #{klass}." }
+        else
+          logger.debug { "There are ambiguous {self} -> #{klass} annotation proxy reference properties: #{candidates.qp}." }
+        end
         nil
       end
   
@@ -348,19 +383,17 @@ module CaTissue
       def create_proxy_property(klass)
         # the proxy attribute symbol
         pa = annotation_module.name.demodulize.underscore.to_sym
-        logger.debug { "Creating primary annotation #{qp} => proxy #{klass} attribute #{pa}..." }
+        logger.debug { "Creating #{qp} -> #{klass} primary annotation -> proxy attribute #{pa}..." }
         # make the attribute
         attr_accessor(pa)
-    
         # Add the attribute. Setting the saved flag ensures that the save template passed to
         # the annotation service includes a reference to the hook object. This in turn allows
         # the annotation service to call the integration service to associate the annotation
         # to the hook object.
         prop = add_attribute(pa, proxy, :saved)
-        # make the inverse proxy -> annotation dependent attribute
-        inverse = klass.create_annotation_attribute(self)
-        logger.debug { "Created primary annotation #{qp} proxy #{klass} attribute #{pa} with inverse #{inverse}." }
-    
+        # Make the inverse proxy -> annotation dependent attribute.
+        inv = infer_property_inverse(prop) || klass.create_annotation_property(self)
+        logger.debug { "Created #{annotation_module.qp} #{qp} -> #{klass} annotation proxy attribute #{pa} with inverse #{inv}." }
         prop
       end
   
@@ -428,7 +461,7 @@ module CaTissue
           alias_method(aliaz, old_mth)
           lambda do |value|
             # Convert the parameter from a hook to a proxy, if necessary.
-            pxy = klass === value ? value.proxy_for(inverse, self) : value
+            pxy = klass === value ? value.proxy_for(self) : value
             unless pxy == value then logger.debug { "Converted #{qp} #{writer} argument from hook #{value.qp} to proxy #{pxy.qp}" } end
             send(self.class.proxy_property.writer, pxy)
           end

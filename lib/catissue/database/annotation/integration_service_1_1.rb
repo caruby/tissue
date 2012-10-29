@@ -5,12 +5,16 @@ module CaTissue
     # An IntegrationService fetches and saves CaTissue 1.1.x hook-annotation associations.
     class IntegrationService < CaRuby::PersistenceService
       # Import the caTissue classes.
+      #
+      # @quirk caTissue 2.0 The annotation entity map and form context apparatus moved
+      #   from package +deintegration+ to +edu.common.dynamicextensions.domain.integration+.
       java_import Java::deintegration.EntityMap
       java_import Java::deintegration.EntityMapRecord
       java_import Java::deintegration.FormContext
 
-      def initialize
-        super(SVC_NAME, CaTissue::Database.current.access_properties)
+      def initialize(database)
+        url = database.application_service_url_for(SVC_NAME)
+        super() { CaRuby::URLApplicationService.for(url) }
       end
 
       # Associates the given hook domain object to the annotation.

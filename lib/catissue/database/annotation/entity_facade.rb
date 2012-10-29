@@ -58,8 +58,7 @@ module CaTissue
       # @param [Integer] eid the entity id to check
       # @return [Boolean] whether the entity is primary
       def primary?(eid)
-        result = @executor.query(IS_PRIMARY_SQL, eid).first
-        not result.nil?
+        @executor.query(IS_PRIMARY_SQL, eid).first
       end
       
       # @param [Class] klass the {Annotatable} class

@@ -22,7 +22,13 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
       cts = @scg.consent_tier_statuses.detect { |s| s.consent_tier == ct }
       assert_not_nil(cts, "Missing SCG consent tier status for #{ct}")
     end
-    assert_not_nil(@scg.collection_event_parameters, "#{@scg} default CEP not created")
+    cep = @scg.collection_event_parameters
+    assert_not_nil(cep, "#{@scg} default CEP not created")
+    if @scg.class.property_defined?(:action_applications) then
+      aa = @scg.action_applications.first
+      assert_not_nil(aa, "#{@scg} is missing action applications.")
+      assert_not_nil(cep.action_application, "#{@scg} #{cep} does not reference an action application.")
+    end
   end
   
   def test_spn_conversion
@@ -49,24 +55,24 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
   end
 
   def test_prostatectomy_annotation
-    assert(CaTissue::SpecimenCollectionGroup.annotation_attribute?(:pathology))
     pths = @scg.pathology
     assert(pths.empty?, "Pathology annotations not empty at start")
-    pa = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new
-    pa.merge_attributes(:specimen_collection_group => @scg)
+    pst = CaTissue::SpecimenCollectionGroup::Pathology::RadicalProstatectomyPathologyAnnotation.new(:specimen_collection_group => @scg)
+    assert_not_nil(pst.specimen_collection_group, "#{@scg} prostatectomy SCG reference not set")
+    assert_equal(@scg, pst.specimen_collection_group, "#{@scg} prostatectomy SCG reference is incorrect")
     assert_equal(1, pths.size, "SCG pathology proxy not created")
     pth = pths.first
-    pas = pth.radical_prostatectomy_pathology_annotations
+    psts = pth.radical_prostatectomy_pathology_annotations
+    assert_not_nil(psts.first, "#{@scg} prostatectomy annotation #{pth} does not reference an annotation")
+    assert_same(pst, psts.first, "#{@scg} prostatectomy annotation #{pth} references an incorrect annotation")
+    assert_same(pth, pst.pathology, "#{@scg} #{pth} prostatectomy annotation #{pst} proxy incorrect")
+    assert_same(pth, pst.proxy, "#{@scg} #{pth} prostatectomy annotation proxy #{pst} alias incorrect")
+    assert_same(@scg, pth.hook, "#{@scg} #{pth} prostatectomy annotation proxy hook incorrect")
+    assert_same(@scg, pst.hook, "#{@scg} #{pth} prostatectomy annotation hook incorrect")
     epx = CaTissue::SpecimenCollectionGroup::Pathology::ExtraprostaticExtension.new
-    epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pa)
-    assert_not_nil(pas.first, "#{@scg} prostatectomy annotation not added")
-    assert_same(pa, pas.first, "#{@scg} prostatectomy annotation incorrect")
-    assert_same(pth, pa.pathology, "#{@scg} prostatectomy annotation #{pa} proxy incorrect")
-    assert_same(pth, pa.proxy, "#{@scg} prostatectomy annotation proxy #{pa} alias incorrect")
-    assert_same(@scg, pth.hook, "#{@scg} prostatectomy annotation proxy hook incorrect")
-    assert_same(@scg, pa.hook, "#{@scg} prostatectomy annotation hook incorrect")
-    assert_not_nil(pa.extraprostatic_extension, "#{pa} extraprostatic extension incorrect")
-    assert_same(epx, pa.extraprostatic_extension, "{pa} extraprostatic extension incorrect")
+    epx.merge_attributes(:status => 'Present', :radical_prostatectomy_pathology_annotation => pst)
+    assert_not_nil(pst.extraprostatic_extension, "#{pst} extraprostatic extension incorrect")
+    assert_same(epx, pst.extraprostatic_extension, "{pst} extraprostatic extension incorrect")
   end
   
   def test_prostate_biopsy_annotation
@@ -124,6 +130,26 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     assert(spcs.include?(spc2), "#{spc2} not found in #{scg}")
   end
   
+  def test_action_application_inverse
+    if CaTissue::SpecimenCollectionGroup.property_defined?(:action_applications) then
+      aa = CaTissue::ActionApplication.new(:specimen_collection_group => @scg)
+      assert_not_nil(aa.specimen_collection_group, "Action application SCG owner not set")
+      assert_equal(@scg, aa.specimen_collection_group, "Action application SCG owner incorrect")
+    end
+  end
+  
+  def test_merge_action_applications
+    if CaTissue::SpecimenCollectionGroup.property_defined?(:action_applications) then
+      src = @scg.copy
+      src.action_applications << aa = CaTissue::ActionApplication.new
+      tgt = src.copy(:action_applications)
+      copy = tgt.action_applications.first
+      assert_not_nil(copy, "Action application not copied")
+      assert_not_nil(copy.specimen_collection_group, "Action application SCG owner not set in copy")
+      assert_equal(tgt, copy.specimen_collection_group, "Action application SCG owner incorrect in copy")
+    end
+  end
+  
   def test_json
     verify_json(@scg)
   end
@@ -134,23 +160,18 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     logger.debug { "Verifying #{@scg} create..." }
     verify_save(@scg)
     assert_equal('Complete', @scg.collection_status, "Collection status after store incorrect")
-    assert_equal(2, @scg.event_parameters.size, "#{@scg} events size incorrect")
-    tmpl = @scg.copy(:identifier)
-    verify_query(tmpl, :event_parameters) do |fetched|
-      assert_equal(2, fetched.size, "#{@scg} fetched events size incorrect")
-    end
+    assert_equal(2, @scg.collectible_event_parameters.size, "#{@scg} events size incorrect")
     assert_equal(1, @scg.specimens.size, "#{@scg} specimens size incorrect")
     spc = @scg.specimens.first
-    assert_equal(2, spc.event_parameters.size, "#{@scg} #{spc} events size incorrect")
-    verify_query(spc, :event_parameters) do |fetched|
-      assert_equal(2, fetched.size, "#{@scg} #{spc} events query result size incorrect")
-    end
+    assert_equal(2, spc.collectible_event_parameters.size, "#{@scg} #{spc} events size incorrect")
 
     # test update
     @scg.diagnosis = 'Pleomorphic carcinoma'
-    # set an event comment
-    cep = @scg.specimen_event_parameters.detect { |param| CaTissue::CollectionEventParameters === param }
-    cep.comment = 'Test Comment'
+    unless CaTissue::CollectionEventParameters < CaTissue::Annotation then
+      # set an event comment
+      cep = @scg.collection_event_parameters
+      cep.comment = 'Test Comment'
+    end
     verify_save(@scg)
 
     # query the specimens
@@ -163,24 +184,25 @@ class SpecimenCollectionGroupTest < Test::Unit::TestCase
     end
 
     # query the collection event parameters
-    logger.debug { "Verifying that #{@scg.qp} specimen_event_parameters are created..." }
-    verify_query(tmpl) do |fetched|
-      assert_equal(@scg.specimen_event_parameters.size, fetched.first.specimen_event_parameters.size, "Event query result size incorrect")
-      # the fetched CEP
-      fcep = fetched.first.specimen_event_parameters.detect { |param| CaTissue::CollectionEventParameters === param }
-      assert_not_nil(fcep, "Collection event missing")
-      assert_equal('Test Comment', fcep.comment, "Collection event comment not saved")
+    unless CaTissue::CollectionEventParameters < CaTissue::Annotation then
+      logger.debug { "Verifying that #{@scg.qp} specimen_event_parameters are created..." }
+      verify_query(tmpl) do |fetched|
+        assert_equal(@scg.specimen_event_parameters.size, fetched.first.specimen_event_parameters.size, "Event query result size incorrect")
+        # the fetched CEP
+        fcep = fetched.first.specimen_event_parameters.detect { |param| CaTissue::CollectionEventParameters === param }
+        assert_not_nil(fcep, "Collection event missing")
+        assert_equal('Test Comment', fcep.comment, "Collection event comment not saved")
+      end
+      # test update CEP from a partial template
+      tmpl = @scg.copy(:identifier)
+      tcep = CaTissue::Collectible.create_parameters(:collection, tmpl, :comment => 'Updated Test Comment')
+      verify_save(tmpl)
+      ceps = tmpl.specimen_event_parameters.select { |ep| CaTissue::CollectionEventParameters === ep }
+      assert(ceps.include?(tcep), "#{tmpl} is missing #{tcep}")
+      assert_equal(1, ceps.size, "#{tmpl} has extraneous CEPs: #{ceps.qp}")
+      assert(Jinx::Resource.value_equal?(cep.date, tcep.date), "#{tmpl} event parameters #{tcep} date #{tcep.date} not merged from #{cep} date #{cep.date}")
     end
     
-    # test update CEP from a partial template
-    tmpl = @scg.copy(:identifier)
-    tcep = CaTissue::SpecimenEventParameters.create_parameters(:collection, tmpl, :comment => 'Updated Test Comment')
-    verify_save(tmpl)
-    ceps = tmpl.specimen_event_parameters.select { |ep| CaTissue::CollectionEventParameters === ep }
-    assert(ceps.include?(tcep), "#{tmpl} is missing #{tcep}")
-    assert_equal(1, ceps.size, "#{tmpl} has extraneous CEPs: #{ceps.qp}")
-    assert(Jinx::Resource.value_equal?(cep.date, tcep.date), "#{tmpl} event parameters #{tcep} date #{tcep.date} not merged from #{cep} date #{cep.date}")
-
     # update the comment
     logger.debug { "#{self.class.qp} verifying #{@scg} update..." }
     @scg.comment = comment = 'Test Comment'

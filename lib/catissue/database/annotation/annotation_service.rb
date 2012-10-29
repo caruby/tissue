@@ -1,6 +1,7 @@
 require 'jinx/helpers/inflector'
 require 'caruby/database/sql_executor'
 require 'caruby/database/persistence_service'
+require 'caruby/database/url_application_service'
 
 module CaTissue
   module Annotation
@@ -12,9 +13,9 @@ module CaTissue
       # @param [String] name the caTissue DE service name
       # @param [Integrator] integrator the caTissue annotation integrator
       def initialize(database, name, integrator)
-        super(name, database.access_properties)
+        url = database.application_service_url_for(name)
+        super() { CaRuby::URLApplicationService.for(url) }
         @database = database
-        @database.add_persistence_service(self)
         @intgtr = integrator
       end
 
@@ -77,18 +78,21 @@ module CaTissue
       
       # @see #create
       def create_annotation_object(annotation)
-        # can't create a proxy
-        if Proxy === annotation then
-          raise AnnotationError.new("#{annotation} annotation proxy create is not supported")
-        end
         # The next database identifier.
         annotation.identifier = EntityFacade.instance.next_identifier(annotation)
-        # Ensure that there is a proxy hook.
-        pxy = annotation.proxy
-        if pxy then pxy.ensure_hook_exists end
+        # Ensure that there is a hook.
+        ensure_hook_exists(annotation)
         # Delegate to standard record create.
         app_service.create_object(annotation)
         logger.debug { "Created annotation object #{annotation}." }
+      end
+      
+      
+      # Ensures that this proxy's hook exists in the database.
+      def ensure_hook_exists(annotation)
+        hook = annotation.hook
+        if hook.nil? then raise AnnotationError.new("Annotation proxy #{annotation} is missing the hook domain object") end
+        hook.ensure_exists
       end
     end
   end

@@ -9,13 +9,13 @@ class AddressTest < Test::Unit::TestCase
     @user = defaults.tissue_bank.coordinator
     @addr = @user.address
   end
-  
-  def test_primary_key
-    assert_equal([:identifier], CaTissue::Address.primary_key_attributes, "Primary key is not the identifier")
-  end
 
   def test_defaults
     verify_defaults(@addr)
+  end
+  
+  def test_primary_key
+    assert_equal([:identifier], CaTissue::Address.primary_key_attributes, "Primary key is not the identifier")
   end
   
   def test_json
