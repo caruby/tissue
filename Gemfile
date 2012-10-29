@@ -14,4 +14,7 @@ group :development do
   gem 'jinx-migrate', :path => File.dirname(__FILE__) + '/../../jinx/migrate'
   gem 'caruby-core', :path => File.dirname(__FILE__) + '/../core', :require => 'caruby'
   gem 'caruby-tissue', :path => File.dirname(__FILE__), :require => 'catissue'
+  
+  
+  gem 'ruby-debug'
 end
