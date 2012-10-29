@@ -1,4 +1,4 @@
-require 'jinx/helpers/hashable'
+require 'jinx/helpers/hasher'
 require 'jinx/helpers/inflector'
 require 'jinx/helpers/validation'
 require 'catissue/helpers/storable'
@@ -202,7 +202,7 @@ module CaTissue
         # copy the requirement characteristics
         sc = other.specimen_characteristics
         self.specimen_characteristics ||= sc.copy(MERGEABLE_SPC_CHR_ATTRS) if sc
-      when Jinx::Hashable then
+      when Jinx::Hasher then
         # the requirement template
         rqmt = other[:specimen_requirement] || other[:requirement]
         # merge the attribute => value hash
