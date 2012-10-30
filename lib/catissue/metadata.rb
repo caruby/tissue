@@ -140,7 +140,7 @@ module CaTissue
       @de_integration_proxy_class = Annotation::DEIntegration.proxy(name)
       if @de_integration_proxy_class then
         # hide the internal caTissue proxy collection attribute
-        pa = detect_attribute_with_type(@de_integration_proxy_class)
+        pa = domain_attributes.detect_attribute_with_property { |prop| prop.type <= @de_integration_proxy_class }
         if pa then
           remove_attribute(pa)
           logger.debug { "Hid the internal caTissue #{qp} annotation record-keeping attribute #{pa}." }
