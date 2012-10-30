@@ -185,7 +185,7 @@ module CaTissue
         logger.debug { "#{self} subcontainer #{sc} stored #{storable.qp}." }
         self
       elsif not full? then
-        logger.debug { "Creating #{self} of type #{storage_type} subcontainer to hold #{storable.qp}..." }
+        logger.debug { "Creating a subcontainer in #{self} of type #{storage_type} to hold #{storable.qp}..." }
         create_subcontainer_for(storable)
       end
     end
@@ -232,7 +232,7 @@ module CaTissue
     def create_subcontainer_for(storable)
       # the StorageType path to storable
       type_path = type_path_to(storable) || return
-      # create a container for each type leading to storable and add it to the parent container
+      # Create a container for each type leading to storable and add it to the parent container.
       sc = type_path.reverse.inject(storable) do |occ, type|
         ctr = type.new_container
         ctr.site = site
