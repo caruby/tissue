@@ -1,6 +1,10 @@
 This history lists major release themes. See the GitHub commits (https://github.com/caruby/tissue)
 for change details.
 
+2.1.6 / 2012-10-31
+------------------
+* Fix a specimen position bug.
+
 2.1.5 / 2012-06-18
 ------------------
 * Infer the application properties.
