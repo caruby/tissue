@@ -23,13 +23,13 @@ module CaTissue
     # Returns the {CaTissue::SpecimenArrayType} or {CaTissue::StorageType} children which this StorageTypeHolder
     # can hold.
     def child_container_types
-      child_storage_types.union(child_specimen_array_types)
+      @ccts ||= child_storage_types.union(child_specimen_array_types)
     end
 
     # Returns the {CaTissue::SpecimenArrayType}, {CaTissue::AbstractSpecimen#specimen_class} or {CaTissue::StorageType}
     # children which this StorageTypeHolder can hold.
     def child_types
-      child_container_types.union(child_specimen_classes)
+      @cts ||= child_container_types.union(child_specimen_classes)
     end
     
     # Adds the given subtype to the list of subtypes which this StorageType can hold.
@@ -49,6 +49,15 @@ module CaTissue
     end
     
     private
+    
+    # Copies the other child types into this container's child types.
+    #
+    # @param [StorageTypeHolder] other the source child type holder
+    def copy_child_types(other)
+      child_storage_types.merge!(other.child_storage_types)
+      child_specimen_array_types.merge!(other.child_specimen_array_types)
+      child_specimen_classes.merge!(other.child_specimen_classes)
+    end
     
     # Adds the given storage type to the set of types which can be held.
     #

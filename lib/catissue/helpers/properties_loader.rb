@@ -85,10 +85,14 @@ module CaTissue
     end
     
     def remote_service_url
-      file = $CLASSPATH.detect_value do |loc|
+      file = nil
+      $CLASSPATH.each do |loc|
         if File.directory?(loc) then
           f = File.expand_path('remoteService.xml', loc)
-          f if File.exists?(f)
+          if File.exists?(f) then
+            file = f
+            break
+          end
         end
       end
       if file then

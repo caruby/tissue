@@ -197,7 +197,8 @@ module CaTissue
         infer_inverses
         # Select the annotation attributes to make dependent.
         dps = domain_properties.select do |p|
-          p != @proxy_property and p.type < Annotation and not (p.dependent? or p.owner?) and p.declarer == self
+          p != @proxy_property and p.type < Annotation and not (p.dependent? or p.owner?) and
+            p.declarer == self and (p.inverse.nil? or not p.inverse.collection?)
         end
         # Copy the attributes to an array before iteration, since adding a dependent attribute
         # might also add another attribute in the case of a proxy.

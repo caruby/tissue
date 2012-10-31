@@ -7,7 +7,7 @@ module CaTissue
   # Mix-in for extending a caTissue domain class with +Jinx::Metadata+ introspection and annotations.
   module Metadata
     include CaRuby::Metadata
-    
+        
     # @return [Integer, nil] the the hook class designator that is used by caTissue to persist primary
     #   annotation objects, or nil if this is not a primary annotation class
     attr_reader :entity_id
