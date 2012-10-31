@@ -132,7 +132,8 @@ module CaTissue
         infer_inverses
         # Select the annotation attributes to make dependent.
         pa = domain_attributes.compose do |prop|
-          prop != @pxy_prop and prop.type < Annotation and not (prop.dependent? or prop.owner?) and prop.declarer == self
+          prop != @pxy_prop and prop.type < Annotation and not (prop.dependent? or prop.owner?) and
+          prop.declarer == self and (prop.inverse.nil? or not prop.inverse.collection?)
         end
         # Copy the attributes to an array before iteration, since adding a dependent attribute
         # might also add another attribute in the case of a proxy.
