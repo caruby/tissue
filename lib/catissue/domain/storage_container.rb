@@ -148,7 +148,7 @@ module CaTissue
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer from among #{scs.pp_s} to place #{storable.qp}..." } unless scs.empty?
-      # the first subcontainer that can hold the storable is preferred
+      # The first subcontainer that can hold the storable is preferred.
       sc = scs.detect do |sc|
         # Check for circular reference. This occurred as a result of the caTissue bug described
         # in CaTissue::Database#query_object. The work-around circumvents the bug for now, but
@@ -156,7 +156,7 @@ module CaTissue
         if identifier and sc.identifier == identifier then
           raise Jinx::ValidationError.new("#{self} has a circular containment reference to subcontainer #{sc}")
         end
-        # No circular reference; add to subcontainer if possible
+        # No circular reference; add to subcontainer if possible.
         sc.add_to_existing_container(storable) if StorageContainer === sc
       end
       if sc then
@@ -179,7 +179,7 @@ module CaTissue
       # the subcontainers in column, row sort order
       scs = subcontainers.sort { |sc1, sc2| sc1.position.coordinate <=> sc2.position.coordinate }
       logger.debug { "Looking for a #{self} subcontainer #{scs} to place a new #{storable.qp} container..." } unless scs.empty?
-      # the first subcontainer that can hold the new subcontainer is preferred
+      # The first subcontainer that can hold the new subcontainer is preferred.
       sc = scs.detect { |sc| sc.add_to_new_subcontainer(storable) if StorageContainer === sc }
       if sc then
         logger.debug { "#{self} subcontainer #{sc} stored #{storable.qp}." }
@@ -189,22 +189,8 @@ module CaTissue
         create_subcontainer_for(storable)
       end
     end
-
-    def child_types
-      holds_storage_types.union(holds_specimen_classes).union(holds_specimen_array_types)
-    end
     
     private
-    
-    # Copies the other child types into this container's child types.
-    #
-    # @param [StorageTypeHolder] other the source child type holder
-    # @see #storage_type=
-    def copy_child_types(other)
-      child_storage_types.merge!(other.child_storage_types)
-      child_specimen_array_types.merge!(other.child_specimen_array_types)
-      child_specimen_classes.merge!(other.child_specimen_classes)
-    end
     
     # Adds the following defaults:
     # * the default site is the parent container site, if any
@@ -231,10 +217,10 @@ module CaTissue
     # @see #add_to_new_subcontainer
     def create_subcontainer_for(storable)
       # the StorageType path to storable
-      type_path = type_path_to(storable) || return
-      # Create a container for each type leading to storable and add it to the parent container.
-      sc = type_path.reverse.inject(storable) do |occ, type|
-        ctr = type.new_container
+      tp = type_path_to(storable) || return
+      # Create a container for each type leading to the storable and add it to the parent container.
+      sc = tp.reverse.inject(storable) do |occ, st|
+        ctr = st.new_container
         ctr.site = site
         logger.debug { "Created #{qp} #{ctr.container_type.name} subcontainer #{ctr} to hold #{occ}." }
         ctr << occ
@@ -243,13 +229,18 @@ module CaTissue
       add_local(sc)
     end
 
-    # Returns a StorageType array from a child StorageType to a descendant StorageType which can
-    # hold the given storable, or nil if no such path exists.
+    # Returns a StorageType array of descendant StorageTypes which can hold the given storable,
+    # or nil if no such path exists.
     #
     # @param [Storable] the domain object to store in this container
     # @return [<StorageType>] the {StorageType}s leading from this container to the storable holder
     def type_path_to(storable)
-      holds_storage_types.detect_value { |type| type.path_to(storable) }
+      shortest = nil
+      holds_storage_types.each do |st|
+        stp = st.path_to(storable) || next
+        shortest = stp if shortest.nil? or stp.size < shortest.size
+      end
+      shortest
     end
 
     # Adds the given storage type to the set of types which can be held.
